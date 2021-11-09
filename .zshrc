@@ -8,6 +8,10 @@ export PATH=$PATH:$HOME/elixir-ls/release
 # make sure doom is in the path
 export PATH=$PATH:$HOME/.doom_emacs.d/bin
 
+#make the keyboard work faster
+defaults write -g InitialKeyRepeat -int 10 # normal minimum is 15 (225 ms)
+defaults write -g KeyRepeat -int 1 # normal minimum is 2 (30 ms)
+
 
 # Path to your oh-my-zsh installation.
 export ZSH="/Users/zimakki/.oh-my-zsh"
