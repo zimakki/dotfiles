@@ -17,7 +17,7 @@ FILES=(
   ".gitignore_global"
 )
 
-# Iterate over the files and create the setup_sim_linkss
+# Iterate over the files and create the symlinks
 for FILE in "${FILES[@]}"; do
   # Set the path to the target file
   TARGET_FILE="${CURRENT_DIR}/${FILE#\.}"
@@ -25,12 +25,15 @@ for FILE in "${FILES[@]}"; do
   # Remove the dot (.) at the start of the file name
   DESTINATION_FILE="${HOME}/${FILE}"
 
-  # Remove the existing file if it exists
+  # Check if the destination file already exists
   if [[ -e "${DESTINATION_FILE}" ]]; then
-    rm -rf "${DESTINATION_FILE}"
+    # Create a backup file with the .bak extension
+    BACKUP_FILE="${DESTINATION_FILE}.bak"
+    mv "${DESTINATION_FILE}" "${BACKUP_FILE}"
+    echo "Existing file moved to backup: ${DESTINATION_FILE} -> ${BACKUP_FILE}"
   fi
 
-  # Create the setup_sim_links to the target file
+  # Create the symlink to the target file
   ln -s "${TARGET_FILE}" "${DESTINATION_FILE}"
 
 
