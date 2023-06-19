@@ -13,6 +13,8 @@ The plan is to have more...
 
 > note: I have not run this on a new computer so I imagine I will have to install everything I need before I am really able to use this file.
 
+I'm currently running [AstroVim](https://astronvim.com/) and you can find the astro vim config here: [AstroNvim](https://github.com/zimakki/AstroNvim)
+
 ### 1. Install all the brew stuff
 
 Run the below command from the root of this folder:
