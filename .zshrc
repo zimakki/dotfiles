@@ -1,3 +1,4 @@
+#!/bin/zsh
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
@@ -114,9 +115,6 @@ fi
 # users are encouraged to define aliases within the ZSH_CUSTOM folder.
 # For a full list of active aliases, run `alias`.
 #
-# Example aliases
-# alias zshconfig="mate ~/.zshrc"
-# alias ohmyzsh="mate ~/.oh-my-zsh"
 
 # function for listing and checking out branches
 function gci() {
@@ -126,13 +124,22 @@ function gci() {
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
+##############################################################################
 # alias's
+##############################################################################
 ## Changing "ls" to "exa"
 alias ls='lsd -al --group-dirs first' # my preferred listing
-alias vi='nvim' # my preferred listing
+alias vi='nvim' 
 alias cdd='cd ../..'
 alias cddd='cd ../../..'
 alias cdddd='cd ../../../..'
+## use delta with rg for much nicer outputs!
+alias rg='rg --json -C 2 handle | delta'
+# alias cat to bat for colors!
+alias cat="bat"
+# Example aliases
+# alias zshconfig="mate ~/.zshrc"
+# alias ohmyzsh="mate ~/.oh-my-zsh"
 
 
 # to get help in iex for erlang functions
@@ -142,8 +149,6 @@ export KERL_BUILD_DOCS="yes"
 # Elixir: enable history in iex
 export ERL_AFLAGS="-kernel shell_history enabled"
 
-# alias cat to bat for colors!
-alias cat="bat"
 
 # asdf
 . /usr/local/opt/asdf/libexec/asdf.sh
