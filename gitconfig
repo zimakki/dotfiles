@@ -4,23 +4,22 @@
 [core]
 	excludesfile = /Users/zimakki/.gitignore_global
 
-; here is a list of some cool aliases I use:
 [alias]
-	; show me the log in a pretty format
+	## show me the log in a pretty format
 	lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
-	; show me the log in a pretty format with the files changed
+	## show me the log in a pretty format with the files changed
 	lg1 = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative --name-status
-	; show me the log in a pretty format with the files changed and the diff
+	## show me the log in a pretty format with the files changed and the diff
 	lg2 = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative -p
-	; show me the log in a pretty format with the files changed and the diff and the stat
+	## show me the log in a pretty format with the files changed and the diff and the stat
 	lg3 = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative -p --stat
-	; show me the log in a pretty format with the files changed and the diff and the stat and the graph
+	## show me the log in a pretty format with the files changed and the diff and the stat and the graph
 	lg4 = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative -p --stat --graph
-	; show me the log in a pretty format with the files changed and the diff and the stat and the graph and the reflog
+	## show me the log in a pretty format with the files changed and the diff and the stat and the graph and the reflog
 	lg5 = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative -p --stat --graph --reflog
-	; show me the log in a pretty format with the files changed and the diff and the stat and the graph and the ref
-	;
-	; cool config for delta (the diff tool)
+	## show me the log in a pretty format with the files changed and the diff and the stat and the graph and the ref
+	##
+	## cool config for delta (the diff tool)
 [core]
     pager = delta
 
@@ -32,6 +31,7 @@
     light = false      # set to true if you're in a terminal w/ a light background color (e.g. the default macOS terminal)
     side-by-side = true
     line-numbers = true
+    true-color = always
 
 [merge]
     conflictstyle = diff3
