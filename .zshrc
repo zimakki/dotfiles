@@ -85,13 +85,9 @@ HIST_STAMPS="yyyy-mm-dd"
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
-    git
-    asdf
-    fd
-    fzf
+    dotenv
     mix
-    brew
-    zsh-completions
+    git
 )
 
 source $ZSH/oh-my-zsh.sh
@@ -105,7 +101,7 @@ source $ZSH/oh-my-zsh.sh
 
 # Preferred editor for local and remote sessions
 if [[ -n $SSH_CONNECTION ]]; then
-  export EDITOR='vim'
+  export EDITOR='nvim'
 else
   export EDITOR='nvim'
 fi
@@ -122,6 +118,7 @@ fi
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
+# function for listing and checking out branches
 function gci() {
     git checkout $(git branch --all | fzf | sed 's/remotes\/origin\///' )
 }
@@ -132,8 +129,11 @@ function gci() {
 # alias's
 ## Changing "ls" to "exa"
 alias ls='lsd -al --group-dirs first' # my preferred listing
+alias vi='nvim' # my preferred listing
+alias cdd='cd ../..'
+alias cddd='cd ../../..'
+alias cdddd='cd ../../../..'
 
-. /opt/homebrew/opt/asdf/asdf.sh
 
 # to get help in iex for erlang functions
 # Note: This needs to be set BEFORE you install Erlang to work
@@ -145,15 +145,46 @@ export ERL_AFLAGS="-kernel shell_history enabled"
 # alias cat to bat for colors!
 alias cat="bat"
 
+# asdf
+. /usr/local/opt/asdf/libexec/asdf.sh
+
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+export PATH="/usr/local/opt/curl/bin:$PATH"
+
+# curl
+# For compilers to find curl you may need to set:
+export LDFLAGS="-L/usr/local/opt/curl/lib"
+export CPPFLAGS="-I/usr/local/opt/curl/include"
+export PATH="/usr/local/sbin:$PATH"
 
 
-# NOTE: fzf-tab needs to be loaded after compinit, but before plugins which will wrap widgets, such as zsh-autosuggestions or fast-syntax-highlighting!!
-source /Users/zimakki/.oh-my-zsh/custom/plugins/fzf-tab/fzf-tab.plugin.zsh
+#Add zoxide to your shell
+# zoxide is used to jump around directories. Example: `z mia` will jump to the directory that has mia in it
+eval "$(zoxide init zsh)"
 
-# To activate the syntax highlighting, add the following at the end of your .zshrc:
-source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+# stuff for tre
+tre() { command tre "$@" -e && source "/tmp/tre_aliases_$USER" 2>/dev/null; }
 
-# If you receive "highlighters directory not found" error message,
-# you may need to add the following to your .zshenv:
-# export ZSH_HIGHLIGHT_HIGHLIGHTERS_DIR=/opt/homebrew/share/zsh-syntax-highlighting/highlighters
+#lunar vim settings
+export PATH=/Users/zimakki/.local/bin:$PATH
+
+# trying to fix an issue that doom doctor reported
+# In .zshrc/.bashrc
+if [ -d "$(brew --prefix)/opt/grep/libexec/gnubin" ]; then
+    PATH="$(brew --prefix)/opt/grep/libexec/gnubin:$PATH"
+fi
+
+# some secrets for live_beats elixir application
+export LIVE_BEATS_GITHUB_CLIENT_ID="1aac63d3d8f1e4fb9dc6"
+export LIVE_BEATS_GITHUB_CLIENT_SECRET="86473938560cbecd3e9a00ade6f9afc7f4548c48"
+
+delete_nvim_cache ()
+{
+  echo "deleting ~/.local/share/nvim"
+  rm -rf ~/.local/share/nvim 
+  echo "deleting ~/.local/state/nvim"
+  rm -rf ~/.local/state/nvim
+  echo "deleting ~/.cache/nvim"
+  rm -rf ~/.cache/nvim 
+}
+
