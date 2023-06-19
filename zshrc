@@ -136,10 +136,20 @@ alias cdddd='cd ../../../..'
 ## use delta with rg for much nicer outputs!
 alias rg='rg --json -C 2 handle | delta'
 # alias cat to bat for colors!
-alias cat="bat"
+alias cat='bat'
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
+alias git='git_with_diff'
+
+git_with_diff() {
+  if [[ "$1" == "status" ]]; then
+    shift
+    command git status "$@" && git diff
+  else
+    command git "$@"
+  fi
+}
 
 
 # to get help in iex for erlang functions
