@@ -129,6 +129,7 @@ function gci() {
 ## Changing "ls" to "exa"
 alias ls='lsd -al --group-dirs first' # my preferred listing
 alias vi='nvim' 
+alias vim='nvim' 
 alias cdd='cd ../..'
 alias cddd='cd ../../..'
 alias cdddd='cd ../../../..'
