@@ -205,6 +205,3 @@ delete_nvim_cache ()
 
 # add rebar3 to the path
 export PATH=/Users/zimakki/.cache/rebar3/bin:$PATH
-
-# chatgpt key used by chatgpt-nvim plugin
-export OPENAI_API_KEY="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"
