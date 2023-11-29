@@ -1,8 +1,12 @@
 [user]
-	email = zimakki@gmail.com
 	name = Zi Makki
+	email = zimakki@gmail.com
+
+[github]
+	user = zimakki
+
 [core]
-	excludesfile = /Users/zimakki/.gitignore_global
+    pager = delta
 
 [alias]
 	lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
@@ -12,21 +16,20 @@
 	lg4 = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative -p --stat --graph
 	lg5 = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative -p --stat --graph --reflog
 
-[core]
-    pager = delta
-
 [interactive]
-    diffFilter = delta --color-only
+	editor = nvim
+	diffFilter = delta --color-only
 
 [delta]
-    navigate = true    # use n and N to move between diff sections
-    light = false      # set to true if you're in a terminal w/ a light background color (e.g. the default macOS terminal)
-    side-by-side = true
-    line-numbers = true
-    true-color = always
+	navigate = true
+	light = false
+	side-by-side = true
+	line-numbers = true
+	true-color = always
 
 [merge]
-    conflictstyle = diff3
+	conflictStyle = diff3
 
 [diff]
-    colorMoved = default
+	colorMoved = default
+
