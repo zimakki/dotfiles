@@ -161,7 +161,23 @@ export ERL_AFLAGS="-kernel shell_history enabled"
 
 
 # asdf
-. /opt/homebrew/opt/asdf/libexec/asdf.sh
+# Get the machine hardware name
+machine_hw_name=$(uname -m)
+
+# Check if it's an Apple Silicon M1 Mac
+if [ "$machine_hw_name" = "arm64" ]; then
+    echo "This is an Apple Silicon M1 Mac."
+    # Add your M1 specific commands here
+    . /opt/homebrew/opt/asdf/libexec/asdf.sh
+elif [ "$machine_hw_name" = "x86_64" ]; then
+    echo "This is an Intel Mac. Setting up Intel specific commands for asdf."
+    # Add your Intel specific commands here
+    . /usr/local/opt/asdf/libexec/asdf.sh
+else
+    echo "Unknown architecture: $machine_hw_name"
+    # Handle other architectures or unknown cases
+fi
+###################################
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 export PATH="/usr/local/opt/curl/bin:$PATH"
