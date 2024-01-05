@@ -219,5 +219,15 @@ delete_nvim_cache ()
   rm -rf ~/.cache/nvim 
 }
 
+# for the chatgpt.nvim plugin - it needs an api key for open_ai
+OPENAI_API_KEY="$(op read op://Personal/ChatGPT.nvim/password --no-newline)"
+export OPENAI_API_KEY=$OPENAI_API_KEY
+echo "-------------------------------------"
+echo "OPENAI_API_KEY=$OPENAI_API_KEY"
+echo "OPENAI_API_KEY='$OPENAI_API_KEY'"
+echo 'OPENAI_API_KEY="$OPENAI_API_KEY"'
+echo "-------------------------------------"
+
+
 # add rebar3 to the path
 export PATH=/Users/zimakki/.cache/rebar3/bin:$PATH
