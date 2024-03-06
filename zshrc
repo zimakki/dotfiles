@@ -267,5 +267,19 @@ function run_iex() {
   fi
 }
 ####################################################################################################
+#
+# Yazi - File manager
+# function below is used to give yazi the ability to change the directory
+####################################################################################################
+function ya() {
+	local tmp="$(mktemp -t "yazi-cwd.XXXXX")"
+	yazi "$@" --cwd-file="$tmp"
+	if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+		cd -- "$cwd"
+	fi
+	rm -f -- "$tmp"
+}
+
+
 # add rebar3 to the path
 export PATH=/Users/zimakki/.cache/rebar3/bin:$PATH
