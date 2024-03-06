@@ -283,3 +283,7 @@ function ya() {
 
 # add rebar3 to the path
 export PATH=/Users/zimakki/.cache/rebar3/bin:$PATH
+
+# trying out a homebrew version of file. Its also installed on the system... 
+# so if things go wrong, I can always use the system version
+export PATH="/opt/homebrew/opt/file-formula/bin:$PATH"
