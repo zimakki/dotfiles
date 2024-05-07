@@ -2,14 +2,12 @@
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
-
 # make sure doom is in the path
 export PATH=$PATH:$HOME/.doom_emacs.d/bin
 
 #make the keyboard work faster
 defaults write -g InitialKeyRepeat -int 10 # normal minimum is 15 (225 ms)
-defaults write -g KeyRepeat -int 1 # normal minimum is 2 (30 ms)
-
+defaults write -g KeyRepeat -int 1         # normal minimum is 2 (30 ms)
 
 # Path to your oh-my-zsh installation.
 export ZSH="/Users/zimakki/.oh-my-zsh"
@@ -78,16 +76,15 @@ HIST_STAMPS="yyyy-mm-dd"
 # Would you like to use another custom folder than $ZSH/custom?
 # ZSH_CUSTOM=/path/to/new-custom-folder
 
-
 # Which plugins would you like to load?
 # Standard plugins can be found in $ZSH/plugins/
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
-    dotenv
-    mix
-    git
+	dotenv
+	mix
+	git
 )
 
 source $ZSH/oh-my-zsh.sh
@@ -101,9 +98,9 @@ source $ZSH/oh-my-zsh.sh
 
 # Preferred editor for local and remote sessions
 if [[ -n $SSH_CONNECTION ]]; then
-  export EDITOR='nvim'
+	export EDITOR='nvim'
 else
-  export EDITOR='nvim'
+	export EDITOR='nvim'
 fi
 
 # Compilation flags
@@ -115,11 +112,18 @@ fi
 # For a full list of active aliases, run `alias`.
 #
 
+# ngrok shell completion
+if command -v ngrok &>/dev/null; then
+	eval "$(ngrok completion)"
+fi
+
+# From fzf instructions
+eval "$(fzf --zsh)"
+
 # function for listing and checking out branches
 function gci() {
-    git checkout $(git branch --all | fzf | sed 's/remotes\/origin\///' )
+	git checkout $(git branch --all | fzf | sed 's/remotes\/origin\///')
 }
-
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
@@ -128,8 +132,8 @@ function gci() {
 ##############################################################################
 ## Changing "ls" to "lsd"
 alias ls='lsd -l --group-dirs first' # my preferred listing
-alias vi='nvim' 
-alias vim='nvim' 
+alias vi='nvim'
+alias vim='nvim'
 alias cdd='cd ../..'
 alias cddd='cd ../../..'
 alias cdddd='cd ../../../..'
@@ -143,14 +147,13 @@ alias cat='bat'
 alias git='git_with_diff'
 
 git_with_diff() {
-  if [[ "$1" == "status" ]]; then
-    shift
-    command git status "$@" && git diff
-  else
-    command git "$@"
-  fi
+	if [[ "$1" == "status" ]]; then
+		shift
+		command git status "$@" && git diff
+	else
+		command git "$@"
+	fi
 }
-
 
 # to get help in iex for erlang functions
 # Note: This needs to be set BEFORE you install Erlang to work
@@ -159,23 +162,22 @@ export KERL_BUILD_DOCS="yes"
 # Elixir: enable history in iex
 export ERL_AFLAGS="-kernel shell_history enabled"
 
-
 # asdf
 # Get the machine hardware name
 machine_hw_name=$(uname -m)
 
 # Check if it's an Apple Silicon M1 Mac
 if [ "$machine_hw_name" = "arm64" ]; then
-    echo "This is an Apple Silicon M1 Mac."
-    # Add your M1 specific commands here
-    . /opt/homebrew/opt/asdf/libexec/asdf.sh
+	echo "This is an Apple Silicon M1 Mac."
+	# Add your M1 specific commands here
+	. /opt/homebrew/opt/asdf/libexec/asdf.sh
 elif [ "$machine_hw_name" = "x86_64" ]; then
-    echo "This is an Intel Mac. Setting up Intel specific commands for asdf."
-    # Add your Intel specific commands here
-    . /usr/local/opt/asdf/libexec/asdf.sh
+	echo "This is an Intel Mac. Setting up Intel specific commands for asdf."
+	# Add your Intel specific commands here
+	. /usr/local/opt/asdf/libexec/asdf.sh
 else
-    echo "Unknown architecture: $machine_hw_name"
-    # Handle other architectures or unknown cases
+	echo "Unknown architecture: $machine_hw_name"
+	# Handle other architectures or unknown cases
 fi
 ###################################
 
@@ -187,7 +189,6 @@ export PATH="/usr/local/opt/curl/bin:$PATH"
 export LDFLAGS="-L/usr/local/opt/curl/lib"
 export CPPFLAGS="-I/usr/local/opt/curl/include"
 export PATH="/usr/local/sbin:$PATH"
-
 
 #Add zoxide to your shell
 # zoxide is used to jump around directories. Example: `z mia` will jump to the directory that has mia in it
@@ -202,21 +203,20 @@ export PATH=/Users/zimakki/.local/bin:$PATH
 # trying to fix an issue that doom doctor reported
 # In .zshrc/.bashrc
 if [ -d "$(brew --prefix)/opt/grep/libexec/gnubin" ]; then
-    PATH="$(brew --prefix)/opt/grep/libexec/gnubin:$PATH"
+	PATH="$(brew --prefix)/opt/grep/libexec/gnubin:$PATH"
 fi
 
 # some secrets for live_beats elixir application
 export LIVE_BEATS_GITHUB_CLIENT_ID="1aac63d3d8f1e4fb9dc6"
 export LIVE_BEATS_GITHUB_CLIENT_SECRET="86473938560cbecd3e9a00ade6f9afc7f4548c48"
 
-delete_nvim_cache ()
-{
-  echo "deleting ~/.local/share/nvim"
-  rm -rf ~/.local/share/nvim 
-  echo "deleting ~/.local/state/nvim"
-  rm -rf ~/.local/state/nvim
-  echo "deleting ~/.cache/nvim"
-  rm -rf ~/.cache/nvim 
+delete_nvim_cache() {
+	echo "deleting ~/.local/share/nvim"
+	rm -rf ~/.local/share/nvim
+	echo "deleting ~/.local/state/nvim"
+	rm -rf ~/.local/state/nvim
+	echo "deleting ~/.cache/nvim"
+	rm -rf ~/.cache/nvim
 }
 
 # for the chatgpt.nvim plugin - it needs an api key for open_ai
@@ -228,7 +228,6 @@ echo "OPENAI_API_KEY='$OPENAI_API_KEY'"
 echo 'OPENAI_API_KEY="$OPENAI_API_KEY"'
 echo "-------------------------------------"
 
-
 ####################################################################################################
 # Alex's fzf plugin for iex
 ####################################################################################################
@@ -239,32 +238,32 @@ alias i="run_iex"
 alias is="run_iex -S mix phx.server"
 
 function run_iex() {
-  local session=$(date | sha256sum | cut -c1-8)
-  local current_session=${1:-$(tmux display -p '#{session_name}')}
+	local session=$(date | sha256sum | cut -c1-8)
+	local current_session=${1:-$(tmux display -p '#{session_name}')}
 
-  local command='iex'
+	local command='iex'
 
-  if [ "$#" -gt 0 ]; then
-    command+=" $@"
-  fi
+	if [ "$#" -gt 0 ]; then
+		command+=" $@"
+	fi
 
-  # Determine the current directory
-  local current_dir="$(pwd)"
+	# Determine the current directory
+	local current_dir="$(pwd)"
 
-  if [ -n "$TMUX" ]; then
-    echo "Already in a tmux session. Switching to 'iex_session'..."
-    # Send 'cd' to the current directory and clear the screen
-    tmux send-keys -t "$current_session" "cd ${current_dir}" C-m \; send-keys -t "$current_session" "clear" C-m
-    # Then send the command
-    tmux send-keys -t "$current_session" "$command" C-m
-  else
-    # Create a new session with the current directory and run the command
-    tmux new-session -d -s "$session" -c "$current_dir"
-    tmux send-keys -t "$session" "$command" C-m
-    if [ -z "$TMUX" ]; then
-      tmux attach -t "$session"
-    fi
-  fi
+	if [ -n "$TMUX" ]; then
+		echo "Already in a tmux session. Switching to 'iex_session'..."
+		# Send 'cd' to the current directory and clear the screen
+		tmux send-keys -t "$current_session" "cd ${current_dir}" C-m \; send-keys -t "$current_session" "clear" C-m
+		# Then send the command
+		tmux send-keys -t "$current_session" "$command" C-m
+	else
+		# Create a new session with the current directory and run the command
+		tmux new-session -d -s "$session" -c "$current_dir"
+		tmux send-keys -t "$session" "$command" C-m
+		if [ -z "$TMUX" ]; then
+			tmux attach -t "$session"
+		fi
+	fi
 }
 ####################################################################################################
 #
@@ -280,10 +279,9 @@ function ya() {
 	rm -f -- "$tmp"
 }
 
-
 # add rebar3 to the path
 export PATH=/Users/zimakki/.cache/rebar3/bin:$PATH
 
-# trying out a homebrew version of file. Its also installed on the system... 
+# trying out a homebrew version of file. Its also installed on the system...
 # so if things go wrong, I can always use the system version
 export PATH="/opt/homebrew/opt/file-formula/bin:$PATH"
