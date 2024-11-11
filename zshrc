@@ -131,7 +131,7 @@ function gci() {
 # alias's
 ##############################################################################
 ## Changing "ls" to "lsd"
-alias ls='lsd -l --group-dirs first' # my preferred listing
+alias ls='lsd -al --group-dirs first' # my preferred listing
 alias vi='nvim'
 alias vim='nvim'
 alias cdd='cd ../..'
@@ -162,24 +162,63 @@ export KERL_BUILD_DOCS="yes"
 # Elixir: enable history in iex
 export ERL_AFLAGS="-kernel shell_history enabled"
 
-# asdf
-# Get the machine hardware name
-machine_hw_name=$(uname -m)
 
-# Check if it's an Apple Silicon M1 Mac
-if [ "$machine_hw_name" = "arm64" ]; then
-	echo "This is an Apple Silicon M1 Mac."
-	# Add your M1 specific commands here
-	. /opt/homebrew/opt/asdf/libexec/asdf.sh
-elif [ "$machine_hw_name" = "x86_64" ]; then
-	echo "This is an Intel Mac. Setting up Intel specific commands for asdf."
-	# Add your Intel specific commands here
-	. /usr/local/opt/asdf/libexec/asdf.sh
-else
-	echo "Unknown architecture: $machine_hw_name"
-	# Handle other architectures or unknown cases
+#mise activate output
+#
+export MISE_SHELL=zsh
+export __MISE_ORIG_PATH="$PATH"
+
+mise() {
+  local command
+  command="${1:-}"
+  if [ "$#" = 0 ]; then
+    command /opt/homebrew/bin/mise
+    return
+  fi
+  shift
+
+  case "$command" in
+  deactivate|s|shell)
+    # if argv doesn't contains -h,--help
+    if [[ ! " $@ " =~ " --help " ]] && [[ ! " $@ " =~ " -h " ]]; then
+      eval "$(command /opt/homebrew/bin/mise "$command" "$@")"
+      return $?
+    fi
+    ;;
+  esac
+  command /opt/homebrew/bin/mise "$command" "$@"
+}
+
+_mise_hook() {
+  eval "$(/opt/homebrew/bin/mise hook-env -s zsh)";
+}
+typeset -ag precmd_functions;
+if [[ -z "${precmd_functions[(r)_mise_hook]+1}" ]]; then
+  precmd_functions=( _mise_hook ${precmd_functions[@]} )
 fi
-###################################
+typeset -ag chpwd_functions;
+if [[ -z "${chpwd_functions[(r)_mise_hook]+1}" ]]; then
+  chpwd_functions=( _mise_hook ${chpwd_functions[@]} )
+fi
+
+if [ -z "${_mise_cmd_not_found:-}" ]; then
+    _mise_cmd_not_found=1
+    [ -n "$(declare -f command_not_found_handler)" ] && eval "${$(declare -f command_not_found_handler)/command_not_found_handler/_command_not_found_handler}"
+
+    function command_not_found_handler() {
+        if /opt/homebrew/bin/mise hook-not-found -s zsh -- "$1"; then
+          _mise_hook
+          "$@"
+        elif [ -n "$(declare -f _command_not_found_handler)" ]; then
+            _command_not_found_handler "$@"
+        else
+            echo "zsh: command not found: $1" >&2
+            return 127
+        fi
+    }
+fi
+# end mise stuff ---------------------------------------------------------------------------
+
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 export PATH="/usr/local/opt/curl/bin:$PATH"
@@ -221,7 +260,9 @@ delete_nvim_cache() {
 
 # for the chatgpt.nvim plugin - it needs an api key for open_ai
 OPENAI_API_KEY="$(op read op://Personal/ChatGPT.nvim/password --no-newline)"
+ANTHROPIC_API_KEY="$(op read op://Personal/nvim.anthropic_api_key/password --no-newline)"
 export OPENAI_API_KEY=$OPENAI_API_KEY
+export ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY
 echo "-------------------------------------"
 echo "OPENAI_API_KEY=$OPENAI_API_KEY"
 echo "OPENAI_API_KEY='$OPENAI_API_KEY'"
