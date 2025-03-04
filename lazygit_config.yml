@@ -1,0 +1,24 @@
+git:
+  paging:
+    colorArg: always
+    pager: delta --dark --paging=never
+
+# Config relating to the Lazygit UI
+gui:
+  # If true, show the number of lines changed per file in the Files view
+  showNumstatInFilesView: true
+
+  # Nerd fonts version to use.
+  # One of: '2' | '3' | empty string (default)
+  # If empty, do not show icons.
+  nerdFontsVersion: 3
+
+  # If true (default), file icons are shown in the file views. Only relevant if NerdFontsVersion is not empty.
+  showFileIcons: true
+
+  # Whether to show the divergence from the base branch in the branches view.
+  # One of: 'none' | 'onlyArrow'  | 'arrowAndNumber'
+  showDivergenceFromBaseBranch: arrowAndNumber
+
+os:
+  editPreset: "nvim-remote"
