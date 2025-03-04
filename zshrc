@@ -231,7 +231,8 @@ export PATH="/usr/local/sbin:$PATH"
 
 #Add zoxide to your shell
 # zoxide is used to jump around directories. Example: `z mia` will jump to the directory that has mia in it
-eval "$(zoxide init zsh)"
+# the `--cmd` flag is used so that zoxide replaces the cd command in the shell
+eval "$(zoxide init --cmd  cd zsh)"
 
 # stuff for tre
 tre() { command tre "$@" -e && source "/tmp/tre_aliases_$USER" 2>/dev/null; }
