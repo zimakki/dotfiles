@@ -125,6 +125,23 @@ function gci() {
 	git checkout $(git branch --all | fzf | sed 's/remotes\/origin\///')
 }
 
+# Function to diff two files using fzf and delta
+function diff_files() {
+  # Select the first file
+  local file1=$(git ls-tree -r --name-only HEAD | fzf --prompt="Select first file: ")
+  [[ -z "$file1" ]] && echo "No file selected!" && return 1
+
+  # Select the second file
+  local file2=$(git ls-tree -r --name-only HEAD | fzf --prompt="Select second file: ")
+  [[ -z "$file2" ]] && echo "No file selected!" && return 1
+
+  # Run the diff command
+  diff -u "$file1" "$file2" | delta
+}
+
+# Make sure the function is available in the shell
+export -f diff_files
+
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 ##############################################################################
