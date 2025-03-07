@@ -282,9 +282,9 @@ ANTHROPIC_API_KEY="$(op read op://Personal/nvim.anthropic_api_key/password --no-
 export OPENAI_API_KEY=$OPENAI_API_KEY
 export ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY
 echo "-------------------------------------"
-echo "OPENAI_API_KEY=$OPENAI_API_KEY"
-echo "OPENAI_API_KEY='$OPENAI_API_KEY'"
-echo 'OPENAI_API_KEY="$OPENAI_API_KEY"'
+echo "setting OPENAI_API_KEY"
+echo "setting OPENAI_API_KEY"
+echo "setting OPENAI_API_KEY"
 echo "-------------------------------------"
 
 ####################################################################################################
