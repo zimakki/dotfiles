@@ -347,3 +347,5 @@ export PATH="/opt/homebrew/opt/file-formula/bin:$PATH"
 
 # Added by Windsurf
 export PATH="/Users/zimakki/.codeium/windsurf/bin:$PATH"
+# added by mix escript install
+export PATH="$HOME/.mix/escripts:$PATH"
