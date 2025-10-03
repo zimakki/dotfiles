@@ -246,6 +246,10 @@ export LDFLAGS="-L/usr/local/opt/curl/lib"
 export CPPFLAGS="-I/usr/local/opt/curl/include"
 export PATH="/usr/local/sbin:$PATH"
 
+# make sure we use astronvim v5
+export NVIM_APPNAME=astronvim_v5
+
+
 #Add zoxide to your shell
 # zoxide is used to jump around directories. Example: `z mia` will jump to the directory that has mia in it
 # the `--cmd` flag is used so that zoxide replaces the cd command in the shell
@@ -349,3 +353,4 @@ export PATH="/opt/homebrew/opt/file-formula/bin:$PATH"
 export PATH="/Users/zimakki/.codeium/windsurf/bin:$PATH"
 # added by mix escript install
 export PATH="$HOME/.mix/escripts:$PATH"
+export PATH="~/code/zimakki/prepx/:$PATH"
