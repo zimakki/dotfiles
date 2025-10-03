@@ -281,15 +281,46 @@ delete_nvim_cache() {
 }
 
 # for the chatgpt.nvim plugin - it needs an api key for open_ai
-OPENAI_API_KEY="$(op read op://Personal/ChatGPT.nvim/password --no-newline)"
-ANTHROPIC_API_KEY="$(op read op://Personal/nvim.anthropic_api_key/password --no-newline)"
-export OPENAI_API_KEY=$OPENAI_API_KEY
-export ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY
-echo "-------------------------------------"
-echo "setting OPENAI_API_KEY"
-echo "setting OPENAI_API_KEY"
-echo "setting OPENAI_API_KEY"
-echo "-------------------------------------"
+_load_api_keys() {
+	local secrets_file="$HOME/.zsh_secrets"
+	local max_age_days=7
+
+	# Check if file exists and is fresh (< 7 days old)
+	if [[ -f "$secrets_file" ]]; then
+		local file_age=$(( ($(date +%s) - $(stat -f %m "$secrets_file")) / 86400 ))
+		echo "[API Keys] Secrets file exists (age: ${file_age} days, max: ${max_age_days} days)"
+		if (( file_age < max_age_days )); then
+			# File is fresh, just source it
+			echo "[API Keys] Using cached keys from $secrets_file"
+			source "$secrets_file"
+			return
+		else
+			echo "[API Keys] Cache is stale, refreshing..."
+		fi
+	else
+		echo "[API Keys] No cache file found at $secrets_file"
+	fi
+
+	# File missing or stale, fetch from 1Password
+	echo "[API Keys] Fetching from 1Password..."
+	local openai_key="$(op read op://Personal/ChatGPT.nvim/password --no-newline)"
+	local anthropic_key="$(op read op://Personal/nvim.anthropic_api_key/password --no-newline)"
+
+	# Write to secrets file
+	cat > "$secrets_file" <<-EOF
+		export OPENAI_API_KEY="$openai_key"
+		export ANTHROPIC_API_KEY="$anthropic_key"
+	EOF
+
+	# Secure the file
+	chmod 600 "$secrets_file"
+	echo "[API Keys] Cache saved to $secrets_file"
+
+	# Source it
+	source "$secrets_file"
+}
+
+_load_api_keys
 
 ####################################################################################################
 # Alex's fzf plugin for iex
