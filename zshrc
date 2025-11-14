@@ -394,3 +394,11 @@ export PATH="/Users/zimakki/.codeium/windsurf/bin:$PATH"
 # added by mix escript install
 export PATH="$HOME/.mix/escripts:$PATH"
 export PATH="$HOME/code/zimakki/prepx/:$PATH"
+
+# Initialize Atuin for enhanced shell history
+eval "$(atuin init zsh)"
+
+
+. "$HOME/.atuin/bin/env"
+
+eval "$(atuin init zsh)"
