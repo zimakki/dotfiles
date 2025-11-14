@@ -313,12 +313,10 @@ _load_api_keys() {
 	# File missing or stale, fetch from 1Password
 	echo "[API Keys] Fetching from 1Password..."
 	local openai_key="$(op read op://Personal/ChatGPT.nvim/password --no-newline)"
-	local anthropic_key="$(op read op://Personal/nvim.anthropic_api_key/password --no-newline)"
 
 	# Write to secrets file
 	cat > "$secrets_file" <<-EOF
 		export OPENAI_API_KEY="$openai_key"
-		export ANTHROPIC_API_KEY="$anthropic_key"
 	EOF
 
 	# Secure the file
