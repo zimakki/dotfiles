@@ -393,4 +393,4 @@ export PATH="/opt/homebrew/opt/file-formula/bin:$PATH"
 export PATH="/Users/zimakki/.codeium/windsurf/bin:$PATH"
 # added by mix escript install
 export PATH="$HOME/.mix/escripts:$PATH"
-export PATH="~/code/zimakki/prepx/:$PATH"
+export PATH="$HOME/code/zimakki/prepx/:$PATH"
