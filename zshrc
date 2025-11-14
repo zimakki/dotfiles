@@ -255,6 +255,15 @@ export NVIM_APPNAME=astronvim_v5
 # the `--cmd` flag is used so that zoxide replaces the cd command in the shell
 eval "$(zoxide init --cmd cd zsh)"
 
+# Fallback cd function for when Zoxide isn't properly initialized (e.g., non-interactive shells)
+cd() {
+    if command -v __zoxide_z >/dev/null 2>&1 && type __zoxide_z >/dev/null 2>&1; then
+        __zoxide_z "$@"
+    else
+        builtin cd "$@"
+    fi
+}
+
 # stuff for tre
 tre() { command tre "$@" -e && source "/tmp/tre_aliases_$USER" 2>/dev/null; }
 
