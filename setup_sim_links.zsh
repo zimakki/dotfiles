@@ -41,6 +41,28 @@ for FILE in "${FILES[@]}"; do
   echo "setup_sim_links created: ${DESTINATION_FILE} -> ${TARGET_FILE}"
 done
 
+# Claude Code settings - stored in ~/.claude/
+CLAUDE_DESTINATION="${HOME}/.claude/settings.json"
+CLAUDE_TARGET="${CURRENT_DIR}/claude_settings.json"
+
+echo "Setting up Claude Code config"
+echo "destination: ${CLAUDE_DESTINATION}"
+echo "target: ${CLAUDE_TARGET}"
+
+# Create the .claude directory if it doesn't exist
+mkdir -p "$(dirname "${CLAUDE_DESTINATION}")"
+
+# Check if the destination file already exists
+if [[ -e "${CLAUDE_DESTINATION}" ]]; then
+  BACKUP_FILE="${CLAUDE_DESTINATION}.bak"
+  mv "${CLAUDE_DESTINATION}" "${BACKUP_FILE}"
+  echo "Existing file moved to backup: ${CLAUDE_DESTINATION} -> ${BACKUP_FILE}"
+fi
+
+# Create the symlink
+ln -s "${CLAUDE_TARGET}" "${CLAUDE_DESTINATION}"
+echo "Symlink created: ${CLAUDE_DESTINATION} -> ${CLAUDE_TARGET}"
+
 # lazygit is special... and needs to be in a special place
 # Get the lazygit config directory using the lazygit -cd command
 LAZYGIT_CONFIG_DIR=$(lazygit -cd)
