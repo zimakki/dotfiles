@@ -23,9 +23,9 @@
 [delta]
 	navigate = true
 	light = false
-	side-by-side = true
 	line-numbers = true
 	true-color = always
+	features = side-by-side-view
 
 [merge]
 	conflictStyle = diff3
@@ -35,3 +35,5 @@
 
 [init]
 	defaultBranch = main
+[delta "side-by-side-view"]
+	side-by-side = true
