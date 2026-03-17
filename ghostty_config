@@ -1,1 +1,13 @@
-theme = Catppuccin Frappe
+theme = TokyoNight Storm
+
+# Dim unfocused splits to highlight active pane (0.15-1.0, lower = more dim)
+unfocused-split-opacity = 0.7
+
+# Split navigation (matching Warp: shift+cmd+H/J/K/L)
+keybind = shift+cmd+k=goto_split:top
+keybind = shift+cmd+j=goto_split:bottom
+keybind = shift+cmd+h=goto_split:left
+keybind = shift+cmd+l=goto_split:right
+
+# Toggle split zoom (matching Warp: alt+cmd+enter)
+keybind = alt+cmd+enter=toggle_split_zoom
