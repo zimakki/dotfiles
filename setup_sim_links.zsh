@@ -82,6 +82,25 @@ fi
 ln -s "${STARSHIP_TARGET}" "${STARSHIP_DESTINATION}"
 echo "Symlink created: ${STARSHIP_DESTINATION} -> ${STARSHIP_TARGET}"
 
+# Atuin config - goes in ~/.config/atuin/
+ATUIN_DESTINATION="${HOME}/.config/atuin/config.toml"
+ATUIN_TARGET="${CURRENT_DIR}/atuin_config.toml"
+
+echo "Setting up Atuin config"
+echo "destination: ${ATUIN_DESTINATION}"
+echo "target: ${ATUIN_TARGET}"
+
+mkdir -p "$(dirname "${ATUIN_DESTINATION}")"
+
+if [[ -e "${ATUIN_DESTINATION}" ]]; then
+  BACKUP_FILE="${ATUIN_DESTINATION}.bak"
+  mv "${ATUIN_DESTINATION}" "${BACKUP_FILE}"
+  echo "Existing file moved to backup: ${ATUIN_DESTINATION} -> ${BACKUP_FILE}"
+fi
+
+ln -s "${ATUIN_TARGET}" "${ATUIN_DESTINATION}"
+echo "Symlink created: ${ATUIN_DESTINATION} -> ${ATUIN_TARGET}"
+
 # cmux/Ghostty config - goes in ~/.config/ghostty/
 GHOSTTY_DESTINATION="${HOME}/.config/ghostty/config"
 GHOSTTY_TARGET="${CURRENT_DIR}/ghostty_config"
