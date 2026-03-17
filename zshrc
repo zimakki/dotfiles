@@ -414,3 +414,6 @@ export PATH="/Users/zimakki/.antigravity/antigravity/bin:$PATH"
 
 # Entire CLI shell completion
 autoload -Uz compinit && compinit && source <(entire completion zsh)
+
+# Starship prompt
+eval "$(starship init zsh)"
