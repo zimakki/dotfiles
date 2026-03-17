@@ -415,5 +415,8 @@ export PATH="/Users/zimakki/.antigravity/antigravity/bin:$PATH"
 # Entire CLI shell completion
 autoload -Uz compinit && compinit && source <(entire completion zsh)
 
+# Predictive command suggestions from history
+source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+
 # Starship prompt
 eval "$(starship init zsh)"
