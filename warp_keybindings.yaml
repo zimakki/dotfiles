@@ -1,0 +1,7 @@
+---
+"pane_group:navigate_up": shift-cmd-K
+"pane_group:navigate_left": shift-cmd-H
+"pane_group:toggle_maximize_pane": alt-cmd-enter
+"pane_group:navigate_right": shift-cmd-L
+"pane_group:navigate_down": shift-cmd-J
+"input:search_command_history": shift-cmd-Y
