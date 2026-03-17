@@ -63,6 +63,25 @@ fi
 ln -s "${CLAUDE_TARGET}" "${CLAUDE_DESTINATION}"
 echo "Symlink created: ${CLAUDE_DESTINATION} -> ${CLAUDE_TARGET}"
 
+# Starship prompt config - goes in ~/.config/
+STARSHIP_DESTINATION="${HOME}/.config/starship.toml"
+STARSHIP_TARGET="${CURRENT_DIR}/starship.toml"
+
+echo "Setting up Starship config"
+echo "destination: ${STARSHIP_DESTINATION}"
+echo "target: ${STARSHIP_TARGET}"
+
+mkdir -p "$(dirname "${STARSHIP_DESTINATION}")"
+
+if [[ -e "${STARSHIP_DESTINATION}" ]]; then
+  BACKUP_FILE="${STARSHIP_DESTINATION}.bak"
+  mv "${STARSHIP_DESTINATION}" "${BACKUP_FILE}"
+  echo "Existing file moved to backup: ${STARSHIP_DESTINATION} -> ${BACKUP_FILE}"
+fi
+
+ln -s "${STARSHIP_TARGET}" "${STARSHIP_DESTINATION}"
+echo "Symlink created: ${STARSHIP_DESTINATION} -> ${STARSHIP_TARGET}"
+
 # lazygit is special... and needs to be in a special place
 # Get the lazygit config directory using the lazygit -cd command
 LAZYGIT_CONFIG_DIR=$(lazygit -cd)
