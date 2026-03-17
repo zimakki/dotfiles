@@ -101,6 +101,25 @@ fi
 ln -s "${GHOSTTY_TARGET}" "${GHOSTTY_DESTINATION}"
 echo "Symlink created: ${GHOSTTY_DESTINATION} -> ${GHOSTTY_TARGET}"
 
+# Warp keybindings - goes in ~/.warp/
+WARP_DESTINATION="${HOME}/.warp/keybindings.yaml"
+WARP_TARGET="${CURRENT_DIR}/warp_keybindings.yaml"
+
+echo "Setting up Warp keybindings"
+echo "destination: ${WARP_DESTINATION}"
+echo "target: ${WARP_TARGET}"
+
+mkdir -p "$(dirname "${WARP_DESTINATION}")"
+
+if [[ -e "${WARP_DESTINATION}" ]]; then
+  BACKUP_FILE="${WARP_DESTINATION}.bak"
+  mv "${WARP_DESTINATION}" "${BACKUP_FILE}"
+  echo "Existing file moved to backup: ${WARP_DESTINATION} -> ${BACKUP_FILE}"
+fi
+
+ln -s "${WARP_TARGET}" "${WARP_DESTINATION}"
+echo "Symlink created: ${WARP_DESTINATION} -> ${WARP_TARGET}"
+
 # lazygit is special... and needs to be in a special place
 # Get the lazygit config directory using the lazygit -cd command
 LAZYGIT_CONFIG_DIR=$(lazygit -cd)
