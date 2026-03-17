@@ -82,6 +82,25 @@ fi
 ln -s "${STARSHIP_TARGET}" "${STARSHIP_DESTINATION}"
 echo "Symlink created: ${STARSHIP_DESTINATION} -> ${STARSHIP_TARGET}"
 
+# cmux/Ghostty config - goes in ~/.config/ghostty/
+GHOSTTY_DESTINATION="${HOME}/.config/ghostty/config"
+GHOSTTY_TARGET="${CURRENT_DIR}/ghostty_config"
+
+echo "Setting up cmux/Ghostty config"
+echo "destination: ${GHOSTTY_DESTINATION}"
+echo "target: ${GHOSTTY_TARGET}"
+
+mkdir -p "$(dirname "${GHOSTTY_DESTINATION}")"
+
+if [[ -e "${GHOSTTY_DESTINATION}" ]]; then
+  BACKUP_FILE="${GHOSTTY_DESTINATION}.bak"
+  mv "${GHOSTTY_DESTINATION}" "${BACKUP_FILE}"
+  echo "Existing file moved to backup: ${GHOSTTY_DESTINATION} -> ${BACKUP_FILE}"
+fi
+
+ln -s "${GHOSTTY_TARGET}" "${GHOSTTY_DESTINATION}"
+echo "Symlink created: ${GHOSTTY_DESTINATION} -> ${GHOSTTY_TARGET}"
+
 # lazygit is special... and needs to be in a special place
 # Get the lazygit config directory using the lazygit -cd command
 LAZYGIT_CONFIG_DIR=$(lazygit -cd)
