@@ -1,3 +1,4 @@
+font-family = FiraCode Nerd Font Mono
 theme = TokyoNight Storm
 
 # Dim unfocused splits to highlight active pane (0.15-1.0, lower = more dim)
