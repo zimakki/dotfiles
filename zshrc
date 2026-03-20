@@ -337,6 +337,7 @@ export PATH="~/.iex-history:$PATH"
 
 alias i="run_iex"
 alias is="run_iex -S mix phx.server"
+alias dev="~/code/dotfiles/cmux_dev_layout.sh"
 
 function run_iex() {
 	local session=$(date | sha256sum | cut -c1-8)
