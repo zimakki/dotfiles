@@ -1,3 +1,4 @@
+# vim: set ft=gitconfig :
 [user]
 	name = Zi Makki
 	email = zimakki@gmail.com
@@ -6,7 +7,7 @@
 	user = zimakki
 
 [core]
-    pager = delta
+  pager = delta
 
 [alias]
 	lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
@@ -35,5 +36,6 @@
 
 [init]
 	defaultBranch = main
+
 [delta "side-by-side-view"]
 	side-by-side = true
