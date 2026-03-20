@@ -1,8 +1,10 @@
+# vim: set ft=conf :
 font-family = FiraCode Nerd Font Mono
+font-size = 13
 theme = TokyoNight Storm
 
 # Dim unfocused splits to highlight active pane (0.15-1.0, lower = more dim)
-unfocused-split-opacity = 0.5
+unfocused-split-opacity = 0.15
 unfocused-split-fill = #1a1b26
 split-divider-color = #7aa2f7
 
