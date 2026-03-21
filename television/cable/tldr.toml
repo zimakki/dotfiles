@@ -7,7 +7,7 @@ requirements = ["tldr"]
 command = "tldr --list"
 
 [preview]
-command = "tldr '{0}' --color always"
+command = "tldr --color '{0}'"
 
 [ui]
 layout = "portrait"
