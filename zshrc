@@ -338,6 +338,7 @@ export PATH="~/.iex-history:$PATH"
 alias i="run_iex"
 alias is="run_iex -S mix phx.server"
 alias dev="~/code/dotfiles/cmux_dev_layout.sh"
+alias tvf='tv files -k "enter=\"confirm_selection\"" | xargs nvim'
 
 function run_iex() {
 	local session=$(date | sha256sum | cut -c1-8)

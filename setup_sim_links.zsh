@@ -101,6 +101,23 @@ fi
 ln -s "${ATUIN_TARGET}" "${ATUIN_DESTINATION}"
 echo "Symlink created: ${ATUIN_DESTINATION} -> ${ATUIN_TARGET}"
 
+# Television config - goes in ~/.config/television/
+TV_DESTINATION="${HOME}/.config/television"
+TV_TARGET="${CURRENT_DIR}/television"
+
+echo "Setting up Television config"
+echo "destination: ${TV_DESTINATION}"
+echo "target: ${TV_TARGET}"
+
+if [[ -e "${TV_DESTINATION}" ]]; then
+  BACKUP_FILE="${TV_DESTINATION}.bak"
+  mv "${TV_DESTINATION}" "${BACKUP_FILE}"
+  echo "Existing file moved to backup: ${TV_DESTINATION} -> ${BACKUP_FILE}"
+fi
+
+ln -s "${TV_TARGET}" "${TV_DESTINATION}"
+echo "Symlink created: ${TV_DESTINATION} -> ${TV_TARGET}"
+
 # cmux/Ghostty config - goes in ~/.config/ghostty/
 GHOSTTY_DESTINATION="${HOME}/.config/ghostty/config"
 GHOSTTY_TARGET="${CURRENT_DIR}/ghostty_config"
