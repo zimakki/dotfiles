@@ -119,6 +119,7 @@ fi
 
 # From fzf instructions
 eval "$(fzf --zsh)"
+bindkey -r '^T' # Unbind fzf's Ctrl+T (tv handles this)
 
 # function for listing and checking out branches
 function gci() {
@@ -395,12 +396,12 @@ export PATH="/Users/zimakki/.codeium/windsurf/bin:$PATH"
 export PATH="$HOME/.mix/escripts:$PATH"
 export PATH="$HOME/code/zimakki/prepx/:$PATH"
 
-# Initialize Atuin for enhanced shell history
-eval "$(atuin init zsh)"
+# Initialize television shell integration (smart autocomplete on Ctrl+T)
+eval "$(tv init zsh)"
+bindkey -r '^R' # Unbind tv's Ctrl+R so atuin handles history
 
-
+# Initialize Atuin for enhanced shell history (Ctrl+R)
 . "$HOME/.atuin/bin/env"
-
 eval "$(atuin init zsh)"
 
 # pnpm
