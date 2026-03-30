@@ -251,4 +251,5 @@ fallback_channel = "files"
 "smart_autocomplete" = "ctrl-t"
 # controls which keybinding should trigger tv
 # for command history
-"command_history" = "ctrl-r"
+# Disabled: conflicts with atuin's ctrl-r history binding
+# "command_history" = "ctrl-r"
