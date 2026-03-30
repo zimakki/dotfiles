@@ -238,7 +238,7 @@ fi
 # end mise stuff ---------------------------------------------------------------------------
 
 
-test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+
 export PATH="/usr/local/opt/curl/bin:$PATH"
 
 # curl
