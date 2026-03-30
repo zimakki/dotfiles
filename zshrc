@@ -421,5 +421,7 @@ autoload -Uz compinit && compinit && source <(entire completion zsh)
 # Predictive command suggestions from history
 source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
-# Starship prompt
+# Starship prompt — STARSHIP_PREEXEC_READY suppresses cursor position queries
+# that leak as ";1R;6R" garbage in some terminals
+export STARSHIP_LOG=error
 eval "$(starship init zsh)"
