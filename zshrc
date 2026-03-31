@@ -2,6 +2,8 @@
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
+export PATH="$HOME/.local/bin:$PATH"
+
 # make sure doom is in the path
 export PATH=$PATH:$HOME/.doom_emacs.d/bin
 
