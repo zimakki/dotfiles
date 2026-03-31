@@ -21,6 +21,7 @@ LINKS=(
   "ghostty_config:~/.config/ghostty/config"
   "warp_keybindings.yaml:~/.warp/keybindings.yaml"
   "lazygit_config.yml:$(lazygit -cd)/config.yml"
+  "bat_config:~/.config/bat/config"
 )
 
 # ─── Logic ─────────────────────────────────────────────────────────
