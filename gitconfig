@@ -26,6 +26,7 @@
 	light = false
 	line-numbers = true
 	true-color = always
+	syntax-theme = Catppuccin Mocha
 	features = side-by-side-view
 
 [merge]
