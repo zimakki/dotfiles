@@ -20,33 +20,31 @@
 # (relocated here from zshrc, where they re-ran on every shell launch)
 defaults write -g InitialKeyRepeat -int 10   # delay before repeat (System Settings min = 15)
 defaults write -g KeyRepeat        -int 1    # repeat rate (System Settings min = 2)
+defaults write -g ApplePressAndHoldEnabled -bool false  # key-repeat instead of accent popup
 
-# Use F1/F2/… as standard function keys. Verify your value on the old Mac with
-#   defaults read -g com.apple.keyboard.fnState
-# then uncomment with the correct bool:
-# defaults write -g com.apple.keyboard.fnState -bool true
+# Use F1/F2/… as standard function keys (captured from old Mac: fnState = 1).
+defaults write -g com.apple.keyboard.fnState -bool true
 
 # ── Finder ───────────────────────────────────────────────────────────────────
-# Read your old-Mac values (`defaults read com.apple.finder <key>` or -g),
-# then uncomment the ones you use and set them to match.
-# defaults write -g AppleShowAllExtensions -bool true                  # show all file extensions
-# defaults write com.apple.finder AppleShowAllFiles -bool true         # show hidden files
-# defaults write com.apple.finder ShowPathbar -bool true               # path bar
-# defaults write com.apple.finder ShowStatusBar -bool true             # status bar
-# defaults write com.apple.finder _FXSortFoldersFirst -bool true       # folders on top
-# defaults write com.apple.finder FXPreferredViewStyle -string "Nlsv"  # list view (icnv/clmv/Flwv/Nlsv)
-# defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"  # search current folder
+# Captured from old Mac.
+defaults write -g AppleShowAllExtensions -bool true                  # show all file extensions
+defaults write com.apple.finder AppleShowAllFiles -bool true         # show hidden files
+defaults write com.apple.finder ShowPathbar -bool true               # path bar
+defaults write com.apple.finder _FXSortFoldersFirst -bool true       # folders on top
+defaults write com.apple.finder FXPreferredViewStyle -string "Nlsv"  # list view (icnv/clmv/Flwv/Nlsv)
+# defaults write com.apple.finder ShowStatusBar -bool true             # status bar (off on old Mac)
+# defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"  # search current folder (unset on old Mac)
 
 # ── Dock ─────────────────────────────────────────────────────────────────────
-# Read with `defaults read com.apple.dock <key>`, then uncomment/match.
-# defaults write com.apple.dock autohide -bool true
+# Captured from old Mac.
+defaults write com.apple.dock autohide -bool true
+defaults write com.apple.dock tilesize -int 39
+defaults write com.apple.dock orientation -string "right"             # left/right/bottom
 # defaults write com.apple.dock autohide-delay -float 0
 # defaults write com.apple.dock autohide-time-modifier -float 0.2
-# defaults write com.apple.dock tilesize -int 48
-# defaults write com.apple.dock magnification -bool false
-# defaults write com.apple.dock show-recents -bool false
-# defaults write com.apple.dock mineffect -string "scale"              # genie/scale/suck
-# defaults write com.apple.dock orientation -string "bottom"           # left/right/bottom
+# defaults write com.apple.dock magnification -bool false              # unset on old Mac
+# defaults write com.apple.dock show-recents -bool false              # unset on old Mac
+# defaults write com.apple.dock mineffect -string "scale"             # genie/scale/suck
 
 # ── Add anything else below (see header for how to discover keys) ─────────────
 
