@@ -207,6 +207,26 @@ actually rely on. Notable gaps to consider adding to the repo:
   just make sure the old Mac's version is committed.
 - Anything under `~/.config` you use that isn't in `LINKS`.
 
+**Audit `~/.config` by modification time.** Recently-touched config is a strong
+sign of an app you actively use and may want to track. Surface candidates and
+diff them against what's already symlinked:
+
+```sh
+# config files changed in the last 30 days (active apps bubble up)
+find ~/.config -maxdepth 3 -type f -mtime -30 2>/dev/null | sort
+
+# everything in ~/.config, most-recently-modified first
+ls -lt ~/.config
+
+# destinations already symlinked from this repo (spot the gaps):
+grep -oE '~/[^"]+' setup_sim_links.zsh | sort
+```
+
+For any actively-used `~/.config/<app>` not already symlinked: copy it into the
+repo and add a `LINKS` entry (`<repo-file>:~/.config/<app>/<file>`). The same
+mtime trick works on `~/Library/Application Support` and `~/Library/Preferences`
+if an app keeps its config there instead.
+
 **Do NOT commit secrets:** `~/.zsh_secrets`, `~/.ssh/*`, 1Password data, or any
 file containing tokens/keys.
 
