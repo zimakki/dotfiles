@@ -156,6 +156,35 @@ on launch.
 > ever replaces the symlink with a real file, just re-run `setup_sim_links.zsh` to
 > re-link. Never track `~/.config/karabiner/automatic_backups/`.
 
+**macOS system settings (keyboard, function keys, etc.).** These get captured
+into `macos_defaults.sh` (applied once on the new Mac in Phase 2). macOS has no
+"diff from default", so add only the settings you actually changed. On the OLD Mac:
+
+1. Read current values and append a `defaults write` line for each to
+   `macos_defaults.sh`. Starting points:
+   ```sh
+   defaults read -g com.apple.keyboard.fnState   # F1/F2 as standard function keys
+   defaults read -g InitialKeyRepeat             # key-repeat delay (already seeded)
+   defaults read -g KeyRepeat                     # key-repeat rate  (already seeded)
+   defaults read -g | less                        # browse all global-domain tweaks
+   ```
+2. To find the key behind a System Settings toggle you don't know, use the
+   before/after diff:
+   ```sh
+   defaults read > /tmp/before.txt
+   # ...flip the toggle in System Settings...
+   defaults read > /tmp/after.txt
+   diff /tmp/before.txt /tmp/after.txt
+   ```
+   Add the discovered `defaults write …` line to `macos_defaults.sh`.
+
+**Raycast.** The raw files aren't portable/diffable, so use Raycast's own export:
+Raycast → Settings → Advanced → **Export** → a `.rayconfig` file (offer it a
+password). Then either:
+- commit it to the repo as `raycast.rayconfig` — ⚠️ it can contain snippets and
+  secrets, so only do this with the **password-protected** export; or
+- keep it outside git (1Password / iCloud) and note where it lives.
+
 ### 1f. Commit & push from the OLD machine
 
 ```sh
@@ -188,7 +217,10 @@ mise install        # uses ~/.config/mise/config.toml
 # 4. Symlink dotfiles into place (backs up existing files to *.bak)
 ./setup_sim_links.zsh
 
-# 5. Open a fresh shell and confirm there are no startup errors
+# 5. Apply macOS system settings (keyboard repeat, function keys, etc.)
+./macos_defaults.sh
+
+# 6. Open a fresh shell and confirm there are no startup errors
 ```
 
 ### Post-install manual bits
@@ -199,6 +231,7 @@ mise install        # uses ~/.config/mise/config.toml
   `OPENAI_API_KEY` fetch works. Until then it skips silently.
 - **Postgres.app**: launch it once, then create the Phoenix role if needed:
   `createuser -s postgres` (or set creds in each app's `dev.exs`).
+- **Raycast**: Settings → Advanced → Import → select your `.rayconfig`.
 
 ---
 
