@@ -107,7 +107,49 @@ the new machine. **Review the list, don't auto-remove** — important caveats:
 (No atuin on the old machine? Point `$DB` logic at `~/.zsh_history` instead —
 it needs `EXTENDED_HISTORY` timestamps to be useful.)
 
-### 1d. Capture non-Homebrew tools (NONE of these live in the Brewfile)
+### 1d. Make sure the apps you use are in the Brewfile
+
+Find which GUI apps you actually use on the old Mac (Spotlight tracks a per-app
+use count + last-used date) and confirm each is a `cask` in the Brewfile.
+
+```sh
+# Rank installed apps by how often you've launched them (most-used first)
+for app in /Applications/*.app ~/Applications/*.app; do
+  [ -e "$app" ] || continue
+  uses=$(mdls -name kMDItemUseCount     -raw "$app" 2>/dev/null)
+  last=$(mdls -name kMDItemLastUsedDate -raw "$app" 2>/dev/null)
+  printf '%6s  %-19s  %s\n' "${uses:-0}" "${last:-never}" "$(basename "$app" .app)"
+done | sort -rn | head -40
+```
+
+Also check what you deliberately keep in the Dock:
+
+```sh
+defaults read com.apple.dock persistent-apps \
+  | grep -o '"file-label"[^;]*' | sed 's/.*= //'
+```
+
+For each frequently-used app **not** already in the Brewfile, see if Homebrew
+has it and add it:
+
+```sh
+brew search --cask "<app name>"     # find the cask token
+# then add to BrewFile:  cask "<token>"
+```
+
+**Mac App Store apps** won't show under brew — capture them with `mas`:
+
+```sh
+brew install mas      # if needed
+mas list              # App Store apps + their IDs
+# add to BrewFile:  brew "mas"  and  mas "App Name", id: 1234567890
+```
+
+Caveats: `kMDItemUseCount` relies on Spotlight and can be empty/reset for some
+apps — treat the ranking as a guide. Not everything is on Homebrew; a few apps
+you'll still install manually.
+
+### 1e. Capture non-Homebrew tools (NONE of these live in the Brewfile)
 
 Run each, note anything you want reproduced, and decide where it belongs
 (mise / `npm -g` / a setup script / etc.):
@@ -123,7 +165,7 @@ ls ~/.mix/escripts ~/.cache/rebar3/bin 2>/dev/null  # elixir/erlang escripts
 code --list-extensions 2>/dev/null                  # VS Code extensions
 ```
 
-### 1e. Capture configs/dotfiles not yet tracked in this repo
+### 1f. Capture configs/dotfiles not yet tracked in this repo
 
 Compare the `LINKS` manifest in `setup_sim_links.zsh` against what configs you
 actually rely on. Notable gaps to consider adding to the repo:
@@ -191,7 +233,7 @@ password). Then either:
   secrets, so only do this with the **password-protected** export; or
 - keep it outside git (1Password / iCloud) and note where it lives.
 
-### 1f. Commit & push from the OLD machine
+### 1g. Commit & push from the OLD machine
 
 ```sh
 git add -A
