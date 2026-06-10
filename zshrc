@@ -4,10 +4,6 @@
 
 export PATH="$HOME/.local/bin:$PATH"
 
-#make the keyboard work faster
-defaults write -g InitialKeyRepeat -int 10 # normal minimum is 15 (225 ms)
-defaults write -g KeyRepeat -int 1         # normal minimum is 2 (30 ms)
-
 # Path to your oh-my-zsh installation.
 export ZSH="/Users/zimakki/.oh-my-zsh"
 
