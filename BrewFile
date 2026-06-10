@@ -20,6 +20,7 @@ brew "curl"
 # brew "exercism"      # exercism.io CLI — pruned
 brew "fd"
 brew "flyctl"
+brew "fop"            # erlang docs (KERL_BUILD_DOCS=yes)
 # brew "fwup"           # embedded/Nerves — pruned
 brew "fzf"
 # brew "gdu"            # disk tool — pruned
@@ -39,6 +40,7 @@ brew "lazygit"
 # brew "libheif"        # media lib — pruned
 # brew "libraw"         # media lib — pruned
 # brew "librsvg"        # media lib — pruned
+brew "libxslt"       # erlang docs (xsltproc)
 brew "lsd"
 brew "mhanberg/tap/lazyasdf"
 brew "mise"
