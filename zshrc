@@ -306,6 +306,14 @@ _load_api_keys() {
 		echo "[API Keys] No cache file found at $secrets_file"
 	fi
 
+	# File missing or stale — fetch from 1Password, but only if the CLI is
+	# installed and an account is configured. Otherwise skip silently and
+	# fall back to a stale cache if one exists (no startup errors/prompts).
+	if ! command -v op >/dev/null 2>&1 || ! op account list >/dev/null 2>&1; then
+		[[ -f "$secrets_file" ]] && source "$secrets_file"
+		return
+	fi
+
 	# File missing or stale, fetch from 1Password
 	echo "[API Keys] Fetching from 1Password..."
 	local openai_key="$(op read op://Personal/ChatGPT.nvim/password --no-newline)"
