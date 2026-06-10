@@ -1,77 +1,78 @@
-tap "d12frosted/emacs-plus"
 tap "homebrew/bundle"
 tap "homebrew/cask-fonts"
 tap "homebrew/services"
 brew  "1password-cli"
-brew "aom"
-brew "arc"
+brew "atuin"
+# brew "aom"            # media lib (imagemagick dep) — pruned
+# brew "arc"            # second browser — pruned (keeping chrome)
 brew "autoconf"
 brew "bat"
-brew "bottom"
-brew "brotli"
+# brew "bottom"         # redundant monitor — pruned (keeping btop)
+# brew "brotli"         # transitive dep — pruned (auto-installed if needed)
 brew "btop"
 brew "cmake"
-brew "cmake-docs"
-brew "cmark-gfm"
+# brew "cmake-docs"    # offline cmake docs — pruned
+# brew "cmark-gfm"      # transitive dep — pruned
 brew "coreutils"
 brew "curl"
-brew "duf"
-brew "emscripten"
-brew "exercism"
+# brew "duf"            # disk tool — pruned
+# brew "emscripten"     # embedded/wasm — pruned
+# brew "exercism"      # exercism.io CLI — pruned
 brew "fd"
 brew "flyctl"
-brew "fwup"
+# brew "fwup"           # embedded/Nerves — pruned
 brew "fzf"
-brew "gdu"
+# brew "gdu"            # disk tool — pruned
 brew "gh"
-brew "ghostscript"
+# brew "ghostscript"    # media lib — pruned
 brew "git"
 brew "git-delta"
-brew "glances"
+# brew "glances"        # redundant monitor — pruned (keeping btop)
 brew "gnupg"
-brew "gobject-introspection"
+# brew "gobject-introspection"  # transitive dep — pruned
 brew "grep"
-brew "guile"
-brew "imagemagick"
-brew "jasper"
-brew "jpeg-xl"
+# brew "guile"         # Scheme interpreter (emacs/imagemagick dep) — pruned
+# brew "imagemagick"    # media — pruned
+# brew "jasper"         # media lib — pruned
+# brew "jpeg-xl"        # media lib — pruned
 brew "lazygit"
-brew "libheif"
-brew "libraw"
-brew "librsvg"
+# brew "libheif"        # media lib — pruned
+# brew "libraw"         # media lib — pruned
+# brew "librsvg"        # media lib — pruned
 brew "lsd"
 brew "mhanberg/tap/lazyasdf"
 brew "mise"
-brew "navi"
+# brew "navi"          # cheatsheet tool — pruned
 brew "neovim"
-brew "node"
-brew "openldap"
+# brew "openldap"      # LDAP libs (transitive dep) — pruned
 brew "openssl@3"
-brew "pandoc"
+# brew "pandoc"        # doc converter — pruned
 brew "pkg-config"
-brew "postgresql@14"
-brew "python@3.11"
-brew "python@3.9"
+# brew "postgresql@14" # replaced by Postgres.app (cask "postgres-app")
 brew "ripgrep"
 brew "shellcheck"
 brew "shfmt"
-brew "squashfs"
-brew "stylelint"
+brew "starship"
+# brew "squashfs"       # embedded/Nerves — pruned
+# brew "stylelint"     # CSS linter — pruned (use per-project via npm/mise)
+brew "television"
 brew "tldr"
 brew "tre-command"
-brew "tree-sitter"
-brew "webp"
-brew "wxwidgets"
-brew "xz"
+# brew "tree-sitter"   # CLI — pruned (neovim ships its own parsers)
+# brew "webp"           # media lib — pruned
+# brew "wxwidgets"      # GUI toolkit (erlang :observer) — pruned; see note
+# brew "xz"             # transitive dep — pruned (auto-installed if needed)
 brew "zoxide"
+brew "zsh-autosuggestions"
 brew "zsh-syntax-highlighting"
 cask "1password"
-cask "arduino-ide"
+# cask "arduino-ide"    # pruned
 cask "cron"
 cask "font-hack-nerd-font"
 cask "font-jetbrains-mono-nerd-font"
 cask "google-chrome"
 cask "karabiner-elements"
+cask "postgres-app"
 cask "raycast"
 cask "slack"
 cask "telegram"
