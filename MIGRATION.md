@@ -109,28 +109,52 @@ it needs `EXTENDED_HISTORY` timestamps to be useful.)
 
 ### 1d. Make sure the apps you use are in the Brewfile
 
-Find which GUI apps you actually use on the old Mac (Spotlight tracks a per-app
-use count + last-used date) and confirm each is a `cask` in the Brewfile.
+Find which GUI apps you actually use on the old Mac, then confirm each is a
+`cask` in the Brewfile.
+
+**Best signal — `knowledgeC.db`** (macOS's on-device activity database, the one
+Screen Time reads). It logs real app *usage* with timestamps, independent of how
+you launch apps (Raycast, Dock, Finder — all counted). The terminal needs **Full
+Disk Access** first: System Settings → Privacy & Security → Full Disk Access →
+add your terminal app.
 
 ```sh
-# Rank installed apps by how often you've launched them (most-used first)
-for app in /Applications/*.app ~/Applications/*.app; do
-  [ -e "$app" ] || continue
-  uses=$(mdls -name kMDItemUseCount     -raw "$app" 2>/dev/null)
-  last=$(mdls -name kMDItemLastUsedDate -raw "$app" 2>/dev/null)
-  printf '%6s  %-19s  %s\n' "${uses:-0}" "${last:-never}" "$(basename "$app" .app)"
-done | sort -rn | head -40
+DB="$HOME/Library/Application Support/Knowledge/knowledgeC.db"
+sqlite3 "$DB" "
+SELECT ZVALUESTRING AS app,
+       COUNT(*) AS uses,
+       datetime(MAX(ZSTARTDATE)+978307200,'unixepoch','localtime') AS last_used
+FROM ZOBJECT
+WHERE ZSTREAMNAME='/app/usage'
+GROUP BY app ORDER BY uses DESC LIMIT 40;"
 ```
 
-Also check what you deliberately keep in the Dock:
+Returns bundle IDs (`com.google.Chrome`, …) ranked by usage. (Swap
+`/app/usage` for `/app/inFocus` to rank by focus time instead.)
+
+**Raycast is itself a ranking.** Raycast orders "Search Applications" by your own
+frecency, so the top of that list *is* your most-used apps — a quick manual
+cross-check. (Its store under `~/Library/Application Support/com.raycast.macos/`
+is undocumented, so use the visible ordering rather than querying it.)
+
+**Dock keepers** — deliberate, always-wanted apps:
 
 ```sh
 defaults read com.apple.dock persistent-apps \
   | grep -o '"file-label"[^;]*' | sed 's/.*= //'
 ```
 
-For each frequently-used app **not** already in the Brewfile, see if Homebrew
-has it and add it:
+**No Full Disk Access?** Recently-touched prefs are a rough proxy for recent use:
+
+```sh
+ls -lt ~/Library/Preferences/*.plist ~/Library/Containers 2>/dev/null | head -40
+```
+
+> Skip `mdls -name kMDItemUseCount/kMDItemLastUsedDate` — those LaunchServices
+> attributes are unreliable on modern macOS (often empty/stale), whatever the
+> launcher.
+
+Then, for each frequently-used app **not** already in the Brewfile:
 
 ```sh
 brew search --cask "<app name>"     # find the cask token
@@ -145,9 +169,14 @@ mas list              # App Store apps + their IDs
 # add to BrewFile:  brew "mas"  and  mas "App Name", id: 1234567890
 ```
 
-Caveats: `kMDItemUseCount` relies on Spotlight and can be empty/reset for some
-apps — treat the ranking as a guide. Not everything is on Homebrew; a few apps
-you'll still install manually.
+> **If none of these produce a useful list** (Full Disk Access denied,
+> `knowledgeC.db` empty/locked, etc.), ask Claude to research current
+> alternatives and adapt — e.g. `log show` launch events, `lsappinfo`, the
+> CoreDuet / Screen Time `RMAdminStore`, Raycast's own store, or a third-party
+> usage tool. These methods drift across macOS versions, so verify against your
+> machine rather than assuming.
+
+Not everything is on Homebrew; a few apps you'll still install manually.
 
 ### 1e. Capture non-Homebrew tools (NONE of these live in the Brewfile)
 
