@@ -276,10 +276,6 @@ if [ -d "$(brew --prefix)/opt/grep/libexec/gnubin" ]; then
 	PATH="$(brew --prefix)/opt/grep/libexec/gnubin:$PATH"
 fi
 
-# some secrets for live_beats elixir application
-export LIVE_BEATS_GITHUB_CLIENT_ID="1aac63d3d8f1e4fb9dc6"
-export LIVE_BEATS_GITHUB_CLIENT_SECRET="86473938560cbecd3e9a00ade6f9afc7f4548c48"
-
 delete_nvim_cache() {
 	echo "deleting ~/.local/share/nvim"
 	rm -rf ~/.local/share/nvim
