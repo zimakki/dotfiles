@@ -4,9 +4,6 @@
 
 export PATH="$HOME/.local/bin:$PATH"
 
-# make sure doom is in the path
-export PATH=$PATH:$HOME/.doom_emacs.d/bin
-
 #make the keyboard work faster
 defaults write -g InitialKeyRepeat -int 10 # normal minimum is 15 (225 ms)
 defaults write -g KeyRepeat -int 1         # normal minimum is 2 (30 ms)
@@ -333,57 +330,13 @@ _load_api_keys() {
 _load_api_keys
 
 ####################################################################################################
-# Alex's fzf plugin for iex
+# iex history + television (tvf) helper
 ####################################################################################################
 
 export PATH="~/.iex-history:$PATH"
 
-alias i="run_iex"
-alias is="run_iex -S mix phx.server"
-alias dev="~/code/dotfiles/cmux_dev_layout.sh"
 alias tvf='tv files -k "enter=\"confirm_selection\"" | xargs nvim'
 
-function run_iex() {
-	local session=$(date | sha256sum | cut -c1-8)
-	local current_session=${1:-$(tmux display -p '#{session_name}')}
-
-	local command='iex'
-
-	if [ "$#" -gt 0 ]; then
-		command+=" $@"
-	fi
-
-	# Determine the current directory
-	local current_dir="$(pwd)"
-
-	if [ -n "$TMUX" ]; then
-		echo "Already in a tmux session. Switching to 'iex_session'..."
-		# Send 'cd' to the current directory and clear the screen
-		tmux send-keys -t "$current_session" "cd ${current_dir}" C-m \; send-keys -t "$current_session" "clear" C-m
-		# Then send the command
-		tmux send-keys -t "$current_session" "$command" C-m
-	else
-		# Create a new session with the current directory and run the command
-		tmux new-session -d -s "$session" -c "$current_dir"
-		tmux send-keys -t "$session" "$command" C-m
-		if [ -z "$TMUX" ]; then
-			tmux attach -t "$session"
-		fi
-	fi
-}
-####################################################################################################
-#
-# Yazi - File manager
-# function below is used to give yazi the ability to change the directory
-####################################################################################################
-function ya() {
-	local tmp="$(mktemp -t "yazi-cwd.XXXXX")"
-	yazi "$@" --cwd-file="$tmp"
-	if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
-		cd -- "$cwd"
-	fi
-	rm -f -- "$tmp"
-}
 
 # add rebar3 to the path
 export PATH=/Users/zimakki/.cache/rebar3/bin:$PATH
@@ -403,7 +356,8 @@ eval "$(tv init zsh)"
 bindkey -r '^R' # Unbind tv's Ctrl+R so atuin handles history
 
 # Initialize Atuin for enhanced shell history (Ctrl+R)
-. "$HOME/.atuin/bin/env"
+# (brew's atuin doesn't create ~/.atuin/bin/env; guard so it works either way)
+[ -f "$HOME/.atuin/bin/env" ] && . "$HOME/.atuin/bin/env"
 eval "$(atuin init zsh)"
 
 # pnpm
@@ -417,8 +371,9 @@ esac
 # Added by Antigravity
 export PATH="/Users/zimakki/.antigravity/antigravity/bin:$PATH"
 
-# Entire CLI shell completion
-autoload -Uz compinit && compinit && source <(entire completion zsh)
+# "entire" CLI completion — REMOVED: tool unidentified & no longer installed (added 2026-03).
+# oh-my-zsh already runs compinit, so dropping this whole line is safe.
+# autoload -Uz compinit && compinit && source <(entire completion zsh)
 
 # Predictive command suggestions from history
 source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
@@ -427,3 +382,6 @@ source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 # that leak as ";1R;6R" garbage in some terminals
 export STARSHIP_LOG=error
 eval "$(starship init zsh)"
+
+# zsh-syntax-highlighting — MUST be sourced last (after all other zle widgets)
+source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
