@@ -26,7 +26,31 @@ defaults write -g KeyRepeat        -int 1    # repeat rate (System Settings min 
 # then uncomment with the correct bool:
 # defaults write -g com.apple.keyboard.fnState -bool true
 
-# ── Add more captured settings below (see header for how to discover keys) ────
+# ── Finder ───────────────────────────────────────────────────────────────────
+# Read your old-Mac values (`defaults read com.apple.finder <key>` or -g),
+# then uncomment the ones you use and set them to match.
+# defaults write -g AppleShowAllExtensions -bool true                  # show all file extensions
+# defaults write com.apple.finder AppleShowAllFiles -bool true         # show hidden files
+# defaults write com.apple.finder ShowPathbar -bool true               # path bar
+# defaults write com.apple.finder ShowStatusBar -bool true             # status bar
+# defaults write com.apple.finder _FXSortFoldersFirst -bool true       # folders on top
+# defaults write com.apple.finder FXPreferredViewStyle -string "Nlsv"  # list view (icnv/clmv/Flwv/Nlsv)
+# defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"  # search current folder
+
+# ── Dock ─────────────────────────────────────────────────────────────────────
+# Read with `defaults read com.apple.dock <key>`, then uncomment/match.
+# defaults write com.apple.dock autohide -bool true
+# defaults write com.apple.dock autohide-delay -float 0
+# defaults write com.apple.dock autohide-time-modifier -float 0.2
+# defaults write com.apple.dock tilesize -int 48
+# defaults write com.apple.dock magnification -bool false
+# defaults write com.apple.dock show-recents -bool false
+# defaults write com.apple.dock mineffect -string "scale"              # genie/scale/suck
+# defaults write com.apple.dock orientation -string "bottom"           # left/right/bottom
+
+# ── Add anything else below (see header for how to discover keys) ─────────────
 
 
-echo "Applied. Some settings need a logout, or: killall SystemUIServer Dock Finder"
+# Apply Finder/Dock/menubar changes immediately (brief restart of each)
+killall Finder Dock SystemUIServer 2>/dev/null || true
+echo "Applied. A few settings may still need a logout/restart."

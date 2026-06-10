@@ -132,6 +132,8 @@ actually rely on. Notable gaps to consider adding to the repo:
   this repo as `mise_config.toml` and symlinked via `setup_sim_links.zsh`.
 - Neovim config — `NVIM_APPNAME=astronvim_v5`; confirm that config is its own
   repo and is pushed.
+- Ghostty terminal — already tracked (`ghostty_config` → `~/.config/ghostty/config`);
+  just make sure the old Mac's version is committed.
 - Anything under `~/.config` you use that isn't in `LINKS`.
 
 **Do NOT commit secrets:** `~/.zsh_secrets`, `~/.ssh/*`, 1Password data, or any
@@ -167,7 +169,11 @@ into `macos_defaults.sh` (applied once on the new Mac in Phase 2). macOS has no
    defaults read -g InitialKeyRepeat             # key-repeat delay (already seeded)
    defaults read -g KeyRepeat                     # key-repeat rate  (already seeded)
    defaults read -g | less                        # browse all global-domain tweaks
+   defaults read com.apple.finder | less          # Finder settings
+   defaults read com.apple.dock   | less          # Dock settings
    ```
+   `macos_defaults.sh` already has commented Finder/Dock templates — uncomment
+   the ones you use and set them to your old-Mac values.
 2. To find the key behind a System Settings toggle you don't know, use the
    before/after diff:
    ```sh
