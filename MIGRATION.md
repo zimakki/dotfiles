@@ -57,7 +57,57 @@ For each result, decide: **do I want this on the new machine?**
 - Remember the intentional removals: `node`, `python@*` (→ mise), redundant
   monitors, media libs, embedded/Nerves tools, emacs, etc. Don't blindly re-add.
 
-### 1c. Capture non-Homebrew tools (NONE of these live in the Brewfile)
+### 1c. Flag CLIs you haven't used in a while (usage audit)
+
+Pruning by memory is hard. This cross-references each installed Homebrew CLI
+against your **atuin** shell history to surface tools you haven't actually run
+recently — strong candidates to leave off the new machine.
+
+```sh
+DB="$HOME/.local/share/atuin/history.db"   # atuin history database
+THRESHOLD_DAYS=120                          # tune to taste
+now=$(date +%s)
+
+for f in $(brew leaves); do
+  # executables this formula actually provides (command name != formula name)
+  bins=$(brew list "$f" 2>/dev/null | grep -E '/s?bin/[^/]+$' | sed 's#.*/##' | sort -u)
+  [ -z "$bins" ] && continue
+
+  newest=0
+  for b in $bins; do
+    ts=$(sqlite3 "$DB" \
+      "SELECT IFNULL(MAX(timestamp),0) FROM history
+         WHERE command='$b' OR command LIKE '$b %';" 2>/dev/null)
+    ts=$(( ${ts:-0} / 1000000000 ))         # atuin stores nanoseconds
+    [ "$ts" -gt "$newest" ] && newest=$ts
+  done
+
+  if [ "$newest" -eq 0 ]; then
+    echo "NEVER       $f  ($bins)"
+  else
+    days=$(( (now - newest) / 86400 ))
+    [ "$days" -ge "$THRESHOLD_DAYS" ] && echo "STALE ${days}d  $f  (last $(date -r "$newest" +%Y-%m-%d))"
+  fi
+done | sort
+```
+
+Anything printed `NEVER` or `STALE` is a candidate to comment out / leave off
+the new machine. **Review the list, don't auto-remove** — important caveats:
+
+- **Indirect use doesn't show up.** Tools invoked by your editor, scripts, git
+  hooks, or pulled in as build deps/libraries (e.g. `fd` via a nvim picker,
+  `pkg-config`, `openssl@3`, `coreutils`) won't appear in interactive history
+  even though they're needed. Keep libraries/build deps regardless.
+- **History only reaches as far back as atuin does** — a useful tool you last
+  ran before adopting atuin can look stale.
+- **GUI casks aren't covered** — this audits CLI formulae only.
+- Name≠command is handled (we read each formula's real `bin/`); formulae that
+  install nothing into bin are skipped.
+
+(No atuin on the old machine? Point `$DB` logic at `~/.zsh_history` instead —
+it needs `EXTENDED_HISTORY` timestamps to be useful.)
+
+### 1d. Capture non-Homebrew tools (NONE of these live in the Brewfile)
 
 Run each, note anything you want reproduced, and decide where it belongs
 (mise / `npm -g` / a setup script / etc.):
@@ -73,7 +123,7 @@ ls ~/.mix/escripts ~/.cache/rebar3/bin 2>/dev/null  # elixir/erlang escripts
 code --list-extensions 2>/dev/null                  # VS Code extensions
 ```
 
-### 1d. Capture configs/dotfiles not yet tracked in this repo
+### 1e. Capture configs/dotfiles not yet tracked in this repo
 
 Compare the `LINKS` manifest in `setup_sim_links.zsh` against what configs you
 actually rely on. Notable gaps to consider adding to the repo:
@@ -87,7 +137,7 @@ actually rely on. Notable gaps to consider adding to the repo:
 **Do NOT commit secrets:** `~/.zsh_secrets`, `~/.ssh/*`, 1Password data, or any
 file containing tokens/keys.
 
-### 1e. Commit & push from the OLD machine
+### 1f. Commit & push from the OLD machine
 
 ```sh
 git add -A
