@@ -78,8 +78,8 @@ code --list-extensions 2>/dev/null                  # VS Code extensions
 Compare the `LINKS` manifest in `setup_sim_links.zsh` against what configs you
 actually rely on. Notable gaps to consider adding to the repo:
 
-- `~/.config/mise/config.toml` — global runtime versions (created on the new
-  machine but **not yet symlinked from this repo**; worth adding + a LINKS entry).
+- `~/.config/mise/config.toml` — global runtime versions. Now **tracked** in
+  this repo as `mise_config.toml` and symlinked via `setup_sim_links.zsh`.
 - Neovim config — `NVIM_APPNAME=astronvim_v5`; confirm that config is its own
   repo and is pushed.
 - Anything under `~/.config` you use that isn't in `LINKS`.
@@ -137,7 +137,7 @@ mise install        # uses ~/.config/mise/config.toml
 
 | Area | Change |
 |------|--------|
-| Runtimes | `node`/`python` removed from Brewfile → managed by mise (`~/.config/mise/config.toml`: node 22.12.0, python 3.13, elixir 1.18.3-otp-27, erlang 27.3.3) |
+| Runtimes | `node`/`python` removed from Brewfile → managed by mise. Tracked as `mise_config.toml` (node 22.12.0, python 3.13, elixir 1.20.1-otp-29, erlang 29.0.2) and symlinked to `~/.config/mise/config.toml` |
 | Brewfile | Pruned monitors/disk/media/embedded/unused CLIs (commented out); dropped emacs tap, arc, arduino-ide; postgresql@14 → Postgres.app; added starship/atuin/television/zsh-autosuggestions |
 | zshrc | Removed tmux/run_iex/yazi/emacs/doom; commented unidentified `entire`; guarded atuin env + 1Password fetch; source zsh-syntax-highlighting last; removed leaked secret |
 | Files | Deleted orphaned `cmux_dev_layout.sh` |
