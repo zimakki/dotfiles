@@ -4,8 +4,14 @@ This branch (`chore/curate-dotfiles-for-new-mac`) curates the dotfiles on the
 **new** MacBook: runtimes moved to mise, the Brewfile pruned, the zshrc cleaned
 up, and a leaked secret removed.
 
-**Before installing anything on the new machine**, run **Phase 1** on the
-**old** machine to capture anything still needed that pruning may have dropped.
+**Goal:** stand up the new Mac from these curated dotfiles without losing
+anything you rely on. **Phase 1** (old Mac) is a full audit — it captures the
+packages, CLI/GUI tools, configs, app list, and macOS settings worth keeping.
+**Phase 2** (new Mac) installs it all in the right order. Run Phase 1 *before*
+installing on the new machine.
+
+**Prerequisites:** the dotfiles repo is already cloned and your GitHub SSH
+access works on both machines (set up separately).
 
 > You can hand this file to Claude on the old machine:
 > "Read MIGRATION.md and walk me through Phase 1."
@@ -31,9 +37,18 @@ up, and a leaked secret removed.
 
 ## Phase 1 — OLD machine: capture what's missing
 
+**Use a git worktree** so your live configs are never touched. Your dotfiles are
+symlinked from your *main* checkout; a worktree is a separate directory, so
+checking out this branch there leaves the main checkout — and your symlinks —
+untouched. (Don't run `setup_sim_links.zsh` here.)
+
 ```sh
-cd <path-to>/dotfiles
-git fetch && git checkout chore/curate-dotfiles-for-new-mac
+cd <your main dotfiles checkout>
+git fetch origin
+git worktree add ../dotfiles-migration chore/curate-dotfiles-for-new-mac
+cd ../dotfiles-migration
+# ...do Phase 1 here, then commit + push...
+# when finished: git worktree remove ../dotfiles-migration
 ```
 
 ### 1a. Snapshot installed Homebrew packages (to a TEMP file)
@@ -284,9 +299,15 @@ password). Then either:
 
 ### 1g. Commit & push from the OLD machine
 
+Review what you're about to commit — don't blanket-add (it can sweep in secrets
+like an unprotected `raycast.rayconfig`):
+
 ```sh
-git add -A
-git commit -m "Capture old-machine packages/tools"
+git status                                            # eyeball every change
+git add BrewFile karabiner.json macos_defaults.sh    # add intended files explicitly
+# password-protected Raycast export only (it's gitignored):
+# git add -f raycast.rayconfig
+git commit -m "Capture old-machine packages, tools, and configs"
 git push
 ```
 
@@ -309,7 +330,8 @@ KEEP_ZSHRC=yes RUNZSH=no CHSH=no \
 brew bundle --file=~/code/zimakki/dotfiles/BrewFile
 
 # 3. Language runtimes via mise (erlang/elixir compile from source here)
-mise install        # uses ~/.config/mise/config.toml
+mise trust          # approve this repo's .mise.toml (one-time)
+mise install        # installs node/python/elixir/erlang per .mise.toml
 
 # 4. Symlink dotfiles into place (backs up existing files to *.bak)
 ./setup_sim_links.zsh
@@ -317,8 +339,22 @@ mise install        # uses ~/.config/mise/config.toml
 # 5. Apply macOS system settings (keyboard repeat, function keys, etc.)
 ./macos_defaults.sh
 
-# 6. Open a fresh shell and confirm there are no startup errors
+# 6. Reload the shell (then run the Verify checklist below)
+exec zsh
 ```
+
+### Verify
+
+```sh
+mise ls          # node 22.12.0, python 3.13, elixir 1.20.1-otp-29, erlang 29.0.2
+mise doctor      # mise environment healthy
+elixir --version # 1.20.1 on Erlang/OTP 29
+brew bundle check --file=~/code/zimakki/dotfiles/BrewFile   # all formulae/casks present
+exec zsh         # opens clean — no "command not found" spam
+```
+
+Rollback: `setup_sim_links.zsh` backs up anything it replaces to `<file>.bak`
+beside the original — move the `.bak` back over the symlink to restore.
 
 ### Post-install manual bits
 
@@ -329,6 +365,16 @@ mise install        # uses ~/.config/mise/config.toml
 - **Postgres.app**: launch it once, then create the Phoenix role if needed:
   `createuser -s postgres` (or set creds in each app's `dev.exs`).
 - **Raycast**: Settings → Advanced → Import → select your `.rayconfig`.
+
+---
+
+## ✅ Done when
+
+- A fresh shell opens with no errors (prompt = starship, history = atuin).
+- `mise ls` shows node 22.12.0, python 3.13, elixir 1.20.1-otp-29, erlang 29.0.2.
+- `brew bundle check` passes.
+- Your key apps launch, Karabiner remaps work, and Raycast config is imported.
+- The leaked `LIVE_BEATS` secret has been rotated on GitHub.
 
 ---
 
