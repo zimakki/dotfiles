@@ -18,6 +18,7 @@ LINKS=(
   "starship.toml:~/.config/starship.toml"
   "atuin_config.toml:~/.config/atuin/config.toml"
   "mise_config.toml:~/.config/mise/config.toml"
+  "karabiner.json:~/.config/karabiner/karabiner.json"
   "television:~/.config/television"
   "ghostty_config:~/.config/ghostty/config"
   "warp_keybindings.yaml:~/.warp/keybindings.yaml"

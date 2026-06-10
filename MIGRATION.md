@@ -137,6 +137,25 @@ actually rely on. Notable gaps to consider adding to the repo:
 **Do NOT commit secrets:** `~/.zsh_secrets`, `~/.ssh/*`, 1Password data, or any
 file containing tokens/keys.
 
+**Karabiner-Elements (keyboard config).** The cask is already in the Brewfile,
+so only the config needs capturing. On the OLD machine, copy it into the repo (a
+symlink entry already exists in `setup_sim_links.zsh`):
+
+```sh
+cp ~/.config/karabiner/karabiner.json karabiner.json
+# optional: custom complex-modification rule files you authored
+# cp -R ~/.config/karabiner/assets/complex_modifications ./karabiner_complex_modifications
+```
+
+Commit it (step 1f). On the new machine, `setup_sim_links.zsh` symlinks
+`karabiner.json` → `~/.config/karabiner/karabiner.json` and Karabiner picks it up
+on launch.
+
+> Caveat: Karabiner rewrites `karabiner.json` whenever you change settings in its
+> UI. With the symlink that's normally fine (it writes in place), but if Karabiner
+> ever replaces the symlink with a real file, just re-run `setup_sim_links.zsh` to
+> re-link. Never track `~/.config/karabiner/automatic_backups/`.
+
 ### 1f. Commit & push from the OLD machine
 
 ```sh
