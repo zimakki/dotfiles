@@ -5,7 +5,7 @@
 # Note: the elixir build is precompiled against a specific OTP major
 # (the -otp-NN suffix), so the erlang major must match it.
 [tools]
-node = "22.12.0"
+node = "22.13"
 python = "3.13"
 elixir = "1.20.1-otp-29"
 erlang = "29.0.2"
