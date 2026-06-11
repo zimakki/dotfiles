@@ -34,7 +34,7 @@ done
 
 hdr "mise runtimes (functional probes)"
 nv=$(mise exec -- node --version 2>/dev/null)
-[[ "$nv" == *"22.12.0"* ]] && pass "node $nv" || fail "node: ${nv:-<none>} (want 22.12.0)"
+[[ "$nv" == *"v22.13"* ]] && pass "node $nv" || fail "node: ${nv:-<none>} (want 22.13.x)"
 pv=$(mise exec -- python --version 2>/dev/null)
 [[ "$pv" == *"3.13"* ]] && pass "python $pv" || fail "python: ${pv:-<none>} (want 3.13)"
 ev=$(mise exec -- elixir --version 2>/dev/null)

@@ -378,7 +378,7 @@ beside anything it replaced; revert macOS tweaks by diffing against
 ## ✅ Done when
 
 - A fresh shell opens with no errors (prompt = starship, history = atuin).
-- `mise ls` shows node 22.12.0, python 3.13, elixir 1.20.1-otp-29, erlang 29.0.2.
+- `mise ls` shows node 22.13.x, python 3.13, elixir 1.20.1-otp-29, erlang 29.0.2.
 - `brew bundle check` passes.
 - Your key apps launch, Karabiner remaps work, and Raycast config is imported.
 
@@ -388,7 +388,7 @@ beside anything it replaced; revert macOS tweaks by diffing against
 
 | Area | Change |
 |------|--------|
-| Runtimes | `node`/`python` removed from Brewfile → managed by mise. Tracked as `mise_config.toml` (node 22.12.0, python 3.13, elixir 1.20.1-otp-29, erlang 29.0.2) and symlinked to `~/.config/mise/config.toml` |
+| Runtimes | `node`/`python` removed from Brewfile → managed by mise. Tracked as `mise_config.toml` (node 22.13, python 3.13, elixir 1.20.1-otp-29, erlang 29.0.2) and symlinked to `~/.config/mise/config.toml` |
 | Brewfile | Pruned monitors/disk/media/embedded/unused CLIs (commented out); dropped emacs tap, arc, arduino-ide; postgresql@14 → Postgres.app; added starship/atuin/television/zsh-autosuggestions |
 | zshrc | Removed tmux/run_iex/yazi/emacs/doom; commented unidentified `entire`; guarded atuin env + 1Password fetch; source zsh-syntax-highlighting last; removed leaked secret |
 | Files | Deleted orphaned `cmux_dev_layout.sh` |
