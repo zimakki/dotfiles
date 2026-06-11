@@ -42,7 +42,7 @@ ev=$(mise exec -- elixir --version 2>/dev/null)
 [[ "$ev" == *"OTP 29"*  ]] && pass "erlang/OTP 29" || fail "OTP not 29: ${ev:-<none>}"
 
 hdr "Symlinks (LINKS → repo)"
-grep -oE '"[^"]+:[^"]+"' "$REPO/setup_sim_links.zsh" | tr -d '"' | while IFS=: read -r src dest; do
+grep -oE '"[^"]+:(~|/|\$)[^"]*"' "$REPO/setup_sim_links.zsh" | tr -d '"' | while IFS=: read -r src dest; do
   d="${dest/#\~/$HOME}"
   [[ "$d" == *'$('* ]] && d=$(eval echo "$d") 2>/dev/null
   if [[ -L "$d" ]]; then
@@ -58,7 +58,7 @@ done
 hdr "macOS defaults (read-back vs macos_defaults.sh)"
 grep -E '^[[:space:]]*defaults write' "$REPO/macos_defaults.sh" | while IFS= read -r line; do
   rest=${line#*defaults write }
-  toks=(${(z)rest})
+  toks=(${(zQ)rest})   # z=shell-split, Q=strip one level of quotes
   if [[ "${toks[1]}" == "-g" || "${toks[1]}" == "NSGlobalDomain" ]]; then
     domain="-g"; key="${toks[2]}"; tflag="${toks[3]}"; val="${toks[4]:-}"
   else
@@ -73,11 +73,13 @@ grep -E '^[[:space:]]*defaults write' "$REPO/macos_defaults.sh" | while IFS= rea
 done
 
 hdr "Integration: interactive shell loads clean"
-errout=$(zsh -ic 'exit' 2>&1 >/dev/null)
+# Run under a pty (script) so ZLE-based plugins (atuin/tv) initialize exactly as
+# in a real terminal; without a tty they emit harmless "can't change option: zle".
+errout=$(script -q /dev/null zsh -ic 'exit' 2>&1 | tr -d '\r\004' | grep -vE "Saving session|Restored session|^[[:space:]]*$")
 if [[ -z "$errout" ]]; then
-  pass "zsh -i loaded with no stderr"
+  pass "interactive shell (pty) loaded clean"
 else
-  fail "zsh -i produced errors:"; print "$errout" | sed 's/^/        /'
+  fail "shell load produced unexpected output:"; print "$errout" | sed 's/^/        /'
 fi
 
 hdr "mise environment"
