@@ -1,6 +1,3 @@
-tap "homebrew/bundle"
-tap "homebrew/cask-fonts"
-tap "homebrew/services"
 brew "atuin"
 # brew "aom"            # media lib (imagemagick dep) — pruned
 # brew "arc"            # second browser — pruned (keeping chrome)
@@ -41,7 +38,7 @@ brew "lazygit"
 # brew "librsvg"        # media lib — pruned
 brew "libxslt"       # erlang docs (xsltproc)
 brew "lsd"
-brew "mhanberg/tap/lazyasdf"
+# brew "mhanberg/tap/lazyasdf"  # removed: build fails on this macOS + asdf TUI, obsolete under mise
 brew "mise"
 # brew "navi"          # cheatsheet tool — pruned
 brew "neovim"
