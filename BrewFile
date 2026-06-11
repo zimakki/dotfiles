@@ -71,7 +71,7 @@ cask "1password"
 # cask "arduino-ide"    # pruned
 cask "cmux"
 cask "codex"
-cask "cron"
+# cask "cron"          # legacy token — same app as notion-calendar (below)
 cask "discord"
 cask "font-hack-nerd-font"
 cask "font-inter"
