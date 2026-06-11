@@ -1,7 +1,6 @@
 tap "homebrew/bundle"
 tap "homebrew/cask-fonts"
 tap "homebrew/services"
-brew  "1password-cli"
 brew "atuin"
 # brew "aom"            # media lib (imagemagick dep) — pruned
 # brew "arc"            # second browser — pruned (keeping chrome)
@@ -68,6 +67,7 @@ brew "zoxide"
 brew "zsh-autosuggestions"
 brew "zsh-syntax-highlighting"
 cask "1password"
+cask "1password-cli"
 # cask "arduino-ide"    # pruned
 cask "cmux"
 cask "codex"
