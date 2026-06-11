@@ -315,56 +315,63 @@ git push
 
 ## Phase 2 — NEW machine: install (after Phase 1 is merged/pulled)
 
-**Order matters** — build deps must exist before mise compiles erlang/elixir,
-and lazygit must exist before the symlink script runs.
+**Order matters** — build deps must exist before mise compiles erlang/elixir, and
+lazygit must exist before the symlink script runs. Each step is gated before and
+verified after; stop at the first failed check.
+
+### Pre-flight (gate the whole phase)
 
 ```sh
 cd ~/code/zimakki/dotfiles
 git pull
+./scripts/phase2_preflight.sh   # branch/toolchain/disk/network + validates every Brewfile token
+```
+Don't continue unless this exits ✅.
 
-# 1. oh-my-zsh (not a brew package; required by zshrc line ~92)
-KEEP_ZSHRC=yes RUNZSH=no CHSH=no \
+### Steps
+
+```sh
+# 1. oh-my-zsh (gate: not already installed; verify: oh-my-zsh.sh exists)
+[ -d ~/.oh-my-zsh ] || KEEP_ZSHRC=yes RUNZSH=no CHSH=no \
   sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+[ -f ~/.oh-my-zsh/oh-my-zsh.sh ] && echo "✅ oh-my-zsh" || echo "❌ oh-my-zsh"
 
-# 2. Homebrew packages (also provides erlang build deps + lazygit)
-brew bundle --file=~/code/zimakki/dotfiles/BrewFile
+# 2. Homebrew packages — logged (some casks prompt for your Mac password)
+brew bundle --file=~/code/zimakki/dotfiles/BrewFile 2>&1 | tee /tmp/brew-bundle.log
+brew bundle check --file=~/code/zimakki/dotfiles/BrewFile     # verify: "dependencies are satisfied"
 
-# 3. Language runtimes via mise (erlang/elixir compile from source here)
-mise trust          # approve this repo's .mise.toml (one-time)
-mise install        # installs node/python/elixir/erlang per .mise.toml
+# 3. Runtimes via mise — compiles erlang/elixir; logged
+mise trust
+mise install 2>&1 | tee /tmp/mise-install.log
+mise exec -- elixir --version          # verify: Elixir 1.20.1, compiled with Erlang/OTP 29
 
-# 4. Symlink dotfiles into place (backs up existing files to *.bak)
-./setup_sim_links.zsh
+# 4. Symlinks (gate: lazygit installed; backs up replaced files to *.bak)
+command -v lazygit >/dev/null && ./setup_sim_links.zsh || echo "❌ install lazygit first"
 
-# 5. Apply macOS system settings (keyboard repeat, function keys, etc.)
+# 5. macOS settings — snapshot first for rollback/diff
+defaults read > /tmp/defaults.before
 ./macos_defaults.sh
 
-# 6. Reload the shell (then run the Verify checklist below)
+# 6. Reload the shell
 exec zsh
 ```
 
-### Verify
+### Verify everything
 
 ```sh
-mise ls          # node 22.12.0, python 3.13, elixir 1.20.1-otp-29, erlang 29.0.2
-mise doctor      # mise environment healthy
-elixir --version # 1.20.1 on Erlang/OTP 29
-brew bundle check --file=~/code/zimakki/dotfiles/BrewFile   # all formulae/casks present
-exec zsh         # opens clean — no "command not found" spam
+./scripts/verify_setup.sh    # runs all automated post-checks → PASS/FAIL report
 ```
+Re-runnable anytime. **Rollback:** `setup_sim_links.zsh` leaves `<file>.bak`
+beside anything it replaced; revert macOS tweaks by diffing against
+`/tmp/defaults.before`.
 
-Rollback: `setup_sim_links.zsh` backs up anything it replaces to `<file>.bak`
-beside the original — move the `.bak` back over the symlink to restore.
+### Manual checklist (GUI / credentials — can't be automated)
 
-### Post-install manual bits
-
-- **Rotate the leaked `LIVE_BEATS` GitHub OAuth secret** — it was removed from
-  the file but remains in git history, so it is still compromised.
-- **1Password CLI**: `op signin` (and add your account) so the guarded
-  `OPENAI_API_KEY` fetch works. Until then it skips silently.
-- **Postgres.app**: launch it once, then create the Phoenix role if needed:
-  `createuser -s postgres` (or set creds in each app's `dev.exs`).
-- **Raycast**: Settings → Advanced → Import → select your `.rayconfig`.
+- [ ] **Karabiner**: approve the input-monitoring / system-extension prompt, then test a remapped key.
+- [ ] **Raycast**: Settings → Advanced → Import → `raycast.rayconfig` (needs the export password); confirm a hotkey.
+- [ ] **1Password**: `op signin`, then `op whoami` succeeds (enables the `OPENAI_API_KEY` fetch).
+- [ ] **Postgres.app**: launch once; `pg_isready`; `createuser -s postgres` if Phoenix needs it.
+- [ ] Eyeball: starship prompt renders, nerd-font glyphs show, atuin `Ctrl-R` + television `Ctrl-T` work.
 
 ---
 
@@ -374,7 +381,6 @@ beside the original — move the `.bak` back over the symlink to restore.
 - `mise ls` shows node 22.12.0, python 3.13, elixir 1.20.1-otp-29, erlang 29.0.2.
 - `brew bundle check` passes.
 - Your key apps launch, Karabiner remaps work, and Raycast config is imported.
-- The leaked `LIVE_BEATS` secret has been rotated on GitHub.
 
 ---
 
