@@ -135,8 +135,8 @@ function diff_files() {
   diff -u "$file1" "$file2" | delta
 }
 
-# Make sure the function is available in the shell
-export -f diff_files
+# (no `export -f` — that's a bashism; in zsh the function is already available,
+#  and `export -f` just prints the definition on every shell startup)
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
@@ -286,44 +286,26 @@ _load_api_keys() {
 	local secrets_file="$HOME/.zsh_secrets"
 	local max_age_days=7
 
-	# Check if file exists and is fresh (< 7 days old)
+	# Fresh cache (< max_age_days)? source it silently.
 	if [[ -f "$secrets_file" ]]; then
 		local file_age=$(( ($(date +%s) - $(stat -f %m "$secrets_file")) / 86400 ))
-		echo "[API Keys] Secrets file exists (age: ${file_age} days, max: ${max_age_days} days)"
 		if (( file_age < max_age_days )); then
-			# File is fresh, just source it
-			echo "[API Keys] Using cached keys from $secrets_file"
 			source "$secrets_file"
 			return
-		else
-			echo "[API Keys] Cache is stale, refreshing..."
 		fi
-	else
-		echo "[API Keys] No cache file found at $secrets_file"
 	fi
 
-	# File missing or stale — fetch from 1Password, but only if the CLI is
-	# installed and an account is configured. Otherwise skip silently and
-	# fall back to a stale cache if one exists (no startup errors/prompts).
-	if ! command -v op >/dev/null 2>&1 || ! op account list >/dev/null 2>&1; then
+	# Cache missing/stale — refresh from 1Password, but only if signed in.
+	# Otherwise skip silently (fall back to a stale cache if present).
+	if ! command -v op >/dev/null 2>&1 || ! op whoami >/dev/null 2>&1; then
 		[[ -f "$secrets_file" ]] && source "$secrets_file"
 		return
 	fi
 
-	# File missing or stale, fetch from 1Password
-	echo "[API Keys] Fetching from 1Password..."
+	echo "[API Keys] refreshing OPENAI_API_KEY from 1Password…"
 	local openai_key="$(op read op://Personal/ChatGPT.nvim/password --no-newline)"
-
-	# Write to secrets file
-	cat > "$secrets_file" <<-EOF
-		export OPENAI_API_KEY="$openai_key"
-	EOF
-
-	# Secure the file
+	print -r -- "export OPENAI_API_KEY=\"$openai_key\"" > "$secrets_file"
 	chmod 600 "$secrets_file"
-	echo "[API Keys] Cache saved to $secrets_file"
-
-	# Source it
 	source "$secrets_file"
 }
 
