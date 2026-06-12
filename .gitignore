@@ -1,2 +1,6 @@
 # Secrets file for API keys
 .zsh_secrets
+
+# Raycast export may contain secrets — commit only the password-protected
+# one, explicitly, with: git add -f raycast.rayconfig
+*.rayconfig

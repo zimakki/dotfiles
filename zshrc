@@ -4,13 +4,6 @@
 
 export PATH="$HOME/.local/bin:$PATH"
 
-# make sure doom is in the path
-export PATH=$PATH:$HOME/.doom_emacs.d/bin
-
-#make the keyboard work faster
-defaults write -g InitialKeyRepeat -int 10 # normal minimum is 15 (225 ms)
-defaults write -g KeyRepeat -int 1         # normal minimum is 2 (30 ms)
-
 # Path to your oh-my-zsh installation.
 export ZSH="/Users/zimakki/.oh-my-zsh"
 
@@ -142,8 +135,8 @@ function diff_files() {
   diff -u "$file1" "$file2" | delta
 }
 
-# Make sure the function is available in the shell
-export -f diff_files
+# (no `export -f` — that's a bashism; in zsh the function is already available,
+#  and `export -f` just prints the definition on every shell startup)
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
@@ -279,10 +272,6 @@ if [ -d "$(brew --prefix)/opt/grep/libexec/gnubin" ]; then
 	PATH="$(brew --prefix)/opt/grep/libexec/gnubin:$PATH"
 fi
 
-# some secrets for live_beats elixir application
-export LIVE_BEATS_GITHUB_CLIENT_ID="1aac63d3d8f1e4fb9dc6"
-export LIVE_BEATS_GITHUB_CLIENT_SECRET="86473938560cbecd3e9a00ade6f9afc7f4548c48"
-
 delete_nvim_cache() {
 	echo "deleting ~/.local/share/nvim"
 	rm -rf ~/.local/share/nvim
@@ -297,93 +286,39 @@ _load_api_keys() {
 	local secrets_file="$HOME/.zsh_secrets"
 	local max_age_days=7
 
-	# Check if file exists and is fresh (< 7 days old)
+	# Fresh cache (< max_age_days)? source it silently.
 	if [[ -f "$secrets_file" ]]; then
 		local file_age=$(( ($(date +%s) - $(stat -f %m "$secrets_file")) / 86400 ))
-		echo "[API Keys] Secrets file exists (age: ${file_age} days, max: ${max_age_days} days)"
 		if (( file_age < max_age_days )); then
-			# File is fresh, just source it
-			echo "[API Keys] Using cached keys from $secrets_file"
 			source "$secrets_file"
 			return
-		else
-			echo "[API Keys] Cache is stale, refreshing..."
 		fi
-	else
-		echo "[API Keys] No cache file found at $secrets_file"
 	fi
 
-	# File missing or stale, fetch from 1Password
-	echo "[API Keys] Fetching from 1Password..."
+	# Cache missing/stale — refresh from 1Password, but only if signed in.
+	# Otherwise skip silently (fall back to a stale cache if present).
+	if ! command -v op >/dev/null 2>&1 || ! op whoami >/dev/null 2>&1; then
+		[[ -f "$secrets_file" ]] && source "$secrets_file"
+		return
+	fi
+
+	echo "[API Keys] refreshing OPENAI_API_KEY from 1Password…"
 	local openai_key="$(op read op://Personal/ChatGPT.nvim/password --no-newline)"
-
-	# Write to secrets file
-	cat > "$secrets_file" <<-EOF
-		export OPENAI_API_KEY="$openai_key"
-	EOF
-
-	# Secure the file
+	print -r -- "export OPENAI_API_KEY=\"$openai_key\"" > "$secrets_file"
 	chmod 600 "$secrets_file"
-	echo "[API Keys] Cache saved to $secrets_file"
-
-	# Source it
 	source "$secrets_file"
 }
 
 _load_api_keys
 
 ####################################################################################################
-# Alex's fzf plugin for iex
+# iex history + television (tvf) helper
 ####################################################################################################
 
 export PATH="~/.iex-history:$PATH"
 
-alias i="run_iex"
-alias is="run_iex -S mix phx.server"
-alias dev="~/code/dotfiles/cmux_dev_layout.sh"
 alias tvf='tv files -k "enter=\"confirm_selection\"" | xargs nvim'
 
-function run_iex() {
-	local session=$(date | sha256sum | cut -c1-8)
-	local current_session=${1:-$(tmux display -p '#{session_name}')}
-
-	local command='iex'
-
-	if [ "$#" -gt 0 ]; then
-		command+=" $@"
-	fi
-
-	# Determine the current directory
-	local current_dir="$(pwd)"
-
-	if [ -n "$TMUX" ]; then
-		echo "Already in a tmux session. Switching to 'iex_session'..."
-		# Send 'cd' to the current directory and clear the screen
-		tmux send-keys -t "$current_session" "cd ${current_dir}" C-m \; send-keys -t "$current_session" "clear" C-m
-		# Then send the command
-		tmux send-keys -t "$current_session" "$command" C-m
-	else
-		# Create a new session with the current directory and run the command
-		tmux new-session -d -s "$session" -c "$current_dir"
-		tmux send-keys -t "$session" "$command" C-m
-		if [ -z "$TMUX" ]; then
-			tmux attach -t "$session"
-		fi
-	fi
-}
-####################################################################################################
-#
-# Yazi - File manager
-# function below is used to give yazi the ability to change the directory
-####################################################################################################
-function ya() {
-	local tmp="$(mktemp -t "yazi-cwd.XXXXX")"
-	yazi "$@" --cwd-file="$tmp"
-	if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
-		cd -- "$cwd"
-	fi
-	rm -f -- "$tmp"
-}
 
 # add rebar3 to the path
 export PATH=/Users/zimakki/.cache/rebar3/bin:$PATH
@@ -403,7 +338,8 @@ eval "$(tv init zsh)"
 bindkey -r '^R' # Unbind tv's Ctrl+R so atuin handles history
 
 # Initialize Atuin for enhanced shell history (Ctrl+R)
-. "$HOME/.atuin/bin/env"
+# (brew's atuin doesn't create ~/.atuin/bin/env; guard so it works either way)
+[ -f "$HOME/.atuin/bin/env" ] && . "$HOME/.atuin/bin/env"
 eval "$(atuin init zsh)"
 
 # pnpm
@@ -417,8 +353,9 @@ esac
 # Added by Antigravity
 export PATH="/Users/zimakki/.antigravity/antigravity/bin:$PATH"
 
-# Entire CLI shell completion
-autoload -Uz compinit && compinit && source <(entire completion zsh)
+# "entire" CLI completion — REMOVED: tool unidentified & no longer installed (added 2026-03).
+# oh-my-zsh already runs compinit, so dropping this whole line is safe.
+# autoload -Uz compinit && compinit && source <(entire completion zsh)
 
 # Predictive command suggestions from history
 source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
@@ -427,3 +364,6 @@ source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 # that leak as ";1R;6R" garbage in some terminals
 export STARSHIP_LOG=error
 eval "$(starship init zsh)"
+
+# zsh-syntax-highlighting — MUST be sourced last (after all other zle widgets)
+source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
