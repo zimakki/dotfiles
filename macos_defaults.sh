@@ -46,6 +46,10 @@ defaults write com.apple.dock orientation -string "right"             # left/rig
 # defaults write com.apple.dock show-recents -bool false              # unset on old Mac
 # defaults write com.apple.dock mineffect -string "scale"             # genie/scale/suck
 
+# ── Menu bar ─────────────────────────────────────────────────────────────────
+# Show battery percentage next to the icon (per-host domain, so -currentHost)
+defaults -currentHost write com.apple.controlcenter BatteryShowPercentage -bool true
+
 # ── Add anything else below (see header for how to discover keys) ─────────────
 
 
