@@ -82,6 +82,20 @@ else
   fail "shell load produced unexpected output:"; print "$errout" | sed 's/^/        /'
 fi
 
+hdr "Brewfile drift (installed vs recorded)"
+# Direction 1: in BrewFile but not installed
+brew bundle check --file="$BREWFILE" >/dev/null 2>&1 \
+  && pass "everything in BrewFile is installed" \
+  || fail "BrewFile entries missing from system — run: brew bundle --file=$BREWFILE"
+# Direction 2: installed but not in BrewFile (dry-run only — NEVER --force here)
+drift=$(brew bundle cleanup --file="$BREWFILE" 2>/dev/null | grep -E '^[a-z0-9@/._-]+$' | sort)
+if [[ -z "$drift" ]]; then
+  pass "nothing installed outside the BrewFile"
+else
+  fail "installed but not in BrewFile (record via install-app skill, or remove):"
+  print "$drift" | sed 's/^/        /'
+fi
+
 hdr "mise environment"
 mise doctor >/dev/null 2>&1 && pass "mise doctor OK" || fail "mise doctor reported problems (run: mise doctor)"
 
