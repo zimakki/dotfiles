@@ -10,6 +10,7 @@ DOTFILES="$(realpath "$(dirname "$0")")"
 
 # ─── Manifest: source_in_repo : destination ────────────────────────
 LINKS=(
+  "zshenv:~/.zshenv"
   "zshrc:~/.zshrc"
   "gitconfig:~/.gitconfig"
   "BrewFile:~/Brewfile"
