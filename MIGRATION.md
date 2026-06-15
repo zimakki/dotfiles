@@ -216,7 +216,7 @@ actually rely on. Notable gaps to consider adding to the repo:
 
 - `~/.config/mise/config.toml` — global runtime versions. Now **tracked** in
   this repo as `mise_config.toml` and symlinked via `setup_sim_links.zsh`.
-- Neovim config — `NVIM_APPNAME=astronvim_v5`; confirm that config is its own
+- Neovim config — `NVIM_APPNAME=astronvim_v6`; confirm that config is its own
   repo and is pushed.
 - Ghostty terminal — already tracked (`ghostty_config` → `~/.config/ghostty/config`);
   just make sure the old Mac's version is committed.
