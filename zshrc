@@ -113,8 +113,12 @@ if command -v ngrok &>/dev/null; then
 fi
 
 # From fzf instructions
-eval "$(fzf --zsh)"
-bindkey -r '^T' # Unbind fzf's Ctrl+T (tv handles this)
+# Guard with `-t 1`: only set up line-editor UI when stdout is a real terminal
+# (e.g. tools like Expert that run `zsh -i -c` with no TTY → avoids "can't change option: zle")
+if [[ -t 1 ]]; then
+  eval "$(fzf --zsh)"
+  bindkey -r '^T' # Unbind fzf's Ctrl+T (tv handles this)
+fi
 
 # function for listing and checking out branches
 function gci() {
@@ -333,14 +337,18 @@ export PATH="/Users/zimakki/.codeium/windsurf/bin:$PATH"
 export PATH="$HOME/.mix/escripts:$PATH"
 export PATH="$HOME/code/zimakki/prepx/:$PATH"
 
-# Initialize television shell integration (smart autocomplete on Ctrl+T)
-eval "$(tv init zsh)"
-bindkey -r '^R' # Unbind tv's Ctrl+R so atuin handles history
+# Initialize television + Atuin shell integration (both register zle widgets)
+# Guard with `-t 1`: only on a real terminal (skipped when a tool shells out to capture output)
+if [[ -t 1 ]]; then
+  # television: smart autocomplete on Ctrl+T
+  eval "$(tv init zsh)"
+  bindkey -r '^R' # Unbind tv's Ctrl+R so atuin handles history
 
-# Initialize Atuin for enhanced shell history (Ctrl+R)
-# (brew's atuin doesn't create ~/.atuin/bin/env; guard so it works either way)
-[ -f "$HOME/.atuin/bin/env" ] && . "$HOME/.atuin/bin/env"
-eval "$(atuin init zsh)"
+  # Atuin: enhanced shell history (Ctrl+R)
+  # (brew's atuin doesn't create ~/.atuin/bin/env; guard so it works either way)
+  [ -f "$HOME/.atuin/bin/env" ] && . "$HOME/.atuin/bin/env"
+  eval "$(atuin init zsh)"
+fi
 
 # pnpm
 export PNPM_HOME="/Users/zimakki/Library/pnpm"
@@ -357,13 +365,17 @@ export PATH="/Users/zimakki/.antigravity/antigravity/bin:$PATH"
 # oh-my-zsh already runs compinit, so dropping this whole line is safe.
 # autoload -Uz compinit && compinit && source <(entire completion zsh)
 
-# Predictive command suggestions from history
-source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-
-# Starship prompt — STARSHIP_PREEXEC_READY suppresses cursor position queries
-# that leak as ";1R;6R" garbage in some terminals
+# Line-editor UI: autosuggestions, starship prompt, syntax-highlighting.
+# Guard with `-t 1`: real terminal only; fzf-style option save/restore errors when shelled out.
 export STARSHIP_LOG=error
-eval "$(starship init zsh)"
+if [[ -t 1 ]]; then
+  # Predictive command suggestions from history
+  source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
-# zsh-syntax-highlighting — MUST be sourced last (after all other zle widgets)
-source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+  # Starship prompt — STARSHIP_PREEXEC_READY suppresses cursor position queries
+  # that leak as ";1R;6R" garbage in some terminals
+  eval "$(starship init zsh)"
+
+  # zsh-syntax-highlighting — MUST be sourced last (after all other zle widgets)
+  source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+fi
