@@ -337,6 +337,9 @@ export PATH="/Users/zimakki/.codeium/windsurf/bin:$PATH"
 export PATH="$HOME/.mix/escripts:$PATH"
 export PATH="$HOME/code/zimakki/prepx/:$PATH"
 
+# Postgres.app CLI tools (psql, pg_dump, etc.) — `latest` symlink tracks the current version
+export PATH="/Applications/Postgres.app/Contents/Versions/latest/bin:$PATH"
+
 # Initialize television + Atuin shell integration (both register zle widgets)
 # Guard with `-t 1`: only on a real terminal (skipped when a tool shells out to capture output)
 if [[ -t 1 ]]; then
