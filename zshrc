@@ -382,3 +382,10 @@ if [[ -t 1 ]]; then
   # zsh-syntax-highlighting — MUST be sourced last (after all other zle widgets)
   source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 fi
+
+# bun completions
+[ -s "/Users/zimakki/.bun/_bun" ] && source "/Users/zimakki/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
