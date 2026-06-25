@@ -29,6 +29,7 @@ brew "gnupg"
 # brew "gobject-introspection"  # transitive dep — pruned
 brew "grep"
 # brew "guile"         # Scheme interpreter (emacs/imagemagick dep) — pruned
+brew "hunk"
 # brew "imagemagick"    # media — pruned
 # brew "jasper"         # media lib — pruned
 # brew "jpeg-xl"        # media lib — pruned
