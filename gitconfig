@@ -6,6 +6,9 @@
 [github]
 	user = zimakki
 
+[url "git@github.com:"]
+	insteadOf = https://github.com/
+
 [core]
   pager = delta
 	excludesfile = /Users/zimakki/.gitignore_global

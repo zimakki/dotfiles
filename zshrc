@@ -246,7 +246,7 @@ export LDFLAGS="-L/usr/local/opt/curl/lib"
 export CPPFLAGS="-I/usr/local/opt/curl/include"
 export PATH="/usr/local/sbin:$PATH"
 
-# make sure we use astronvim v5
+# make sure we use astronvim v6
 export NVIM_APPNAME=astronvim_v6
 
 
