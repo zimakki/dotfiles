@@ -54,7 +54,16 @@
     "searchfit-seo@claude-plugins-official": true
   },
   "skipDangerousModePermissionPrompt": true,
+  "editorMode": "vim",
   "feedbackSurveyState": {
     "lastShownTime": 1754049386672
+  },
+  "extraKnownMarketplaces": {
+    "ponytail": {
+      "source": {
+        "source": "github",
+        "repo": "DietrichGebert/ponytail"
+      }
+    }
   }
 }
