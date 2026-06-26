@@ -1,8 +1,8 @@
 # dotfiles
 
-This repo manages my macOS dotfiles, terminal/TUI app configs, and shared theme
-assets. The symlink manifest in `setup_sim_links.zsh` is the source of truth for
-which files are owned by this project.
+This repo manages my macOS dotfiles, terminal/TUI app configs, shared theme
+assets, and project-local Claude skills. The symlink manifest in
+`setup_sim_links.zsh` is the source of truth for machine-linked files.
 
 Managed areas currently include:
 
@@ -10,6 +10,11 @@ Managed areas currently include:
 - Terminal/TUI tools: Ghostty, Lazygit, Hunk, bat, Television, Warp keybindings/themes
 - Developer tooling: Git config, global gitignore, mise global tools, Claude settings
 - System/app config: Karabiner and Homebrew bundle
+
+Not every tracked config-like artifact is symlinked. `.claude/skills/` is loaded
+as project-local Claude skills from the repo, while `~/.claude/skills` remains
+the shared agent skills directory. `raycast.rayconfig` is a manual Raycast import
+artifact and should not be symlinked.
 
 ## Get up and running
 

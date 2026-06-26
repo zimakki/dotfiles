@@ -42,7 +42,9 @@ ev=$(mise exec -C "$HOME" -- elixir --version 2>/dev/null)
 [[ "$ev" == *"OTP 29"*  ]] && pass "erlang/OTP 29" || fail "OTP not 29: ${ev:-<none>}"
 
 hdr "Symlinks (LINKS → repo)"
+manifest_sources=()
 grep -oE '"[^"]+:(~|/|\$)[^"]*"' "$REPO/setup_sim_links.zsh" | tr -d '"' | while IFS=: read -r src dest; do
+  manifest_sources+=("$src")
   d="${dest/#\~/$HOME}"
   [[ "$d" == *'$('* ]] && d=$(eval echo "$d") 2>/dev/null
   if [[ -L "$d" ]]; then
@@ -54,6 +56,42 @@ grep -oE '"[^"]+:(~|/|\$)[^"]*"' "$REPO/setup_sim_links.zsh" | tr -d '"' | while
     skip "$d (no repo source: $src)"
   fi
 done
+
+hdr "Symlink manifest coverage (repo → LINKS)"
+expected_link_roots=(
+  zshenv
+  zshrc
+  gitconfig
+  BrewFile
+  gitignore_global
+  claude_settings.json
+  starship.toml
+  atuin_config.toml
+  atuin_themes
+  mise_config.toml
+  karabiner.json
+  television
+  ghostty_config
+  warp_keybindings.yaml
+  warp_themes
+  lazygit_config.yml
+  bat_config
+  hunk
+  zsh
+)
+for root in $expected_link_roots; do
+  if [[ ! -e "$REPO/$root" ]]; then
+    fail "manifest coverage source missing: $root"
+    continue
+  fi
+  covered=0
+  for src in $manifest_sources; do
+    [[ "$src" == "$root" || "$src" == "$root"/* ]] && covered=1 && break
+  done
+  (( covered )) && pass "manifest covers $root" || fail "tracked config root not in LINKS: $root"
+done
+skip ".claude/skills is project-local; do not replace ~/.claude/skills"
+skip "raycast.rayconfig is imported manually; do not symlink app state"
 
 hdr "macOS defaults (read-back vs macos_defaults.sh)"
 grep -E '^[[:space:]]*defaults write' "$REPO/macos_defaults.sh" | while IFS= read -r line; do
