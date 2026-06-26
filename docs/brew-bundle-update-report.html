@@ -103,18 +103,18 @@
 <body>
 <main>
   <h1>Brew Bundle Update Report</h1>
-  <p>Generated from <code>brew bundle check --file=BrewFile --verbose</code> on 2026-06-26 12:38:54 CEST. Updated after installing Postgres.app on 2026-06-26.</p>
+  <p>Generated from <code>brew bundle check --file=BrewFile --verbose</code> on 2026-06-26 12:38:54 CEST. Updated after installing Postgres.app and Homebrew Starship on 2026-06-26.</p>
 
   <section class="summary" aria-label="Summary">
-    <div class="metric"><strong>32</strong><span>BrewFile entries need action</span></div>
+    <div class="metric"><strong>31</strong><span>BrewFile entries need action</span></div>
     <div class="metric"><strong>27</strong><span>installed but outdated</span></div>
-    <div class="metric"><strong>5</strong><span>missing from Homebrew</span></div>
+    <div class="metric"><strong>4</strong><span>missing from Homebrew</span></div>
     <div class="metric"><strong>0</strong><span>pinned packages reported</span></div>
   </section>
 
   <div class="note">
     <strong>My read:</strong> most formula updates are safe. The places I would slow down are tools that affect shell/runtime behavior
-    (<code>mise</code>, <code>starship</code>, <code>curl</code>), active agent/editor tools (<code>codex</code>, <code>cmux</code>,
+    (<code>mise</code>, <code>curl</code>), active agent/editor tools (<code>codex</code>, <code>cmux</code>,
     <code>zed@preview</code>), network/security tools (<code>1password-cli</code>, <code>ngrok</code>), and app installs that require account or
     privacy setup (<code>meru</code>, <code>wispr-flow</code>).
   </div>
@@ -137,7 +137,6 @@ brew upgrade --cask discord google-chrome slack telegram visual-studio-code what
       <tr><td class="token">curl</td><td>8.19.0</td><td>8.21.0</td><td class="caution">Review/update</td><td><code>zshrc</code> exports a Homebrew curl path. This is safe if PATH resolves as expected after update.</td></tr>
       <tr><td class="token">mise</td><td>2026.3.9</td><td>2026.6.14</td><td class="caution">Review/update</td><td>Owns runtime shims for node/python/elixir. Update, then run <code>mise doctor</code> and the repo verifier.</td></tr>
       <tr><td class="token">ngrok</td><td>3.37.2</td><td>3.39.8</td><td class="caution">Review/update</td><td>Network tunnel tool. Usually safe, but confirm auth and any saved tunnel config after update.</td></tr>
-      <tr><td class="token">starship</td><td>not installed by Homebrew; binary at <code>/usr/local/bin/starship</code></td><td>1.25.1</td><td class="caution">Decide install source</td><td>BrewFile wants Homebrew ownership, but the machine is using a non-Homebrew binary. Installing may change which binary wins on PATH.</td></tr>
       <tr><td class="token">zed@preview</td><td>0.224.2</td><td>1.9.0</td><td class="caution">Review/update</td><td>Preview editor channel. Larger jump than the other GUI apps, so expect possible settings/extension changes.</td></tr>
     </tbody>
   </table>
@@ -152,7 +151,6 @@ brew upgrade --cask discord google-chrome slack telegram visual-studio-code what
       <tr><td class="token">fop</td><td>formula</td><td>2.11</td><td class="safe">Safe if needed</td><td>Used for Erlang docs per BrewFile comment. Pulls OpenJDK dependency if not already present.</td></tr>
       <tr><td class="token">libxslt</td><td>formula</td><td>1.1.45</td><td class="safe">Safe if needed</td><td>Keg-only because macOS provides libxslt. Useful for Erlang docs/Nokogiri builds; low PATH risk.</td></tr>
       <tr><td class="token">meru</td><td>cask</td><td>3.52.0</td><td class="hold">Hold unless wanted</td><td>Gmail desktop app. Installing creates app state and may require account login. Only install if you actively want it.</td></tr>
-      <tr><td class="token">starship</td><td>formula</td><td>1.25.1</td><td class="caution">Decide install source</td><td>The prompt works now from <code>/usr/local/bin/starship</code>. Homebrew install would normalize ownership but may alter PATH behavior.</td></tr>
       <tr><td class="token">wispr-flow</td><td>cask</td><td>1.5.980</td><td class="hold">Hold unless wanted</td><td>Dictation app that needs privacy/accessibility permissions. Install only if you intend to configure those permissions.</td></tr>
     </tbody>
   </table>
@@ -180,7 +178,6 @@ brew upgrade --cask discord google-chrome slack telegram visual-studio-code what
       <tr><td class="token">mise</td><td>formula</td><td>2026.3.9</td><td>2026.6.14</td><td>outdated</td><td class="caution">review</td></tr>
       <tr><td class="token">openssl@3</td><td>formula</td><td>3.6.1</td><td>3.6.2</td><td>outdated</td><td class="safe">safe</td></tr>
       <tr><td class="token">shfmt</td><td>formula</td><td>3.13.0</td><td>3.13.1</td><td>outdated</td><td class="safe">safe</td></tr>
-      <tr><td class="token">starship</td><td>formula</td><td>missing from Homebrew; binary exists</td><td>1.25.1</td><td>missing</td><td class="caution">review</td></tr>
       <tr><td class="token">television</td><td>formula</td><td>0.15.3</td><td>0.15.9</td><td>outdated</td><td class="safe">safe</td></tr>
       <tr><td class="token">1password-cli</td><td>cask</td><td>2.33.0</td><td>2.34.1</td><td>outdated</td><td class="caution">review</td></tr>
       <tr><td class="token">cmux</td><td>cask</td><td>0.62.2</td><td>0.64.17</td><td>outdated</td><td class="caution">review</td></tr>

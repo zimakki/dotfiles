@@ -28,6 +28,10 @@ for c in starship atuin tv fzf zoxide lsd nvim delta bat lazygit rg fd gh; do
   command -v "$c" >/dev/null && pass "$c" || fail "$c not on PATH"
 done
 BP=$(brew --prefix 2>/dev/null)
+starship_path=$(command -v starship 2>/dev/null || true)
+[[ "$starship_path" == "$BP/bin/starship" ]] \
+  && pass "starship from Homebrew ($starship_path)" \
+  || fail "starship resolves to ${starship_path:-<none>} (want $BP/bin/starship)"
 for f in zsh-autosuggestions/zsh-autosuggestions.zsh zsh-syntax-highlighting/zsh-syntax-highlighting.zsh; do
   [[ -f "$BP/share/$f" ]] && pass "plugin $f" || fail "missing $BP/share/$f"
 done
