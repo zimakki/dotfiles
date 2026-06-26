@@ -16,6 +16,16 @@
             "command": "afplay /System/Library/Sounds/Hero.aiff"
           }
         ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -n \"$PASEO_TERMINAL_ID\" ] && \"${PASEO_HOOK_CLI:-paseo}\" hooks claude Notification",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "Stop": [
@@ -27,6 +37,16 @@
             "command": "say \"finished!\""
           }
         ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -n \"$PASEO_TERMINAL_ID\" ] && \"${PASEO_HOOK_CLI:-paseo}\" hooks claude Stop",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "SubagentStop": [
@@ -36,6 +56,42 @@
           {
             "type": "command",
             "command": "afplay /System/Library/Sounds/Submarine.aiff"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -n \"$PASEO_TERMINAL_ID\" ] && \"${PASEO_HOOK_CLI:-paseo}\" hooks claude UserPromptSubmit",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -n \"$PASEO_TERMINAL_ID\" ] && \"${PASEO_HOOK_CLI:-paseo}\" hooks claude StopFailure",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -n \"$PASEO_TERMINAL_ID\" ] && \"${PASEO_HOOK_CLI:-paseo}\" hooks claude SessionEnd",
+            "timeout": 10
           }
         ]
       }
