@@ -103,20 +103,20 @@
 <body>
 <main>
   <h1>Brew Bundle Update Report</h1>
-  <p>Generated from <code>brew bundle check --file=BrewFile --verbose</code> on 2026-06-26 12:38:54 CEST.</p>
+  <p>Generated from <code>brew bundle check --file=BrewFile --verbose</code> on 2026-06-26 12:38:54 CEST. Updated after installing Postgres.app on 2026-06-26.</p>
 
   <section class="summary" aria-label="Summary">
-    <div class="metric"><strong>33</strong><span>BrewFile entries need action</span></div>
+    <div class="metric"><strong>32</strong><span>BrewFile entries need action</span></div>
     <div class="metric"><strong>27</strong><span>installed but outdated</span></div>
-    <div class="metric"><strong>6</strong><span>missing from Homebrew</span></div>
+    <div class="metric"><strong>5</strong><span>missing from Homebrew</span></div>
     <div class="metric"><strong>0</strong><span>pinned packages reported</span></div>
   </section>
 
   <div class="note">
     <strong>My read:</strong> most formula updates are safe. The places I would slow down are tools that affect shell/runtime behavior
     (<code>mise</code>, <code>starship</code>, <code>curl</code>), active agent/editor tools (<code>codex</code>, <code>cmux</code>,
-    <code>zed@preview</code>), network/security tools (<code>1password-cli</code>, <code>ngrok</code>), and anything database/app-install related
-    (<code>postgres-app</code>, <code>meru</code>, <code>wispr-flow</code>).
+    <code>zed@preview</code>), network/security tools (<code>1password-cli</code>, <code>ngrok</code>), and app installs that require account or
+    privacy setup (<code>meru</code>, <code>wispr-flow</code>).
   </div>
 
   <h2>Recommended Safe Batch</h2>
@@ -152,7 +152,6 @@ brew upgrade --cask discord google-chrome slack telegram visual-studio-code what
       <tr><td class="token">fop</td><td>formula</td><td>2.11</td><td class="safe">Safe if needed</td><td>Used for Erlang docs per BrewFile comment. Pulls OpenJDK dependency if not already present.</td></tr>
       <tr><td class="token">libxslt</td><td>formula</td><td>1.1.45</td><td class="safe">Safe if needed</td><td>Keg-only because macOS provides libxslt. Useful for Erlang docs/Nokogiri builds; low PATH risk.</td></tr>
       <tr><td class="token">meru</td><td>cask</td><td>3.52.0</td><td class="hold">Hold unless wanted</td><td>Gmail desktop app. Installing creates app state and may require account login. Only install if you actively want it.</td></tr>
-      <tr><td class="token">postgres-app</td><td>cask</td><td>2.9.5, Postgres 14-18</td><td class="hold">Hold/plan</td><td>Database app. The shell PATH points at Postgres.app, but the app is not Homebrew-installed. Install deliberately and confirm data/service expectations.</td></tr>
       <tr><td class="token">starship</td><td>formula</td><td>1.25.1</td><td class="caution">Decide install source</td><td>The prompt works now from <code>/usr/local/bin/starship</code>. Homebrew install would normalize ownership but may alter PATH behavior.</td></tr>
       <tr><td class="token">wispr-flow</td><td>cask</td><td>1.5.980</td><td class="hold">Hold unless wanted</td><td>Dictation app that needs privacy/accessibility permissions. Install only if you intend to configure those permissions.</td></tr>
     </tbody>
@@ -190,7 +189,6 @@ brew upgrade --cask discord google-chrome slack telegram visual-studio-code what
       <tr><td class="token">google-chrome</td><td>cask</td><td>133.0.6943.142</td><td>149.0.7827.201</td><td>outdated</td><td class="safe">safe</td></tr>
       <tr><td class="token">meru</td><td>cask</td><td>missing</td><td>3.52.0</td><td>missing</td><td class="hold">hold</td></tr>
       <tr><td class="token">ngrok</td><td>cask</td><td>3.37.2</td><td>3.39.8</td><td>outdated</td><td class="caution">review</td></tr>
-      <tr><td class="token">postgres-app</td><td>cask</td><td>missing</td><td>2.9.5, Postgres 14-18</td><td>missing</td><td class="hold">hold</td></tr>
       <tr><td class="token">slack</td><td>cask</td><td>4.42.120</td><td>4.50.143</td><td>outdated</td><td class="safe">safe</td></tr>
       <tr><td class="token">telegram</td><td>cask</td><td>11.7,270736</td><td>12.8,282010</td><td>outdated</td><td class="safe">safe</td></tr>
       <tr><td class="token">visual-studio-code</td><td>cask</td><td>1.97.2</td><td>1.126.0</td><td>outdated</td><td class="safe">safe</td></tr>
