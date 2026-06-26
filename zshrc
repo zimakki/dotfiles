@@ -115,6 +115,12 @@ fi
 # From fzf instructions
 # Guard with `-t 1`: only set up line-editor UI when stdout is a real terminal
 # (e.g. tools like Expert that run `zsh -i -c` with no TTY → avoids "can't change option: zle")
+export FZF_DEFAULT_OPTS=" \
+--color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
+--color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
+--color=marker:#b4befe,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8 \
+--color=selected-bg:#45475a \
+--color=border:#6c7086,label:#cdd6f4"
 if [[ -t 1 ]]; then
   eval "$(fzf --zsh)"
   bindkey -r '^T' # Unbind fzf's Ctrl+T (tv handles this)
@@ -371,6 +377,7 @@ export PATH="/Users/zimakki/.antigravity/antigravity/bin:$PATH"
 # Line-editor UI: autosuggestions, starship prompt, syntax-highlighting.
 # Guard with `-t 1`: real terminal only; fzf-style option save/restore errors when shelled out.
 export STARSHIP_LOG=error
+export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#6c7086"
 if [[ -t 1 ]]; then
   # Predictive command suggestions from history
   source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
@@ -380,6 +387,7 @@ if [[ -t 1 ]]; then
   eval "$(starship init zsh)"
 
   # zsh-syntax-highlighting — MUST be sourced last (after all other zle widgets)
+  source "$HOME/.zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh"
   source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 fi
 

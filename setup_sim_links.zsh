@@ -18,13 +18,17 @@ LINKS=(
   "claude_settings.json:~/.claude/settings.json"
   "starship.toml:~/.config/starship.toml"
   "atuin_config.toml:~/.config/atuin/config.toml"
+  "atuin_themes/catppuccin-mocha-mauve.toml:~/.config/atuin/themes/catppuccin-mocha-mauve.toml"
   "mise_config.toml:~/.config/mise/config.toml"
   "karabiner.json:~/.config/karabiner/karabiner.json"
   "television:~/.config/television"
   "ghostty_config:~/.config/ghostty/config"
   "warp_keybindings.yaml:~/.warp/keybindings.yaml"
+  "warp_themes/catppuccin_mocha.yml:~/.warp/themes/catppuccin_mocha.yml"
   "lazygit_config.yml:$(lazygit -cd)/config.yml"
   "bat_config:~/.config/bat/config"
+  "hunk/config.toml:~/.config/hunk/config.toml"
+  "zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh:~/.zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh"
 )
 
 # ─── Logic ─────────────────────────────────────────────────────────
