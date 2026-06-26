@@ -103,105 +103,50 @@
 <body>
 <main>
   <h1>Brew Bundle Update Report</h1>
-  <p>Generated from <code>brew bundle check --file=BrewFile --verbose</code> on 2026-06-26 12:38:54 CEST. Updated after installing Postgres.app and Homebrew Starship on 2026-06-26.</p>
+  <p>Generated from <code>brew bundle check --file=BrewFile --verbose</code> on 2026-06-26 12:38:54 CEST. Updated after resolving active BrewFile drift on 2026-06-26.</p>
 
   <section class="summary" aria-label="Summary">
-    <div class="metric"><strong>31</strong><span>BrewFile entries need action</span></div>
-    <div class="metric"><strong>27</strong><span>installed but outdated</span></div>
-    <div class="metric"><strong>4</strong><span>missing from Homebrew</span></div>
+    <div class="metric"><strong>0</strong><span>active BrewFile entries need action</span></div>
+    <div class="metric"><strong>0</strong><span>active BrewFile entries missing</span></div>
+    <div class="metric"><strong>0</strong><span>active BrewFile entries outdated</span></div>
     <div class="metric"><strong>0</strong><span>pinned packages reported</span></div>
   </section>
 
   <div class="note">
-    <strong>My read:</strong> most formula updates are safe. The places I would slow down are tools that affect shell/runtime behavior
-    (<code>mise</code>, <code>curl</code>), active agent/editor tools (<code>codex</code>, <code>cmux</code>,
-    <code>zed@preview</code>), network/security tools (<code>1password-cli</code>, <code>ngrok</code>), and app installs that require account or
-    privacy setup (<code>meru</code>, <code>wispr-flow</code>).
+    <strong>Current state:</strong> <code>brew bundle check --file=BrewFile --verbose</code> passes. The active BrewFile is satisfied.
+    The remaining drift is the opposite direction: software installed on this machine but not recorded in <code>BrewFile</code>.
+    That cleanup should be curated because it includes real apps and dependency stacks.
   </div>
 
-  <h2>Recommended Safe Batch</h2>
-  <p>These are normal CLI/app updates with low repo-specific risk. Close GUI apps first if they are running.</p>
-  <code class="cmd">brew upgrade atuin autoconf btop cmake coreutils flyctl fzf gh git gnupg lazygit openssl@3 shfmt television
-brew upgrade --cask discord google-chrome slack telegram visual-studio-code whatsapp</code>
-
-  <h2>Review Before Updating</h2>
-  <p>These are not necessarily bad updates; they just have enough workflow impact that I would update them deliberately and test after.</p>
+  <h2>Actions Completed</h2>
   <table>
     <thead>
-      <tr><th>Item</th><th>Installed</th><th>Available</th><th>Recommendation</th><th>Why</th></tr>
+      <tr><th>Area</th><th>Status</th><th>Notes</th></tr>
     </thead>
     <tbody>
-      <tr><td class="token">1password-cli</td><td>2.33.0</td><td>2.34.1</td><td class="caution">Review/update</td><td>Used by shell secret loading. Usually safe, but verify <code>op whoami</code> and a fresh shell after updating.</td></tr>
-      <tr><td class="token">cmux</td><td>0.62.2</td><td>0.64.17</td><td class="caution">Review/update</td><td>Agent/workflow tool. Updates can change command behavior or session semantics.</td></tr>
-      <tr><td class="token">codex</td><td>0.136.0</td><td>0.142.2</td><td class="caution">Review/update</td><td>Primary coding-agent tool. Worth updating intentionally, then checking config/plugins still work.</td></tr>
-      <tr><td class="token">curl</td><td>8.19.0</td><td>8.21.0</td><td class="caution">Review/update</td><td><code>zshrc</code> exports a Homebrew curl path. This is safe if PATH resolves as expected after update.</td></tr>
-      <tr><td class="token">mise</td><td>2026.3.9</td><td>2026.6.14</td><td class="caution">Review/update</td><td>Owns runtime shims for node/python/elixir. Update, then run <code>mise doctor</code> and the repo verifier.</td></tr>
-      <tr><td class="token">ngrok</td><td>3.37.2</td><td>3.39.8</td><td class="caution">Review/update</td><td>Network tunnel tool. Usually safe, but confirm auth and any saved tunnel config after update.</td></tr>
-      <tr><td class="token">zed@preview</td><td>0.224.2</td><td>1.9.0</td><td class="caution">Review/update</td><td>Preview editor channel. Larger jump than the other GUI apps, so expect possible settings/extension changes.</td></tr>
+      <tr><td class="token">BrewFile dependencies</td><td class="safe">Satisfied</td><td>Formulae/casks declared in <code>BrewFile</code> are installed and current enough for <code>brew bundle check</code>.</td></tr>
+      <tr><td class="token">Postgres</td><td class="safe">Aligned</td><td><code>postgres-app</code> is installed, and shell clients resolve to Postgres.app.</td></tr>
+      <tr><td class="token">Starship</td><td class="safe">Aligned</td><td>Homebrew Starship is installed and fresh shells resolve <code>/opt/homebrew/bin/starship</code>.</td></tr>
+      <tr><td class="token">ShareAVideo CLI</td><td class="safe">Stale formula removed</td><td>The old <code>shareavideo-cli</code> keg and symlink are gone. The remaining <code>shareavideo</code> app is a separate cask outside <code>BrewFile</code>.</td></tr>
+      <tr><td class="token">Meru</td><td class="safe">Adopted by Homebrew</td><td>The existing app bundle was replaced by the Homebrew cask version.</td></tr>
+      <tr><td class="token">Wispr Flow</td><td class="safe">Installed</td><td>The cask is now present. First-launch permissions may still need user setup.</td></tr>
     </tbody>
   </table>
 
-  <h2>Missing Entries</h2>
-  <p>These are active in <code>BrewFile</code> but not installed through Homebrew on this machine.</p>
+  <h2>Remaining Cleanup Decision</h2>
+  <p><code>brew bundle cleanup --file=BrewFile</code> now produces a normal dry-run list instead of failing on <code>shareavideo-cli</code>.
+  It proposes removing many things that are not in the curated BrewFile. Do not run it with <code>--force</code> until each item is classified as
+  keep, add to BrewFile, or remove.</p>
   <table>
     <thead>
-      <tr><th>Item</th><th>Type</th><th>Available</th><th>Recommendation</th><th>Why</th></tr>
+      <tr><th>Examples</th><th>Why not removed automatically</th></tr>
     </thead>
     <tbody>
-      <tr><td class="token">fop</td><td>formula</td><td>2.11</td><td class="safe">Safe if needed</td><td>Used for Erlang docs per BrewFile comment. Pulls OpenJDK dependency if not already present.</td></tr>
-      <tr><td class="token">libxslt</td><td>formula</td><td>1.1.45</td><td class="safe">Safe if needed</td><td>Keg-only because macOS provides libxslt. Useful for Erlang docs/Nokogiri builds; low PATH risk.</td></tr>
-      <tr><td class="token">meru</td><td>cask</td><td>3.52.0</td><td class="hold">Hold unless wanted</td><td>Gmail desktop app. Installing creates app state and may require account login. Only install if you actively want it.</td></tr>
-      <tr><td class="token">wispr-flow</td><td>cask</td><td>1.5.980</td><td class="hold">Hold unless wanted</td><td>Dictation app that needs privacy/accessibility permissions. Install only if you intend to configure those permissions.</td></tr>
+      <tr><td class="token">GUI apps</td><td>Figma, Arc, Brave, OrbStack, Ollama, AnyDesk, Home Assistant, ShareAVideo, Temurin, and others may be intentionally installed even though they are not in <code>BrewFile</code>.</td></tr>
+      <tr><td class="token">Formula stacks</td><td>GIS/media/dev dependencies such as <code>gdal</code>, <code>postgis</code>, <code>ffmpeg</code>, <code>imagemagick</code>, <code>llvm</code>, and Python/Node formulae need a separate keep/remove decision.</td></tr>
+      <tr><td class="token">Taps</td><td>Several non-core taps are installed but not recorded in <code>BrewFile</code>. Some may be legacy and can be untapped after their formulae/casks are removed.</td></tr>
     </tbody>
   </table>
-
-  <h2>All Brew Bundle Failures</h2>
-  <table>
-    <thead>
-      <tr><th>Item</th><th>Kind</th><th>Installed</th><th>Available/current</th><th>Status</th><th>Call</th></tr>
-    </thead>
-    <tbody>
-      <tr><td class="token">atuin</td><td>formula</td><td>18.15.2</td><td>18.16.1</td><td>outdated</td><td class="safe">safe</td></tr>
-      <tr><td class="token">autoconf</td><td>formula</td><td>2.72</td><td>2.73</td><td>outdated</td><td class="safe">safe</td></tr>
-      <tr><td class="token">btop</td><td>formula</td><td>1.4.6</td><td>1.4.7</td><td>outdated</td><td class="safe">safe</td></tr>
-      <tr><td class="token">cmake</td><td>formula</td><td>4.3.0</td><td>4.3.4</td><td>outdated</td><td class="safe">safe</td></tr>
-      <tr><td class="token">coreutils</td><td>formula</td><td>9.10</td><td>9.11</td><td>outdated</td><td class="safe">safe</td></tr>
-      <tr><td class="token">curl</td><td>formula</td><td>8.19.0</td><td>8.21.0</td><td>outdated</td><td class="caution">review</td></tr>
-      <tr><td class="token">flyctl</td><td>formula</td><td>0.4.57</td><td>0.4.61</td><td>outdated</td><td class="safe">safe</td></tr>
-      <tr><td class="token">fop</td><td>formula</td><td>missing</td><td>2.11</td><td>missing</td><td class="safe">safe if needed</td></tr>
-      <tr><td class="token">fzf</td><td>formula</td><td>0.70.0</td><td>0.73.1</td><td>outdated</td><td class="safe">safe</td></tr>
-      <tr><td class="token">gh</td><td>formula</td><td>2.89.0</td><td>2.95.0</td><td>outdated</td><td class="safe">safe</td></tr>
-      <tr><td class="token">git</td><td>formula</td><td>2.53.0</td><td>2.54.0</td><td>outdated</td><td class="safe">safe</td></tr>
-      <tr><td class="token">gnupg</td><td>formula</td><td>2.5.18</td><td>2.5.20</td><td>outdated</td><td class="safe">safe</td></tr>
-      <tr><td class="token">lazygit</td><td>formula</td><td>0.60.0</td><td>0.62.2</td><td>outdated</td><td class="safe">safe</td></tr>
-      <tr><td class="token">libxslt</td><td>formula</td><td>missing</td><td>1.1.45</td><td>missing</td><td class="safe">safe if needed</td></tr>
-      <tr><td class="token">mise</td><td>formula</td><td>2026.3.9</td><td>2026.6.14</td><td>outdated</td><td class="caution">review</td></tr>
-      <tr><td class="token">openssl@3</td><td>formula</td><td>3.6.1</td><td>3.6.2</td><td>outdated</td><td class="safe">safe</td></tr>
-      <tr><td class="token">shfmt</td><td>formula</td><td>3.13.0</td><td>3.13.1</td><td>outdated</td><td class="safe">safe</td></tr>
-      <tr><td class="token">television</td><td>formula</td><td>0.15.3</td><td>0.15.9</td><td>outdated</td><td class="safe">safe</td></tr>
-      <tr><td class="token">1password-cli</td><td>cask</td><td>2.33.0</td><td>2.34.1</td><td>outdated</td><td class="caution">review</td></tr>
-      <tr><td class="token">cmux</td><td>cask</td><td>0.62.2</td><td>0.64.17</td><td>outdated</td><td class="caution">review</td></tr>
-      <tr><td class="token">codex</td><td>cask</td><td>0.136.0</td><td>0.142.2</td><td>outdated</td><td class="caution">review</td></tr>
-      <tr><td class="token">discord</td><td>cask</td><td>0.0.340</td><td>0.0.396</td><td>outdated</td><td class="safe">safe</td></tr>
-      <tr><td class="token">google-chrome</td><td>cask</td><td>133.0.6943.142</td><td>149.0.7827.201</td><td>outdated</td><td class="safe">safe</td></tr>
-      <tr><td class="token">meru</td><td>cask</td><td>missing</td><td>3.52.0</td><td>missing</td><td class="hold">hold</td></tr>
-      <tr><td class="token">ngrok</td><td>cask</td><td>3.37.2</td><td>3.39.8</td><td>outdated</td><td class="caution">review</td></tr>
-      <tr><td class="token">slack</td><td>cask</td><td>4.42.120</td><td>4.50.143</td><td>outdated</td><td class="safe">safe</td></tr>
-      <tr><td class="token">telegram</td><td>cask</td><td>11.7,270736</td><td>12.8,282010</td><td>outdated</td><td class="safe">safe</td></tr>
-      <tr><td class="token">visual-studio-code</td><td>cask</td><td>1.97.2</td><td>1.126.0</td><td>outdated</td><td class="safe">safe</td></tr>
-      <tr><td class="token">whatsapp</td><td>cask</td><td>2.25.3.81</td><td>26.25.20</td><td>outdated</td><td class="safe">safe</td></tr>
-      <tr><td class="token">wispr-flow</td><td>cask</td><td>missing</td><td>1.5.980</td><td>missing</td><td class="hold">hold</td></tr>
-      <tr><td class="token">zed@preview</td><td>cask</td><td>0.224.2</td><td>1.9.0</td><td>outdated</td><td class="caution">review</td></tr>
-    </tbody>
-  </table>
-
-  <h2>Separate Cleanup Note</h2>
-  <p>
-    <code>brew bundle cleanup --file=BrewFile</code> did not produce a normal drift list because Homebrew errored on
-    <code>boudra/shareavideo/shareavideo-cli</code>: “No available formula with the name … Did you mean
-    <code>boudra/shareavideo/shareavideo</code>?” This is separate from the update decision above, but it should be cleaned up later
-    because it blocks reliable cleanup reporting.
-  </p>
 
   <h2>After Any Update</h2>
   <code class="cmd">./scripts/verify_setup.sh</code>
