@@ -28,21 +28,27 @@ for c in starship atuin tv fzf zoxide lsd nvim delta bat lazygit rg fd gh; do
   command -v "$c" >/dev/null && pass "$c" || fail "$c not on PATH"
 done
 BP=$(brew --prefix 2>/dev/null)
+starship_path=$(command -v starship 2>/dev/null || true)
+[[ "$starship_path" == "$BP/bin/starship" ]] \
+  && pass "starship from Homebrew ($starship_path)" \
+  || fail "starship resolves to ${starship_path:-<none>} (want $BP/bin/starship)"
 for f in zsh-autosuggestions/zsh-autosuggestions.zsh zsh-syntax-highlighting/zsh-syntax-highlighting.zsh; do
   [[ -f "$BP/share/$f" ]] && pass "plugin $f" || fail "missing $BP/share/$f"
 done
 
 hdr "mise runtimes (functional probes)"
-nv=$(mise exec -- node --version 2>/dev/null)
-[[ "$nv" == *"v22.13"* ]] && pass "node $nv" || fail "node: ${nv:-<none>} (want 22.13.x)"
-pv=$(mise exec -- python --version 2>/dev/null)
+nv=$(mise exec -C "$HOME" -- node --version 2>/dev/null)
+[[ "$nv" == *"v24.13.1"* ]] && pass "node $nv" || fail "node: ${nv:-<none>} (want 24.13.1)"
+pv=$(mise exec -C "$HOME" -- python --version 2>/dev/null)
 [[ "$pv" == *"3.13"* ]] && pass "python $pv" || fail "python: ${pv:-<none>} (want 3.13)"
-ev=$(mise exec -- elixir --version 2>/dev/null)
-[[ "$ev" == *"1.20.1"* ]] && pass "elixir 1.20.1" || fail "elixir: ${ev:-<none>}"
+ev=$(mise exec -C "$HOME" -- elixir --version 2>/dev/null)
+[[ "$ev" == *"1.20.2"* ]] && pass "elixir 1.20.2" || fail "elixir: ${ev:-<none>}"
 [[ "$ev" == *"OTP 29"*  ]] && pass "erlang/OTP 29" || fail "OTP not 29: ${ev:-<none>}"
 
 hdr "Symlinks (LINKS → repo)"
+manifest_sources=()
 grep -oE '"[^"]+:(~|/|\$)[^"]*"' "$REPO/setup_sim_links.zsh" | tr -d '"' | while IFS=: read -r src dest; do
+  manifest_sources+=("$src")
   d="${dest/#\~/$HOME}"
   [[ "$d" == *'$('* ]] && d=$(eval echo "$d") 2>/dev/null
   if [[ -L "$d" ]]; then
@@ -54,6 +60,42 @@ grep -oE '"[^"]+:(~|/|\$)[^"]*"' "$REPO/setup_sim_links.zsh" | tr -d '"' | while
     skip "$d (no repo source: $src)"
   fi
 done
+
+hdr "Symlink manifest coverage (repo → LINKS)"
+expected_link_roots=(
+  zshenv
+  zshrc
+  gitconfig
+  BrewFile
+  gitignore_global
+  claude_settings.json
+  starship.toml
+  atuin_config.toml
+  atuin_themes
+  mise_config.toml
+  karabiner.json
+  television
+  ghostty_config
+  warp_keybindings.yaml
+  warp_themes
+  lazygit_config.yml
+  bat_config
+  hunk
+  zsh
+)
+for root in $expected_link_roots; do
+  if [[ ! -e "$REPO/$root" ]]; then
+    fail "manifest coverage source missing: $root"
+    continue
+  fi
+  covered=0
+  for src in $manifest_sources; do
+    [[ "$src" == "$root" || "$src" == "$root"/* ]] && covered=1 && break
+  done
+  (( covered )) && pass "manifest covers $root" || fail "tracked config root not in LINKS: $root"
+done
+skip ".claude/skills is project-local; do not replace ~/.claude/skills"
+skip "raycast.rayconfig is imported manually; do not symlink app state"
 
 hdr "macOS defaults (read-back vs macos_defaults.sh)"
 grep -E '^[[:space:]]*defaults write' "$REPO/macos_defaults.sh" | while IFS= read -r line; do
@@ -75,7 +117,7 @@ done
 hdr "Integration: interactive shell loads clean"
 # Run under a pty (script) so ZLE-based plugins (atuin/tv) initialize exactly as
 # in a real terminal; without a tty they emit harmless "can't change option: zle".
-errout=$(script -q /dev/null zsh -ic 'exit' 2>&1 | tr -d '\r\004' | grep -vE "Saving session|Restored session|^[[:space:]]*$")
+errout=$(script -q /dev/null env TERM=xterm-256color zsh -ic 'exit' 2>&1 | perl -pe 's/\r//g; s/\x04//g; s/\x08//g; s/\^D//g' | grep -vE "Saving session|Restored session|^[[:space:]]*$")
 if [[ -z "$errout" ]]; then
   pass "interactive shell (pty) loaded clean"
 else

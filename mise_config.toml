@@ -5,7 +5,11 @@
 # Note: the elixir build is precompiled against a specific OTP major
 # (the -otp-NN suffix), so the erlang major must match it.
 [tools]
-node = "22.13"   # copilot.nvim requires node >= 22.13
-python = "3.13"
-elixir = "1.20.1-otp-29"
+bun = "latest"
+elixir = "1.20.2-otp-29"
 erlang = "29.0.2"
+fnox = "latest"
+node = "24.13.1"
+"npm:@getpaseo/cli" = "latest"
+"npm:portless" = "latest"
+python = "3.13.0"

@@ -67,6 +67,14 @@ Decide with the user what's worth tracking:
 
 If the app needs shell init (an `eval "$(<tool> init zsh)"`, PATH entry, alias),
 add it to `zshrc` — keeping zsh-syntax-highlighting as the LAST sourced line.
+If the highlighting colors change, update
+`zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh`; it is symlinked to
+`~/.zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh` and sourced immediately
+before the Homebrew zsh-syntax-highlighting plugin.
+
+Project-local Claude skills live in `.claude/skills/` in this repo. Do not add a
+global symlink for that directory: `~/.claude/skills` is reserved for the shared
+agent skills tree.
 
 ## 4. Commit
 

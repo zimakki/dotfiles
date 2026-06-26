@@ -1,13 +1,20 @@
 # dotfiles
 
-Currently I have only a few of the dotfiles catered for:
+This repo manages my macOS dotfiles, terminal/TUI app configs, shared theme
+assets, and project-local Claude skills. The symlink manifest in
+`setup_sim_links.zsh` is the source of truth for machine-linked files.
 
-- Brewfile
-- .gitconfig
-- .gitignore_global
-- .zshrc
+Managed areas currently include:
 
-The plan is to have more...
+- Shell: `.zshenv`, `.zshrc`, Starship, Atuin, zsh syntax highlighting
+- Terminal/TUI tools: Ghostty, Lazygit, Hunk, bat, Television, Warp keybindings/themes
+- Developer tooling: Git config, global gitignore, mise global tools, Claude settings
+- System/app config: Karabiner and Homebrew bundle
+
+Not every tracked config-like artifact is symlinked. `.claude/skills/` is loaded
+as project-local Claude skills from the repo, while `~/.claude/skills` remains
+the shared agent skills directory. `raycast.rayconfig` is a manual Raycast import
+artifact and should not be symlinked.
 
 ## Get up and running
 
@@ -22,9 +29,14 @@ Run the below command from the root of this folder:
 
 ### 2. Sim links
 
-To run the `setup_sim_links.zsh`
+To run `setup_sim_links.zsh`:
 
 - make sure you give the file permissions:
   `chmod +x ./setup_sim_links.zsh`
 - run it!:
   `./setup_sim_links.zsh`
+
+### Theme
+
+The terminal/TUI theme target is Catppuccin Mocha, using the Mauve accent where
+an app asks for an accent choice.
