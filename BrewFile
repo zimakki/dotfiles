@@ -1,3 +1,8 @@
+tap "homebrew/bundle"
+tap "homebrew/services"
+tap "zimakki/tap"
+
+brew "agent-browser"
 brew "atuin"
 # brew "aom"            # media lib (imagemagick dep) — pruned
 # brew "arc"            # second browser — pruned (keeping chrome)
@@ -11,7 +16,9 @@ brew "cmake"
 # brew "cmark-gfm"      # transitive dep — pruned
 brew "coreutils"
 brew "curl"
+brew "diff-so-fancy"
 # brew "duf"            # disk tool — pruned
+# brew "eza"            # removed 2026-06: using lsd aliases instead
 # brew "emscripten"     # embedded/wasm — pruned
 # brew "exercism"      # exercism.io CLI — pruned
 brew "fd"
@@ -40,6 +47,7 @@ brew "lazygit"
 brew "libxslt"       # erlang docs (xsltproc)
 brew "lsd"
 # brew "mhanberg/tap/lazyasdf"  # removed: build fails on this macOS + asdf TUI, obsolete under mise
+brew "mermaid-cli"
 brew "mise"
 # brew "navi"          # cheatsheet tool — pruned
 brew "neovim"
@@ -47,6 +55,7 @@ brew "neovim"
 brew "openssl@3"
 # brew "pandoc"        # doc converter — pruned
 brew "pkg-config"
+brew "postgis"
 # brew "postgresql@14" # replaced by Postgres.app (cask "postgres-app")
 brew "ripgrep"
 brew "shellcheck"
@@ -56,7 +65,9 @@ brew "starship"
 # brew "stylelint"     # CSS linter — pruned (use per-project via npm/mise)
 brew "television"
 brew "tldr"
+brew "tree"
 brew "tre-command"
+brew "tree-sitter@0.25"
 # brew "tree-sitter"   # CLI — pruned (neovim ships its own parsers)
 # brew "webp"           # media lib — pruned
 # brew "wxwidgets"      # GUI toolkit (erlang :observer) — pruned; see note
@@ -76,6 +87,7 @@ cask "font-inter"
 cask "font-jetbrains-mono-nerd-font"
 cask "ghostty"
 cask "google-chrome"
+cask "inkwell"
 cask "karabiner-elements"
 cask "meru"
 cask "ngrok"
