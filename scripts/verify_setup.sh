@@ -33,12 +33,12 @@ for f in zsh-autosuggestions/zsh-autosuggestions.zsh zsh-syntax-highlighting/zsh
 done
 
 hdr "mise runtimes (functional probes)"
-nv=$(mise exec -- node --version 2>/dev/null)
-[[ "$nv" == *"v22.13"* ]] && pass "node $nv" || fail "node: ${nv:-<none>} (want 22.13.x)"
-pv=$(mise exec -- python --version 2>/dev/null)
+nv=$(mise exec -C "$HOME" -- node --version 2>/dev/null)
+[[ "$nv" == *"v24.13.1"* ]] && pass "node $nv" || fail "node: ${nv:-<none>} (want 24.13.1)"
+pv=$(mise exec -C "$HOME" -- python --version 2>/dev/null)
 [[ "$pv" == *"3.13"* ]] && pass "python $pv" || fail "python: ${pv:-<none>} (want 3.13)"
-ev=$(mise exec -- elixir --version 2>/dev/null)
-[[ "$ev" == *"1.20.1"* ]] && pass "elixir 1.20.1" || fail "elixir: ${ev:-<none>}"
+ev=$(mise exec -C "$HOME" -- elixir --version 2>/dev/null)
+[[ "$ev" == *"1.20.2"* ]] && pass "elixir 1.20.2" || fail "elixir: ${ev:-<none>}"
 [[ "$ev" == *"OTP 29"*  ]] && pass "erlang/OTP 29" || fail "OTP not 29: ${ev:-<none>}"
 
 hdr "Symlinks (LINKS → repo)"
@@ -75,7 +75,7 @@ done
 hdr "Integration: interactive shell loads clean"
 # Run under a pty (script) so ZLE-based plugins (atuin/tv) initialize exactly as
 # in a real terminal; without a tty they emit harmless "can't change option: zle".
-errout=$(script -q /dev/null zsh -ic 'exit' 2>&1 | tr -d '\r\004' | grep -vE "Saving session|Restored session|^[[:space:]]*$")
+errout=$(script -q /dev/null env TERM=xterm-256color zsh -ic 'exit' 2>&1 | perl -pe 's/\r//g; s/\x04//g; s/\x08//g; s/\^D//g' | grep -vE "Saving session|Restored session|^[[:space:]]*$")
 if [[ -z "$errout" ]]; then
   pass "interactive shell (pty) loaded clean"
 else
