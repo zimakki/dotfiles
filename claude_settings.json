@@ -109,8 +109,10 @@
     "playground@claude-plugins-official": true,
     "searchfit-seo@claude-plugins-official": true
   },
+  "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
   "editorMode": "vim",
+  "theme": "dark",
   "feedbackSurveyState": {
     "lastShownTime": 1754049386672
   },
