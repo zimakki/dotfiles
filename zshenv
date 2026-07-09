@@ -8,7 +8,40 @@ export MISE_ENV_CACHE=1
 # Interactive shells additionally get the full `mise activate` hook from ~/.zshrc, which layers on top.
 eval "$(/opt/homebrew/bin/mise activate zsh --shims)"
 
-# ~/.local/bin holds user-installed binaries (e.g. the native `claude` and `paseo`).
-# Must live in zshenv (not zshrc) so non-interactive login shells — which daemons like
-# Paseo spawn via `zsh -lc` and do NOT source zshrc — can find them too.
-export PATH="$HOME/.local/bin:$PATH"
+# ---------------------------------------------------------------------------
+# PATH — single source of truth for tool directories.
+# Lives in zshenv (not zshrc) so NON-interactive shells (scripts, IDEs, agents
+# that shell out via `zsh -lc`) resolve these too; zshrc is interactive-only.
+#
+# Each dir is added ONLY if it exists on THIS machine, so the same block is
+# correct on every computer that shares this repo and self-heals as tools come
+# and go. `typeset -U` keeps entries unique (idempotent — safe to re-source).
+#
+# Precedence: mise shims (set on the `mise activate --shims` line above) > tool
+# dirs below. That's why the variable tool dirs are APPENDED (path+=), not
+# prepended — a standalone install (e.g. a bare ~/.bun/bin on some machine) must
+# NOT shadow mise's managed shim. Only ~/.local/bin is prepended, so user
+# binaries (claude, paseo) win.
+# ---------------------------------------------------------------------------
+typeset -U path PATH
+
+# ~/.local/bin: user-installed binaries (claude, paseo) — prepend so they win.
+[[ -d "$HOME/.local/bin" ]] && path=("$HOME/.local/bin" $path)
+
+# Other tool dirs whose presence varies across computers. Appended (see note
+# above) so mise shims keep priority. `latest` in the Postgres.app path is a
+# symlink tracking the current version. Listed order == precedence order.
+_dotfiles_path_candidates=(
+  "/Applications/Postgres.app/Contents/Versions/latest/bin"
+  "$HOME/.bun/bin"
+  "$HOME/Library/pnpm"
+  "$HOME/.cache/rebar3/bin"
+  "$HOME/.mix/escripts"
+  "$HOME/.codeium/windsurf/bin"
+  "$HOME/.antigravity/antigravity/bin"
+  "/opt/homebrew/opt/file-formula/bin"
+)
+for _dir in "${_dotfiles_path_candidates[@]}"; do
+  [[ -d "$_dir" ]] && path+=("$_dir")
+done
+unset _dir _dotfiles_path_candidates
