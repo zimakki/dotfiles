@@ -45,3 +45,16 @@ for _dir in "${_dotfiles_path_candidates[@]}"; do
   [[ -d "$_dir" ]] && path+=("$_dir")
 done
 unset _dir _dotfiles_path_candidates
+
+# ---------------------------------------------------------------------------
+# Per-host config: source hosts/<LocalHostName>.zsh if present.
+# LocalHostName is stable + filename-safe (unlike $HOST, which is network-
+# dependent). Repo dir is resolved from THIS file's real path (symlink-aware),
+# since ZDOTDIR is unset and ~/.zshenv is a symlink into the repo.
+# ---------------------------------------------------------------------------
+_dotfiles_dir="${${(%):-%N}:A:h}"
+_host_name="$(scutil --get LocalHostName 2>/dev/null)"
+if [[ -n "$_host_name" && -f "$_dotfiles_dir/hosts/$_host_name.zsh" ]]; then
+  source "$_dotfiles_dir/hosts/$_host_name.zsh"
+fi
+unset _dotfiles_dir _host_name
