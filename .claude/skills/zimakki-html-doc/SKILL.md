@@ -15,8 +15,13 @@ block and page structure, replace the content sections. It is the Catppuccin
 Mocha house style, matching the machine's bat/ghostty/starship/atuin setup.
 
 - **Typography** — Charter serif for prose (17px/1.75, 44rem measure); SF Mono
-  for everything structural. Headings show dimmed markdown `#`/`##` prefixes.
-  All fonts are system-resident; never fetch a webfont.
+  for everything structural. Headings show dimmed markdown `#`/`##` prefixes and
+  a per-level color ramp (h1 mauve, h2 blue, h3 green, h4 yellow). All fonts are
+  system-resident; never fetch a webfont.
+- **Contents rail** — the template's first inline script auto-builds a fixed
+  right-hand "contents" nav from `data-note` sections (shown ≥92rem, scroll-spy
+  highlights the current section). Keep the script as-is; it needs no per-document
+  maintenance.
 - **Margin anchors** — on wide screens each `data-note` section displays its own
   `#id` in the left margin, so ids double as visible feedback anchors. Choose
   ids that read well there.

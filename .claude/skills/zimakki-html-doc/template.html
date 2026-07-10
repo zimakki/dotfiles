@@ -27,6 +27,8 @@
 }
 
 /* ── Page ── */
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 body {
   margin: 0;
   background: var(--base);
@@ -43,20 +45,22 @@ main {
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 
 /* ── Typography ── */
-h1, h2, h3 {
+h1, h2, h3, h4 {
   font-family: var(--font-mono);
   font-weight: 600;
   line-height: 1.35;
-  color: var(--mauve);
   letter-spacing: -.01em;
 }
-h1 { font-size: 1.55rem; margin: 0 0 .4rem; }
-h2 { font-size: 1.18rem; margin: 2.8rem 0 .8rem; }
-h3 { font-size: 1rem; margin: 2rem 0 .6rem; color: var(--text); }
+/* Each level owns a Catppuccin color, so depth reads at a glance. */
+h1 { font-size: 1.55rem; margin: 0 0 .4rem;    color: var(--mauve); }
+h2 { font-size: 1.18rem; margin: 2.8rem 0 .8rem; color: var(--blue); }
+h3 { font-size: 1rem;    margin: 2rem 0 .6rem;   color: var(--green); }
+h4 { font-size: .92rem;  margin: 1.6rem 0 .5rem; color: var(--yellow); }
 /* Markdown made visible: the heading level is the heading's own syntax. */
-h1::before { content: '# ';   color: var(--overlay0); font-weight: 400; }
-h2::before { content: '## ';  color: var(--overlay0); font-weight: 400; }
-h3::before { content: '### '; color: var(--overlay0); font-weight: 400; }
+h1::before { content: '# ';    color: var(--overlay0); font-weight: 400; }
+h2::before { content: '## ';   color: var(--overlay0); font-weight: 400; }
+h3::before { content: '### ';  color: var(--overlay0); font-weight: 400; }
+h4::before { content: '#### '; color: var(--overlay0); font-weight: 400; }
 
 p { margin: 0 0 1.1em; }
 .subtitle { color: var(--subtext0); font-style: italic; margin-bottom: 3rem; }
@@ -151,7 +155,31 @@ pre.code::before {
     white-space: nowrap;
   }
 }
-section[data-note] { position: relative; margin: 0; }
+section[data-note] { position: relative; margin: 0; scroll-margin-top: 2.5rem; }
+
+/* ── Contents rail: auto-built from data-note sections (see script below) ── */
+#toc {
+  display: none;
+  position: fixed;
+  top: 4.5rem;
+  right: 2rem;
+  width: 15rem;
+  font: .78rem/2 var(--font-mono);
+}
+/* 92rem keeps the rail clear of the 54rem breakout panes (which extend to
+   50vw + 27rem): below that the two would overlap, so the rail stays hidden. */
+@media (min-width: 92rem) { #toc { display: block; } }
+#toc .toc-title { color: var(--overlay0); margin-bottom: .3rem; letter-spacing: .05em; }
+#toc a {
+  display: block;
+  color: var(--overlay1);
+  text-decoration: none;
+  padding: 0 .7rem;
+  border-left: 1px solid var(--surface0);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#toc a:hover { color: var(--text); }
+#toc a.active { color: var(--mauve); border-left-color: var(--mauve); }
 
 /* Wide screens: code and diagrams break out past the prose measure.
    Kept last in the sheet: shorthand `margin` in earlier rules must not
@@ -292,6 +320,45 @@ footer {
 <footer>generated with zimakki-html-doc · margin-notes v1 inlined below · catppuccin mocha</footer>
 
 </main>
+<script>
+/* contents rail — built from data-note sections; no maintenance needed */
+(function () {
+  'use strict';
+  try {
+    var sections = document.querySelectorAll('section[data-note][id]');
+    if (sections.length < 2) return;
+    var nav = document.createElement('nav');
+    nav.id = 'toc';
+    nav.setAttribute('aria-label', 'Contents');
+    var title = document.createElement('div');
+    title.className = 'toc-title';
+    title.textContent = 'contents';
+    nav.appendChild(title);
+    var links = {};
+    sections.forEach(function (s) {
+      var h = s.querySelector('h2, h3');
+      if (!h) return;
+      var a = document.createElement('a');
+      a.href = '#' + s.id;
+      a.textContent = h.textContent;
+      nav.appendChild(a);
+      links[s.id] = a;
+    });
+    document.body.appendChild(nav);
+    if ('IntersectionObserver' in window) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (!e.isIntersecting) return;
+          for (var id in links) links[id].classList.toggle('active', id === e.target.id);
+        });
+      }, { rootMargin: '0px 0px -65% 0px' });
+      sections.forEach(function (s) { observer.observe(s); });
+    }
+  } catch (e) {
+    if (window.console) console.error('toc failed to build:', e);
+  }
+})();
+</script>
 <script>
 /* margin-notes v1 — inline annotation layer for agent-generated HTML documents.
  * Source of truth: dotfiles/.claude/skills/zimakki-html-doc/margin-notes.js
