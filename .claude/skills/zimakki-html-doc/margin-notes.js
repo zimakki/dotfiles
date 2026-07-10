@@ -208,7 +208,7 @@
       installCopyButton();
       watchSelection();
       refresh();
-      window.MarginNotes = { addItem: addItem, items: items, feedbackText: feedbackText };
+      window.MarginNotes = { addItem: addItem, removeItem: removeItem, items: items, feedbackText: feedbackText };
     } catch (e) {
       if (window.console) console.error('margin-notes failed to init:', e);
     }

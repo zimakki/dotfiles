@@ -18,8 +18,10 @@ assets, no CDN — so the document works offline and on any device.
   document. One rule: any structured input must report its state into the
   feedback aggregation by calling
   `MarginNotes.addItem({kind: 'choice: <widget-id>', blockId: '<section-id>', text: 'selected: <value>'})`
-  whenever its value changes (remove the previous item for the same widget first
-  by filtering `MarginNotes.items` if you want latest-only semantics).
+  whenever its value changes (if you want latest-only semantics, first find the
+  index of the previous item for that widget in `MarginNotes.items` — e.g. via
+  `findIndex` — and call `MarginNotes.removeItem(index)` before calling `addItem`
+  with the new value).
 
 ## Annotation layer (required)
 
