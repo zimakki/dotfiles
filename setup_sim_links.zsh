@@ -29,6 +29,7 @@ LINKS=(
   "bat_config:~/.config/bat/config"
   "hunk/config.toml:~/.config/hunk/config.toml"
   "zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh:~/.zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh"
+  ".claude/skills/zimakki-html-doc:~/.claude/skills/zimakki-html-doc"
 )
 
 # ─── Logic ─────────────────────────────────────────────────────────
