@@ -338,6 +338,30 @@ footer {
     A->>D: edits exactly the sections each item names</pre>
     <figcaption>the feedback round trip — from generated page back to the agent</figcaption>
   </figure>
+  <p>
+    Color belongs in the diagram source, not just the theme: one <code>classDef</code>
+    per Catppuccin accent gives nodes the same colored-border-on-dark chrome your
+    terminal UIs use, assigned per node — so the colors can <em>mean</em> something
+    (here: green for the contract, mauve for the agent, blue for artifacts, peach
+    for what you produce):
+  </p>
+  <figure class="diagram">
+    <pre class="mermaid">flowchart LR
+    S[SKILL.md] -- contract --> A(agent)
+    A -- writes --> D[explainer.html]
+    M[margin-notes.js] -- inlined --> D
+    D -- "Feedback (n) — Copy" --> F[/feedback block/]
+    F -- pasted back --> A
+    classDef mauve stroke:#cba6f7,color:#cba6f7,fill:#313244
+    classDef blue  stroke:#89b4fa,color:#89b4fa,fill:#313244
+    classDef green stroke:#a6e3a1,color:#a6e3a1,fill:#313244
+    classDef peach stroke:#fab387,color:#fab387,fill:#313244
+    class A mauve
+    class D,M blue
+    class S green
+    class F peach</pre>
+    <figcaption>the same pipeline as artifacts — classDef accents applied per node</figcaption>
+  </figure>
 </section>
 
 <section data-note id="annotation-theming">
@@ -675,13 +699,13 @@ mermaid.initialize({
   themeVariables: {
     background: '#1e1e2e', primaryColor: '#313244', primaryTextColor: '#cdd6f4',
     primaryBorderColor: '#6c7086', lineColor: '#7f849c', secondaryColor: '#45475a',
-    tertiaryColor: '#181825', mainBkg: '#313244', nodeBorder: '#6c7086',
+    tertiaryColor: '#181825', mainBkg: '#313244', nodeBorder: '#cba6f7',
     nodeTextColor: '#cdd6f4', titleColor: '#cba6f7', edgeLabelBackground: '#181825',
-    clusterBkg: '#181825', actorBkg: '#313244', actorBorder: '#6c7086',
-    actorTextColor: '#cdd6f4', signalColor: '#9399b2', signalTextColor: '#cdd6f4',
-    labelBoxBkgColor: '#181825', labelBoxBorderColor: '#45475a', labelTextColor: '#cba6f7',
-    loopTextColor: '#a6adc8', noteBkgColor: '#45475a', noteTextColor: '#cdd6f4',
-    noteBorderColor: '#585b70', activationBkgColor: '#585b70', activationBorderColor: '#6c7086',
+    clusterBkg: '#181825', actorBkg: '#313244', actorBorder: '#cba6f7',
+    actorTextColor: '#cba6f7', signalColor: '#9399b2', signalTextColor: '#cdd6f4',
+    labelBoxBkgColor: '#181825', labelBoxBorderColor: '#cba6f7', labelTextColor: '#cba6f7',
+    loopTextColor: '#a6adc8', noteBkgColor: '#313244', noteTextColor: '#f9e2af',
+    noteBorderColor: '#f9e2af', activationBkgColor: '#45475a', activationBorderColor: '#fab387',
     sequenceNumberColor: '#11111b',
     fontFamily: 'ui-monospace, SF Mono, Menlo, monospace', fontSize: '14px'
   }
