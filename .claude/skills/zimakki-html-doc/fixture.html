@@ -41,9 +41,16 @@
     'border:1px solid var(--mn-border,#c9c9d4);border-radius:4px}',
     '.mn-box .mn-quote{font-style:italic;color:var(--mn-muted,#555);margin:0 0 .4em;',
     'border-left:3px solid var(--mn-border,#bbb);padding-left:.5em;white-space:pre-wrap}',
-    '.mn-box button{font:inherit;margin-right:.4em;cursor:pointer}',
+    '.mn-box button{font:inherit;font-size:13px;margin-right:.4em;cursor:pointer;',
+    'padding:.3em 1em;border-radius:999px;border:1px solid transparent}',
+    '.mn-box .mn-save{background:var(--mn-accent-bg,#1f1f2e);color:var(--mn-accent-fg,#fff)}',
+    '.mn-box .mn-save:hover{filter:brightness(1.15)}',
+    '.mn-box .mn-cancel{background:none;color:var(--mn-muted,#555);border-color:var(--mn-border,#c9c9d4)}',
+    '.mn-box .mn-cancel:hover{color:var(--mn-box-fg,#222)}',
+    '.mn-box textarea:focus{outline:none;border-color:var(--mn-accent-border,#888)}',
     '.mn-saved{font-size:13px;color:var(--mn-box-fg,#333);margin:.2em 0;white-space:pre-wrap}',
-    '.mn-saved .mn-del{color:var(--mn-danger,#a33);cursor:pointer;border:none;background:none;font:inherit}',
+    '.mn-saved .mn-del{color:var(--mn-danger,#a33);cursor:pointer;border:none;background:none;',
+    'font:inherit;padding:0;border-radius:0}',
     '#mn-copy{position:fixed;right:16px;bottom:16px;z-index:9999;padding:.6em 1em;',
     'border-radius:999px;border:1px solid var(--mn-accent-border,#888);',
     'background:var(--mn-accent-bg,#1f1f2e);color:var(--mn-accent-fg,#fff);cursor:pointer;',
@@ -158,6 +165,7 @@
     ta.placeholder = 'Comment for the agent…';
     box.appendChild(ta);
     var ok = document.createElement('button');
+    ok.className = 'mn-save';
     ok.textContent = 'Save';
     ok.onclick = function () {
       if (ta.value.trim()) {
@@ -167,6 +175,7 @@
       if (onDone) onDone();
     };
     var cancel = document.createElement('button');
+    cancel.className = 'mn-cancel';
     cancel.textContent = 'Cancel';
     cancel.onclick = function () { box.remove(); if (onDone) onDone(); };
     box.appendChild(ok);
