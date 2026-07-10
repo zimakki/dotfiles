@@ -62,8 +62,8 @@ Mocha house style, matching the machine's bat/ghostty/starship/atuin setup.
   `MarginNotes.addItem({kind: 'choice: <widget-id>', blockId: '<section-id>', text: 'selected: <value>'})`
   whenever its value changes (if you want latest-only semantics, first find the
   index of the previous item for that widget in `MarginNotes.items` — e.g. via
-  `findIndex` — and call `MarginNotes.removeItem(index)` before calling `addItem`
-  with the new value).
+  `findIndex` — and call `MarginNotes.removeItem(index)` only when the index is
+  not `-1` before calling `addItem` with the new value).
 
 ## Annotation layer (required)
 

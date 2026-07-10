@@ -74,9 +74,11 @@
   }
 
   function removeItem(idx) {
+    if (idx < 0 || idx >= items.length) return false;
     items.splice(idx, 1);
     save(items);
     refresh();
+    return true;
   }
 
   function feedbackText() {
