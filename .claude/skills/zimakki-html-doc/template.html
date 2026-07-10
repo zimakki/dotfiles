@@ -33,10 +33,10 @@ body {
   margin: 0;
   background: var(--base);
   color: var(--text);
-  font: 1.0625rem/1.75 var(--font-body);
+  font: 1.125rem/1.7 var(--font-body);
 }
 main {
-  max-width: 44rem;
+  max-width: 48rem;
   margin: 0 auto;
   padding: 4rem 2.75rem 8rem;
 }
@@ -159,22 +159,24 @@ pre.code::before {
     font: .72rem var(--font-mono);
     color: var(--overlay0);
     white-space: nowrap;
+    max-width: 9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 section[data-note] { position: relative; margin: 0; scroll-margin-top: 2.5rem; }
 
-/* ── Contents rail: auto-built from data-note sections (see script below) ── */
+/* ── Contents rail: auto-built from data-note sections (see script below).
+   Lives in the LEFT margin — visibility handled by the layout block at the
+   end of this sheet. ── */
 #toc {
   display: none;
   position: fixed;
   top: 4.5rem;
-  right: 2rem;
-  width: 15rem;
+  left: 2rem;
+  width: 14rem;
   font: .78rem/2 var(--font-mono);
 }
-/* 92rem keeps the rail clear of the 54rem breakout panes (which extend to
-   50vw + 27rem): below that the two would overlap, so the rail stays hidden. */
-@media (min-width: 92rem) { #toc { display: block; } }
 #toc .toc-title { color: var(--overlay0); margin-bottom: .3rem; letter-spacing: .05em; }
 #toc a {
   display: block;
@@ -187,11 +189,25 @@ section[data-note] { position: relative; margin: 0; scroll-margin-top: 2.5rem; }
 #toc a:hover { color: var(--text); }
 #toc a.active { color: var(--mauve); border-left-color: var(--mauve); }
 
-/* Wide screens: code and diagrams break out past the prose measure.
-   Kept last in the sheet: shorthand `margin` in earlier rules must not
-   re-zero the margin-left this relies on. */
+/* Layout past the prose measure. Kept last in the sheet: shorthand `margin`
+   in earlier rules must not re-zero the margins these rely on.
+
+   64–84rem: content stays centered; code/diagram panes break out symmetrically.
+   ≥84rem (laptop and up): docs-site asymmetry — the contents rail occupies the
+   left margin, the content column leans left-of-center (re-centering only on
+   very wide displays), and panes grow rightward from the prose edge into the
+   freed space. */
 @media (min-width: 64rem) {
   pre.code, .diagram { width: 54rem; margin-left: 50%; transform: translateX(-50%); }
+}
+@media (min-width: 84rem) {
+  #toc { display: block; }
+  main { margin-left: max(28rem, calc(50vw - 26.75rem)); }
+  pre.code, .diagram {
+    width: min(60rem, calc(100vw - 34rem));
+    margin-left: 0;
+    transform: none;
+  }
 }
 
 footer {
@@ -263,15 +279,18 @@ footer {
 <section data-note id="reading-measure">
   <h2>Layout and measure</h2>
   <p>
-    Prose holds a measure of roughly seventy characters — a 44rem column, centered,
-    with real margins on either side. Code panes and diagrams are allowed to break
-    out to 54rem on wide screens, because code is read by shape as much as by line,
-    and squeezing it to prose width forces wrapping where it hurts most.
+    Prose holds a measure of about seventy-two characters — a 48rem column at 18px.
+    On a laptop the page is deliberately asymmetric, like a docs site: the contents
+    rail takes the left margin, the text column leans left-of-center, and code panes
+    and diagrams grow rightward from the prose edge — up to 60rem — into the space
+    that would otherwise sit empty. Code is read by shape as much as by line;
+    squeezing it to prose width forces wrapping where it hurts most.
   </p>
   <p>
-    Below about 1216px the margin anchors fold away and the document becomes a plain
-    single column; the 💬 affordances remain, so annotation still works on a laptop
-    half-screen or a phone.
+    Only on very wide displays does the column drift back toward center. Below
+    about 1344px the rail folds away; below 1216px the margin anchors follow, and
+    the document becomes a plain single column — the 💬 affordances remain, so
+    annotation still works on a half-screen or a phone.
   </p>
 </section>
 
