@@ -245,6 +245,19 @@ footer {
     label in the margin is the exact anchor your copied feedback will cite. The margin
     isn't decoration — it's the annotation system made visible.
   </blockquote>
+
+  <h3>Heading depth is a color, not just a size</h3>
+  <p>
+    Third-level headings render in green — use them to break a section into named
+    steps or facets without promoting them to the contents rail (only
+    <code>data-note</code> sections appear there).
+  </p>
+  <h4>And the fine print is yellow</h4>
+  <p>
+    Fourth-level headings are for edge cases, caveats, and asides that still deserve
+    a scannable label. Deeper nesting than this usually means the section wants to
+    be split.
+  </p>
 </section>
 
 <section data-note id="reading-measure">
@@ -282,6 +295,22 @@ footer {
   <p>Shell sessions use the same pane with prompt and output tokens:</p>
   <pre class="code" data-lang="console"><code><span class="tk-pmt">$</span> python3 -m http.server <span class="tk-num">8000</span>
 <span class="tk-out">Serving HTTP on :: port 8000 (http://[::]:8000/) ...</span></code></pre>
+  <p>
+    The same ten classes cover any language. Elixir, for instance — atoms take the
+    constant color, module attributes read as properties, and modules as types:
+  </p>
+  <pre class="code" data-lang="elixir"><code><span class="tk-kw">defmodule</span> <span class="tk-type">Doc.Feedback</span> <span class="tk-kw">do</span>
+  <span class="tk-pr">@moduledoc</span> <span class="tk-str">"Collects margin-note items the user pastes back."</span>
+  <span class="tk-kw">use</span> <span class="tk-type">GenServer</span>
+
+  <span class="tk-kw">def</span> <span class="tk-fn">start_link</span>(opts), <span class="tk-kw">do:</span> <span class="tk-type">GenServer</span>.<span class="tk-fn">start_link</span>(<span class="tk-type">__MODULE__</span>, [], opts)
+
+  <span class="tk-pr">@impl</span> <span class="tk-num">true</span>
+  <span class="tk-kw">def</span> <span class="tk-fn">handle_call</span>({<span class="tk-num">:add</span>, item}, _from, items) <span class="tk-kw">do</span>
+    <span class="tk-cm"># newest first, like the feedback block itself</span>
+    {<span class="tk-num">:reply</span>, <span class="tk-num">:ok</span>, [item <span class="tk-op">|</span> items]}
+  <span class="tk-kw">end</span>
+<span class="tk-kw">end</span></code></pre>
 </section>
 
 <section data-note id="diagrams">
