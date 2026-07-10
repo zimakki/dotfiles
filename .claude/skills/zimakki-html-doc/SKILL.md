@@ -38,7 +38,10 @@ Mocha house style, matching the machine's bat/ghostty/starship/atuin setup.
   time (~3.4 MB) and inline it before `</body>`, followed by the
   `mermaid.initialize` block kept as a comment at the bottom of `template.html`.
   The viewed document never touches the network; without the renderer the
-  diagram source degrades to readable text in the same pane.
+  diagram source degrades to readable text in the same pane. For color, define
+  one `classDef` per Catppuccin accent inside the diagram source
+  (`classDef mauve stroke:#cba6f7,color:#cba6f7,fill:#313244`, etc. — see the
+  template's flowchart) and assign classes so colors carry meaning per node.
 - **Annotation theming** — margin-notes.js reads `--mn-*` CSS variables
   (declared in the template's `:root`); keep them when adapting the style so
   the comment UI stays Mocha-native.
