@@ -14,7 +14,7 @@
   --surface2: #585b70; --surface1: #45475a; --surface0: #313244;
   --mauve: #cba6f7; --blue: #89b4fa; --green: #a6e3a1; --peach: #fab387;
   --yellow: #f9e2af; --red: #f38ba8; --teal: #94e2d5; --sky: #89dceb;
-  --lavender: #b4befe; --maroon: #eba0ac;
+  --sapphire: #74c7ec; --lavender: #b4befe; --maroon: #eba0ac;
 
   --font-body: Charter, 'Iowan Old Style', Palatino, Georgia, serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
@@ -64,28 +64,34 @@ h4::before { content: '#### '; color: var(--overlay0); font-weight: 400; }
 
 p { margin: 0 0 1.1em; }
 .subtitle { color: var(--subtext0); font-style: italic; margin-bottom: 3rem; }
-a { color: var(--blue); text-decoration: underline; text-decoration-color: var(--surface2); text-underline-offset: 3px; }
-a:hover { text-decoration-color: var(--blue); }
+/* Links scan as cyan — distinct from body text and from blue h2 headings. */
+a { color: var(--sapphire); text-decoration: underline; text-decoration-color: var(--sapphire); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { color: var(--sky); text-decoration-color: var(--sky); text-decoration-thickness: 2px; }
 strong { font-weight: 700; color: var(--text); }
 em { font-style: italic; }
 ul, ol { padding-left: 1.3em; margin: 0 0 1.1em; }
 li { margin-bottom: .35em; }
 li::marker { color: var(--overlay1); }
 hr { border: none; border-top: 1px solid var(--surface0); margin: 2.5rem 0; }
+/* Blockquotes are callouts, not asides: they should pull the eye, not fade. */
 blockquote {
-  margin: 1.2em 0; padding: .1em 0 .1em 1em;
-  border-left: 3px solid var(--surface1); color: var(--subtext1); font-style: italic;
+  margin: 1.4em 0; padding: .7em 1.1em;
+  border-left: 3px solid var(--mauve);
+  border-radius: 0 8px 8px 0;
+  background: rgba(203, 166, 247, .07);
+  color: var(--text); font-style: italic;
 }
+blockquote p { margin: 0; }
 table { border-collapse: collapse; margin: 0 0 1.2em; font-size: .95em; }
 th, td { border: 1px solid var(--surface0); padding: .35em .8em; text-align: left; }
 th { font: .78rem var(--font-mono); color: var(--overlay2); text-transform: uppercase; letter-spacing: .05em; }
 
-/* Inline code: a small chip, like a token lifted out of the terminal. */
+/* Inline code: a peach chip — the page's only warm accent, so it scans instantly. */
 code {
   font: .86em var(--font-mono);
-  color: var(--lavender);
-  background: var(--mantle);
-  border: 1px solid var(--surface0);
+  color: var(--peach);
+  background: var(--surface0);
+  border: 1px solid var(--surface1);
   border-radius: 4px;
   padding: .08em .35em;
 }
