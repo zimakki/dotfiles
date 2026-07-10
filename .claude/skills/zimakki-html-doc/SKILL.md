@@ -33,6 +33,14 @@ generate the document without the layer rather than failing.
 This gives the user: a 💬 comment affordance per section, comment-on-text-selection,
 localStorage persistence, and a "Feedback (n) — Copy for agent" button.
 
+**Known caveat — Safari + `file://`:** some browsers (notably Safari) treat each
+`file://` document as a unique, sandboxed security origin, which can silently break
+`localStorage`. margin-notes.js detects this at load and shows an inline warning
+banner instead of failing silently — comments still work for the current session,
+they just won't survive a reload. If a user reports losing feedback after
+reloading, tell them to copy their feedback before closing the tab, or open the
+file via a local server (e.g. `python3 -m http.server`) for full persistence.
+
 ## Feedback round-trip
 
 The user will paste feedback in this format; each item names a section id in the
