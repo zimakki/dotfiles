@@ -9,6 +9,9 @@ The dotfiles repo is the single entry point for machine setup. Nothing gets
 installed ad-hoc: every install is recorded here first, so a new machine
 reproduces it and `git log` explains it.
 
+Before touching shell config, PATH, or installer shell snippets, read
+`docs/conventions/shell-config.md`.
+
 Input: an app/tool name (and optionally a URL). If no argument given, ask what
 to install.
 
@@ -65,8 +68,19 @@ Decide with the user what's worth tracking:
   `~/.zsh_secrets` / 1Password instead.
 - **macOS `defaults` the app needs** → add to `macos_defaults.sh`.
 
-If the app needs shell init (an `eval "$(<tool> init zsh)"`, PATH entry, alias),
-add it to `zshrc` — keeping zsh-syntax-highlighting as the LAST sourced line.
+If the app needs shell init, split the installer snippet by what each line does:
+
+- A bin directory belongs in the guarded `path` array in `zshenv`, with an
+  existence guard. Do not add PATH entries to `zshrc`. If the tool is
+  mise-managed, no PATH entry is needed because the shim covers it.
+- A shell init hook, completion, prompt widget, alias, or interactive function
+  belongs in `zshrc`. Guard terminal UI setup with `[[ -t 1 ]]`.
+- A non-secret exported env var needed by scripts, IDEs, agents, or commands
+  belongs in `zshenv`.
+- Deliberate machine-specific environment belongs in
+  `hosts/<LocalHostName>.zsh`.
+
+Keep zsh-syntax-highlighting as the LAST sourced line among interactive widgets.
 If the highlighting colors change, update
 `zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh`; it is symlinked to
 `~/.zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh` and sourced immediately

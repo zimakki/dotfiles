@@ -8,12 +8,15 @@ description: Cleanly remove an application or tool — uninstall it, update the 
 Removal is the mirror of install: the machine AND the repo both change, and the
 repo records *why* (prune-by-commenting, per BrewFile convention).
 
+Before touching shell config or PATH cleanup, read
+`docs/conventions/shell-config.md`.
+
 Input: an app/tool name. Confirm the exact BrewFile token before acting.
 
 ## 1. Find every trace first (read-only)
 
 ```sh
-grep -in "<app>" BrewFile mise_config.toml setup_sim_links.zsh zshrc macos_defaults.sh MIGRATION.md
+grep -in "<app>" BrewFile mise_config.toml setup_sim_links.zsh zshenv zshrc hosts/*.zsh macos_defaults.sh MIGRATION.md
 brew list | grep -i <app>; brew list --cask | grep -i <app>
 ls -d ~/.config/<app>* ~/Library/Application\ Support/<App>* ~/.<app>* 2>/dev/null
 ls ~/Library/Preferences/ | grep -i <app>
@@ -45,7 +48,10 @@ uninstalls are destructive.
 2. **setup_sim_links.zsh**: remove the `LINKS` entry. Remove the now-dangling
    symlink in `$HOME` (`rm` the link only, not repo content).
 3. **Repo config files**: `git rm` the app's tracked config (it stays in history).
-4. **zshrc**: remove aliases, PATH entries, `eval` init lines, completions.
+4. **Shell config**: remove aliases, `eval` init lines, completions, and other
+   interactive behavior from `zshrc`; remove the tool's PATH entry from the
+   guarded `path` array in `zshenv`; remove deliberate machine-specific entries
+   from matching `hosts/*.zsh` files.
 5. **macos_defaults.sh / MIGRATION.md**: remove or annotate related lines.
 
 ## 4. Sweep leftovers on disk

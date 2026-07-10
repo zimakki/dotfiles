@@ -1,11 +1,11 @@
 # Shell-Config Conventions: Skills & Guardrails — Design
 
 **Date:** 2026-07-09
-**Status:** Approved (design), pending spec review
+**Status:** Implemented in PR #6
 
 ## Problem
 
-Twice now, PATH entries for tools (most recently `psql` from Postgres.app) were placed in `zshrc`, where non-interactive shells (agents/IDEs/daemons via `zsh -lc`) never source them — so the tool was "not found." An audit also revealed ~11 dead PATH lines accumulated from tool installers. We just fixed this (PR #6: guarded `path` array in `zshenv`, per-host `hosts/<LocalHostName>.zsh`, `zshrc` cleanup), but nothing yet **prevents recurrence**.
+Twice now, PATH entries for tools (most recently `psql` from Postgres.app) were placed in `zshrc`, where non-interactive shells (agents/IDEs/daemons via `zsh -lc`) never source them — so the tool was "not found." An audit also revealed ~11 dead PATH lines accumulated from tool installers. Earlier PR #6 commits fixed this with a guarded `path` array in `zshenv`, per-host `hosts/<LocalHostName>.zsh`, and `zshrc` cleanup, but nothing yet **prevents recurrence**.
 
 Two failure modes to prevent:
 1. **Skill-driven:** `install-app` *actively instructs the mistake* — its §3 says to add PATH entries to `zshrc`.
@@ -17,7 +17,7 @@ Encode the shell-config convention once, make it visible in both the always-load
 
 ## Non-goals
 
-- Re-doing PR #6's config changes (already done/merged separately).
+- Re-doing PR #6's earlier config changes (handled by preceding commits in this PR).
 - Restructuring the other skills' unrelated sections.
 - A new standalone "shell-config" skill (rejected: adds a 4th skill and a trigger-arbitration problem; the convention is better as shared reference + always-loaded pointer).
 

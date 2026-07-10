@@ -9,6 +9,8 @@ Read-only audit first; print the full report; THEN offer fixes one finding at a
 time (each fix follows the `uninstall-app` skill's conventions). Never remove
 anything during the audit phase.
 
+Before auditing shell config, read `docs/conventions/shell-config.md`.
+
 Run the checks below (parallelize where possible). For each, report findings
 with a short "why it's suspect" note, or "✅ clean".
 
@@ -58,10 +60,15 @@ Cross-reference rarely-used apps against BrewFile casks.
 - Home-dir dotfiles/dirs from retired tools (e.g. `~/.asdf`, `~/.doom_emacs.d`,
   `~/.tool-versions` files in projects).
 - **Dead PATH entries**: `for p in ${(s/:/)PATH}; do [[ -d $p ]] || echo "MISSING: $p"; done`
-  — then find which zshrc line adds each missing one.
-- **zshrc references to absent commands**: grep zshrc for `eval "$(`, `source`,
-  aliases, and PATH exports; flag any whose underlying command/file no longer
-  exists (this is what catches asdf-style residue).
+  — then find which `zshenv`, `zshrc`, or `hosts/*.zsh` line adds each missing
+  one.
+- **Misplaced PATH entries**: flag PATH exports or path mutations in `zshrc`
+  that should live in the guarded `path` array in `zshenv`. These are findings
+  even if the target directory exists.
+- **Shell references to absent commands**: grep `zshrc`, `zshenv`, and
+  `hosts/*.zsh` for `eval "$(`, `source`, aliases, PATH/path entries, and
+  exported tool vars; flag any whose underlying command/file no longer exists
+  (this is what catches asdf-style residue).
 - **Dangling symlinks** from `setup_sim_links.zsh` destinations:
   `find ~ -maxdepth 3 -type l ! -exec test -e {} \; -print 2>/dev/null` (plus `~/.config`).
 - Stray `*.bak` files left by `setup_sim_links.zsh`.
