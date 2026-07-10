@@ -26,8 +26,22 @@
     'border-radius:999px;border:1px solid #888;background:#1f1f2e;color:#fff;cursor:pointer;',
     'font:14px -apple-system,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.25)}',
     '#mn-sel{position:absolute;z-index:9998;padding:.2em .6em;border-radius:6px;border:1px solid #888;',
-    'background:#1f1f2e;color:#fff;cursor:pointer;font:13px -apple-system,sans-serif}'
+    'background:#1f1f2e;color:#fff;cursor:pointer;font:13px -apple-system,sans-serif}',
+    '#mn-warn{position:relative;z-index:9999;margin:0 0 1em;padding:.6em .9em;border-radius:8px;',
+    'border:1px solid #d8a23a;background:#fff8e6;color:#5c4700;font:13px/1.4 -apple-system,sans-serif;',
+    'box-shadow:0 1px 4px rgba(0,0,0,.08)}',
+    '#mn-warn button{float:right;margin-left:.6em;border:none;background:none;cursor:pointer;',
+    'font:inherit;color:#5c4700}'
   ].join('\n');
+
+  function probeStorage() {
+    try {
+      var k = STORE_KEY + ':probe';
+      localStorage.setItem(k, '1');
+      localStorage.removeItem(k);
+      return true;
+    } catch (e) { return false; }
+  }
 
   function load() {
     try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
@@ -37,6 +51,7 @@
     try { localStorage.setItem(STORE_KEY, JSON.stringify(items)); } catch (e) {}
   }
 
+  var storageOk = probeStorage();
   var items = load();
   var copyBtn;
 
@@ -199,6 +214,20 @@
     document.body.appendChild(copyBtn);
   }
 
+  function showStorageWarning() {
+    var warn = document.createElement('div');
+    warn.id = 'mn-warn';
+    warn.textContent = 'This browser blocks persistent storage for files opened directly ' +
+      '(file://) — comments will work for this session but won’t survive a reload. Copy ' +
+      'your feedback before closing this tab, or open this file via a local server ' +
+      '(e.g. python3 -m http.server) for full persistence.';
+    var dismiss = document.createElement('button');
+    dismiss.textContent = '✕';
+    dismiss.onclick = function () { warn.remove(); };
+    warn.appendChild(dismiss);
+    document.body.insertBefore(warn, document.body.firstChild);
+  }
+
   function init() {
     try {
       var style = document.createElement('style');
@@ -207,6 +236,7 @@
       decorateBlocks();
       installCopyButton();
       watchSelection();
+      if (!storageOk) showStorageWarning();
       refresh();
       window.MarginNotes = { addItem: addItem, removeItem: removeItem, items: items, feedbackText: feedbackText };
     } catch (e) {
