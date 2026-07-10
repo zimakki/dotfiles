@@ -2,8 +2,6 @@
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
-export PATH="$HOME/.local/bin:$PATH"
-
 # Path to your oh-my-zsh installation.
 export ZSH="/Users/zimakki/.oh-my-zsh"
 
@@ -244,14 +242,6 @@ fi
 
 
 
-export PATH="/usr/local/opt/curl/bin:$PATH"
-
-# curl
-# For compilers to find curl you may need to set:
-export LDFLAGS="-L/usr/local/opt/curl/lib"
-export CPPFLAGS="-I/usr/local/opt/curl/include"
-export PATH="/usr/local/sbin:$PATH"
-
 # make sure we use astronvim v6
 export NVIM_APPNAME=astronvim_v6
 
@@ -272,15 +262,6 @@ cd() {
 
 # stuff for tre
 tre() { command tre "$@" -e && source "/tmp/tre_aliases_$USER" 2>/dev/null; }
-
-#lunar vim settings
-export PATH=/Users/zimakki/.local/bin:$PATH
-
-# trying to fix an issue that doom doctor reported
-# In .zshrc/.bashrc
-if [ -d "$(brew --prefix)/opt/grep/libexec/gnubin" ]; then
-	PATH="$(brew --prefix)/opt/grep/libexec/gnubin:$PATH"
-fi
 
 delete_nvim_cache() {
 	echo "deleting ~/.local/share/nvim"
@@ -325,26 +306,7 @@ _load_api_keys
 # iex history + television (tvf) helper
 ####################################################################################################
 
-export PATH="~/.iex-history:$PATH"
-
 alias tvf='tv files -k "enter=\"confirm_selection\"" | xargs nvim'
-
-
-# add rebar3 to the path
-export PATH=/Users/zimakki/.cache/rebar3/bin:$PATH
-
-# trying out a homebrew version of file. Its also installed on the system...
-# so if things go wrong, I can always use the system version
-export PATH="/opt/homebrew/opt/file-formula/bin:$PATH"
-
-# Added by Windsurf
-export PATH="/Users/zimakki/.codeium/windsurf/bin:$PATH"
-# added by mix escript install
-export PATH="$HOME/.mix/escripts:$PATH"
-export PATH="$HOME/code/zimakki/prepx/:$PATH"
-
-# Postgres.app CLI tools (psql, pg_dump, etc.) — `latest` symlink tracks the current version
-export PATH="/Applications/Postgres.app/Contents/Versions/latest/bin:$PATH"
 
 # Initialize television + Atuin shell integration (both register zle widgets)
 # Guard with `-t 1`: only on a real terminal (skipped when a tool shells out to capture output)
@@ -358,17 +320,6 @@ if [[ -t 1 ]]; then
   [ -f "$HOME/.atuin/bin/env" ] && . "$HOME/.atuin/bin/env"
   eval "$(atuin init zsh)"
 fi
-
-# pnpm
-export PNPM_HOME="/Users/zimakki/Library/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
-esac
-# pnpm end
-
-# Added by Antigravity
-export PATH="/Users/zimakki/.antigravity/antigravity/bin:$PATH"
 
 # "entire" CLI completion — REMOVED: tool unidentified & no longer installed (added 2026-03).
 # oh-my-zsh already runs compinit, so dropping this whole line is safe.
@@ -393,7 +344,3 @@ fi
 
 # bun completions
 [ -s "/Users/zimakki/.bun/_bun" ] && source "/Users/zimakki/.bun/_bun"
-
-# bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
