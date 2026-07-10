@@ -14,12 +14,16 @@ Start from `template.html` in this skill's directory: copy its full `<style>`
 block and page structure, replace the content sections. It is the Catppuccin
 Mocha house style, matching the machine's bat/ghostty/starship/atuin setup.
 
-- **Typography** — Charter serif for prose (17px/1.75, 44rem measure); SF Mono
+- **Typography** — Charter serif for prose (18px/1.7, 48rem measure); SF Mono
   for everything structural. Headings show dimmed markdown `#`/`##` prefixes and
   a per-level color ramp (h1 mauve, h2 blue, h3 green, h4 yellow). All fonts are
   system-resident; never fetch a webfont.
-- **Contents rail** — the template's first inline script auto-builds a fixed
-  right-hand "contents" nav from `data-note` sections (shown ≥92rem, scroll-spy
+- **Laptop-first layout** — ≥84rem the page goes asymmetric like a docs site:
+  the contents rail sits in the left margin, the content column leans
+  left-of-center, and code/diagram panes grow rightward from the prose edge (to
+  60rem). Keep this; don't re-center the column on laptop widths.
+- **Contents rail** — the template's first inline script auto-builds the fixed
+  left-hand "contents" nav from `data-note` sections (shown ≥84rem, scroll-spy
   highlights the current section). Keep the script as-is; it needs no per-document
   maintenance.
 - **Margin anchors** — on wide screens each `data-note` section displays its own
