@@ -8,6 +8,36 @@ description: Create a self-contained interactive HTML document (explainer, plan,
 Produce a **single self-contained HTML file** — all CSS and JS inline, no external
 assets, no CDN — so the document works offline and on any device.
 
+## Design (house style)
+
+Start from `template.html` in this skill's directory: copy its full `<style>`
+block and page structure, replace the content sections. It is the Catppuccin
+Mocha house style, matching the machine's bat/ghostty/starship/atuin setup.
+
+- **Typography** — Charter serif for prose (17px/1.75, 44rem measure); SF Mono
+  for everything structural. Headings show dimmed markdown `#`/`##` prefixes.
+  All fonts are system-resident; never fetch a webfont.
+- **Margin anchors** — on wide screens each `data-note` section displays its own
+  `#id` in the left margin, so ids double as visible feedback anchors. Choose
+  ids that read well there.
+- **Code** — `<pre class="code" data-lang="...">`, syntax colored by hand with
+  the template's `.tk-*` classes (Catppuccin mapping: `tk-kw` keywords/mauve,
+  `tk-fn` functions/blue, `tk-str` strings/green, `tk-num` numbers/peach,
+  `tk-type` types/yellow, `tk-cm` comments, `tk-op` operators, `tk-pr`
+  properties, `tk-pmt` shell prompt, `tk-out` command output). No highlighter
+  library — hand-applied spans keep the file tiny and dependency-free.
+- **Diagrams (optional)** — author Mermaid source inside
+  `<figure class="diagram"><pre class="mermaid">…</pre></figure>`. If — and only
+  if — the document contains a diagram, fetch
+  `https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js` at generation
+  time (~3.4 MB) and inline it before `</body>`, followed by the
+  `mermaid.initialize` block kept as a comment at the bottom of `template.html`.
+  The viewed document never touches the network; without the renderer the
+  diagram source degrades to readable text in the same pane.
+- **Annotation theming** — margin-notes.js reads `--mn-*` CSS variables
+  (declared in the template's `:root`); keep them when adapting the style so
+  the comment UI stays Mocha-native.
+
 ## Document structure
 
 - Wrap each logical unit of content in `<section data-note id="kebab-case-id">`.
@@ -58,4 +88,5 @@ document you wrote — edit those locations precisely:
 - [ ] "Feedback (0) — Copy for agent" button is visible bottom-right.
 - [ ] Any custom widgets you added push items via `MarginNotes.addItem`.
 
-See `fixture.html` in this directory for a known-good example.
+See `template.html` in this directory for the styled reference document, and
+`fixture.html` for the minimal known-good regression example.

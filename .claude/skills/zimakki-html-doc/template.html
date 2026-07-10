@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The zimakki-html-doc house style</title>
+<style>
+/* ── Catppuccin Mocha tokens (matches bat, ghostty, warp, starship, atuin) ── */
+:root {
+  color-scheme: dark;
+  --base: #1e1e2e; --mantle: #181825; --crust: #11111b;
+  --text: #cdd6f4; --subtext1: #bac2de; --subtext0: #a6adc8;
+  --overlay2: #9399b2; --overlay1: #7f849c; --overlay0: #6c7086;
+  --surface2: #585b70; --surface1: #45475a; --surface0: #313244;
+  --mauve: #cba6f7; --blue: #89b4fa; --green: #a6e3a1; --peach: #fab387;
+  --yellow: #f9e2af; --red: #f38ba8; --teal: #94e2d5; --sky: #89dceb;
+  --lavender: #b4befe; --maroon: #eba0ac;
+
+  --font-body: Charter, 'Iowan Old Style', Palatino, Georgia, serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* margin-notes annotation layer, retinted to Mocha */
+  --mn-box-bg: var(--mantle); --mn-box-fg: var(--text); --mn-input-bg: var(--crust);
+  --mn-border: var(--surface1); --mn-muted: var(--subtext0); --mn-danger: var(--red);
+  --mn-accent-bg: var(--mauve); --mn-accent-fg: var(--crust); --mn-accent-border: var(--mauve);
+  --mn-warn-bg: var(--mantle); --mn-warn-border: var(--peach); --mn-warn-fg: var(--peach);
+}
+
+/* ── Page ── */
+body {
+  margin: 0;
+  background: var(--base);
+  color: var(--text);
+  font: 1.0625rem/1.75 var(--font-body);
+}
+main {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 4rem 2.75rem 8rem;
+}
+::selection { background: rgba(203, 166, 247, .28); }
+:focus-visible { outline: 2px solid var(--mauve); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* ── Typography ── */
+h1, h2, h3 {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--mauve);
+  letter-spacing: -.01em;
+}
+h1 { font-size: 1.55rem; margin: 0 0 .4rem; }
+h2 { font-size: 1.18rem; margin: 2.8rem 0 .8rem; }
+h3 { font-size: 1rem; margin: 2rem 0 .6rem; color: var(--text); }
+/* Markdown made visible: the heading level is the heading's own syntax. */
+h1::before { content: '# ';   color: var(--overlay0); font-weight: 400; }
+h2::before { content: '## ';  color: var(--overlay0); font-weight: 400; }
+h3::before { content: '### '; color: var(--overlay0); font-weight: 400; }
+
+p { margin: 0 0 1.1em; }
+.subtitle { color: var(--subtext0); font-style: italic; margin-bottom: 3rem; }
+a { color: var(--blue); text-decoration: underline; text-decoration-color: var(--surface2); text-underline-offset: 3px; }
+a:hover { text-decoration-color: var(--blue); }
+strong { font-weight: 700; color: var(--text); }
+em { font-style: italic; }
+ul, ol { padding-left: 1.3em; margin: 0 0 1.1em; }
+li { margin-bottom: .35em; }
+li::marker { color: var(--overlay1); }
+hr { border: none; border-top: 1px solid var(--surface0); margin: 2.5rem 0; }
+blockquote {
+  margin: 1.2em 0; padding: .1em 0 .1em 1em;
+  border-left: 3px solid var(--surface1); color: var(--subtext1); font-style: italic;
+}
+table { border-collapse: collapse; margin: 0 0 1.2em; font-size: .95em; }
+th, td { border: 1px solid var(--surface0); padding: .35em .8em; text-align: left; }
+th { font: .78rem var(--font-mono); color: var(--overlay2); text-transform: uppercase; letter-spacing: .05em; }
+
+/* Inline code: a small chip, like a token lifted out of the terminal. */
+code {
+  font: .86em var(--font-mono);
+  color: var(--lavender);
+  background: var(--mantle);
+  border: 1px solid var(--surface0);
+  border-radius: 4px;
+  padding: .08em .35em;
+}
+
+/* ── Code blocks: styled like bat output in a ghostty pane ── */
+pre.code {
+  position: relative;
+  background: var(--mantle);
+  border: 1px solid var(--surface0);
+  border-radius: 8px;
+  padding: 1.1rem 1.3rem;
+  overflow-x: auto;
+  font: .875rem/1.7 var(--font-mono);
+  color: var(--text);
+  margin: 1.4rem 0;
+}
+pre.code code { all: unset; font: inherit; }
+pre.code::before {
+  content: attr(data-lang);
+  position: absolute; top: .55rem; right: .95rem;
+  font-size: .7rem; color: var(--overlay0); letter-spacing: .05em;
+}
+/* Syntax token classes — the official Catppuccin mapping, hand-authored
+   by the generating agent (no highlighter library needed). */
+.tk-kw  { color: var(--mauve); }                     /* keywords            */
+.tk-fn  { color: var(--blue); }                      /* functions           */
+.tk-str { color: var(--green); }                     /* strings             */
+.tk-num { color: var(--peach); }                     /* numbers, constants  */
+.tk-type{ color: var(--yellow); }                    /* types, classes      */
+.tk-cm  { color: var(--overlay2); font-style: italic; } /* comments         */
+.tk-op  { color: var(--sky); }                       /* operators           */
+.tk-pr  { color: var(--lavender); }                  /* properties, params  */
+.tk-pmt { color: var(--overlay1); user-select: none; } /* shell prompts     */
+.tk-out { color: var(--subtext0); }                  /* command output      */
+
+/* ── Diagrams ── */
+.diagram {
+  background: var(--mantle);
+  border: 1px solid var(--surface0);
+  border-radius: 8px;
+  padding: 1.2rem;
+  margin: 1.4rem 0;
+  text-align: center;
+}
+.diagram pre.mermaid {
+  margin: 0;
+  font: .8rem/1.6 var(--font-mono);
+  color: var(--overlay1);
+  text-align: left;
+  white-space: pre-wrap;
+}
+.diagram figcaption {
+  font: .75rem var(--font-mono);
+  color: var(--overlay0);
+  margin-top: .8rem;
+}
+
+/* ── The living margin: each section wears its own feedback anchor ── */
+@media (min-width: 76rem) {
+  [data-note]::before {
+    content: '#' attr(id);
+    position: absolute;
+    top: .45em;
+    right: calc(100% + 2.4rem);
+    font: .72rem var(--font-mono);
+    color: var(--overlay0);
+    white-space: nowrap;
+  }
+}
+section[data-note] { position: relative; margin: 0; }
+
+/* Wide screens: code and diagrams break out past the prose measure.
+   Kept last in the sheet: shorthand `margin` in earlier rules must not
+   re-zero the margin-left this relies on. */
+@media (min-width: 64rem) {
+  pre.code, .diagram { width: 54rem; margin-left: 50%; transform: translateX(-50%); }
+}
+
+footer {
+  margin-top: 4rem; padding-top: 1.2rem;
+  border-top: 1px solid var(--surface0);
+  font: .78rem var(--font-mono); color: var(--overlay0);
+}
+</style>
+</head>
+<body>
+<main>
+
+<h1>The zimakki-html-doc house style</h1>
+<p class="subtitle">A reference document that explains its own design — read it, comment on it, copy the feedback out.</p>
+
+<section data-note id="why-mocha">
+  <h2>Why this looks like your terminal</h2>
+  <p>
+    Every tool in this machine's daily stack — <code>bat</code>, <code>ghostty</code>,
+    <code>starship</code>, <code>atuin</code>, <code>lazygit</code> — renders in
+    <a href="https://catppuccin.com">Catppuccin Mocha</a>. A generated document that
+    arrives styled any other way is a context switch; one that arrives in Mocha is
+    just another pane. So the page is built from the palette's own semantic tokens:
+    <code>base</code> for the page, <code>mantle</code> for code panes,
+    <strong>mauve</strong> for structure — the same accent your atuin theme uses
+    for titles.
+  </p>
+  <p>
+    The one deliberate departure from the terminal: prose is set in
+    <strong>Charter</strong>, a serif that ships with macOS and was designed to stay
+    sturdy at low contrast. Explainers are for <em>reading</em>, and a full page of
+    monospace is a transcript, not a document. Everything structural — headings,
+    labels, code — stays mono, so the two worlds are always distinguishable at a glance.
+  </p>
+</section>
+
+<section data-note id="typography">
+  <h2>Typography</h2>
+  <p>Three roles, all from fonts already on the machine — no webfonts, nothing fetched:</p>
+  <ul>
+    <li><strong>Headings</strong> — SF Mono, semibold, in mauve. Each heading wears its
+      own markdown syntax: the dimmed <code>##</code> prefix <em>is</em> the hierarchy,
+      in the same notation the agent authored it and your feedback travels in.</li>
+    <li><strong>Body</strong> — Charter at 17px with a 1.75 line height, tuned for
+      long-form reading on a dark ground.</li>
+    <li><strong>Utility</strong> — small SF Mono for section anchors, code-pane language
+      labels, captions, and the feedback button.</li>
+  </ul>
+  <blockquote>
+    On a wide window, look left of this section's heading: the <code>#typography</code>
+    label in the margin is the exact anchor your copied feedback will cite. The margin
+    isn't decoration — it's the annotation system made visible.
+  </blockquote>
+</section>
+
+<section data-note id="reading-measure">
+  <h2>Layout and measure</h2>
+  <p>
+    Prose holds a measure of roughly seventy characters — a 44rem column, centered,
+    with real margins on either side. Code panes and diagrams are allowed to break
+    out to 54rem on wide screens, because code is read by shape as much as by line,
+    and squeezing it to prose width forces wrapping where it hurts most.
+  </p>
+  <p>
+    Below about 1216px the margin anchors fold away and the document becomes a plain
+    single column; the 💬 affordances remain, so annotation still works on a laptop
+    half-screen or a phone.
+  </p>
+</section>
+
+<section data-note id="code">
+  <h2>Code, in your own theme</h2>
+  <p>
+    Code panes are drawn the way <code>bat</code> draws them in a ghostty window:
+    <code>mantle</code> ground, hairline border, a dimmed language label in the corner.
+    Syntax colors follow the official Catppuccin mapping — mauve keywords, green
+    strings, blue functions, peach numbers — as ten CSS token classes the generating
+    agent applies by hand. No highlighter library, no runtime cost, nothing to load:
+  </p>
+  <pre class="code" data-lang="javascript"><code><span class="tk-cm">/* the heart of the round trip: items become a numbered feedback block */</span>
+<span class="tk-kw">function</span> <span class="tk-fn">feedbackText</span>() {
+  <span class="tk-kw">var</span> title = document.<span class="tk-pr">title</span> || location.<span class="tk-pr">pathname</span>;
+  <span class="tk-kw">var</span> date  = <span class="tk-kw">new</span> <span class="tk-type">Date</span>().<span class="tk-fn">toISOString</span>().<span class="tk-fn">slice</span>(<span class="tk-num">0</span>, <span class="tk-num">10</span>);
+  <span class="tk-kw">var</span> lines = [<span class="tk-str">'## Feedback on "'</span> <span class="tk-op">+</span> title <span class="tk-op">+</span> <span class="tk-str">'" ('</span> <span class="tk-op">+</span> date <span class="tk-op">+</span> <span class="tk-str">')'</span>];
+  items.<span class="tk-fn">forEach</span>(<span class="tk-kw">function</span> (it, i) { <span class="tk-cm">/* …one line per annotation… */</span> });
+  <span class="tk-kw">return</span> lines.<span class="tk-fn">join</span>(<span class="tk-str">'\n'</span>);
+}</code></pre>
+  <p>Shell sessions use the same pane with prompt and output tokens:</p>
+  <pre class="code" data-lang="console"><code><span class="tk-pmt">$</span> python3 -m http.server <span class="tk-num">8000</span>
+<span class="tk-out">Serving HTTP on :: port 8000 (http://[::]:8000/) ...</span></code></pre>
+</section>
+
+<section data-note id="diagrams">
+  <h2>Diagrams</h2>
+  <p>
+    Diagrams are authored as Mermaid source and rendered client-side, themed with the
+    same Mocha tokens. Mermaid's renderer is 3.4&nbsp;MB, so it is <strong>not</strong>
+    part of this template: the generating agent fetches <code>mermaid.min.js</code>
+    once at authoring time and inlines it — but <em>only</em> into documents that
+    actually contain a diagram. The document stays fully offline either way; when the
+    renderer is absent, the source is shown as readable text in the same pane, which
+    is exactly what you see below unless this copy was built with diagrams enabled:
+  </p>
+  <figure class="diagram">
+    <pre class="mermaid">sequenceDiagram
+    participant A as agent
+    participant D as document
+    participant Z as you
+    A->>D: writes sections, inlines margin-notes.js
+    Z->>D: reads, comments on sections and selections
+    D->>D: persists items in localStorage
+    Z->>D: clicks "Feedback (n) — Copy for agent"
+    D-->>Z: clipboard gets the numbered block
+    Z->>A: pastes it back
+    A->>D: edits exactly the sections each item names</pre>
+    <figcaption>the feedback round trip — from generated page back to the agent</figcaption>
+  </figure>
+</section>
+
+<section data-note id="annotation-theming">
+  <h2>The annotation layer, retinted</h2>
+  <p>
+    margin-notes.js carries neutral built-in styling so it works dropped into any
+    page; this template retunes it through CSS custom properties —
+    <code>--mn-box-bg</code>, <code>--mn-accent-bg</code>, and friends — declared in
+    <code>:root</code>. Comment boxes sit on <code>mantle</code>, and the copy button
+    becomes a mauve pill, the same weight your terminal gives to anything titled.
+    Try it: the button in the corner is live.
+  </p>
+</section>
+
+<footer>generated with zimakki-html-doc · margin-notes v1 inlined below · catppuccin mocha</footer>
+
+</main>
+<script>
+/* margin-notes v1 — inline annotation layer for agent-generated HTML documents.
+ * Source of truth: dotfiles/.claude/skills/zimakki-html-doc/margin-notes.js
+ * Inlined into documents by the zimakki-html-doc skill. No dependencies.
+ */
+(function () {
+  'use strict';
+
+  var STORE_KEY = 'margin-notes:' + location.pathname;
+
+  var CSS = [
+    '.mn-btn{position:absolute;left:-1.6em;top:0;border:none;background:none;cursor:pointer;',
+    'font-size:.85em;opacity:.25;padding:0}',
+    '.mn-btn:hover{opacity:1}',
+    '.mn-block{position:relative}',
+    '.mn-block.mn-has-note>.mn-btn{opacity:.9}',
+    '.mn-box{margin:.5em 0;padding:.5em;border:1px solid var(--mn-border,#c9c9d4);border-radius:6px;',
+    'background:var(--mn-box-bg,#f7f7fb);font:14px/1.4 -apple-system,sans-serif;color:var(--mn-box-fg,#222)}',
+    '.mn-box textarea{width:100%;box-sizing:border-box;min-height:3em;margin-bottom:.4em;',
+    'font:inherit;padding:.3em;color:inherit;background:var(--mn-input-bg,#fff);',
+    'border:1px solid var(--mn-border,#c9c9d4);border-radius:4px}',
+    '.mn-box .mn-quote{font-style:italic;color:var(--mn-muted,#555);margin:0 0 .4em;',
+    'border-left:3px solid var(--mn-border,#bbb);padding-left:.5em;white-space:pre-wrap}',
+    '.mn-box button{font:inherit;margin-right:.4em;cursor:pointer}',
+    '.mn-saved{font-size:13px;color:var(--mn-box-fg,#333);margin:.2em 0;white-space:pre-wrap}',
+    '.mn-saved .mn-del{color:var(--mn-danger,#a33);cursor:pointer;border:none;background:none;font:inherit}',
+    '#mn-copy{position:fixed;right:16px;bottom:16px;z-index:9999;padding:.6em 1em;',
+    'border-radius:999px;border:1px solid var(--mn-accent-border,#888);',
+    'background:var(--mn-accent-bg,#1f1f2e);color:var(--mn-accent-fg,#fff);cursor:pointer;',
+    'font:14px -apple-system,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.25)}',
+    '#mn-sel{position:absolute;z-index:9998;padding:.2em .6em;border-radius:6px;',
+    'border:1px solid var(--mn-accent-border,#888);background:var(--mn-accent-bg,#1f1f2e);',
+    'color:var(--mn-accent-fg,#fff);cursor:pointer;font:13px -apple-system,sans-serif}',
+    '#mn-warn{position:relative;z-index:9999;margin:0 0 1em;padding:.6em .9em;border-radius:8px;',
+    'border:1px solid var(--mn-warn-border,#d8a23a);background:var(--mn-warn-bg,#fff8e6);',
+    'color:var(--mn-warn-fg,#5c4700);font:13px/1.4 -apple-system,sans-serif;',
+    'box-shadow:0 1px 4px rgba(0,0,0,.08)}',
+    '#mn-warn button{float:right;margin-left:.6em;border:none;background:none;cursor:pointer;',
+    'font:inherit;color:var(--mn-warn-fg,#5c4700)}'
+  ].join('\n');
+
+  function probeStorage() {
+    try {
+      var k = STORE_KEY + ':probe';
+      localStorage.setItem(k, '1');
+      localStorage.removeItem(k);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function load() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
+    catch (e) { return []; }
+  }
+  function save(items) {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(items)); } catch (e) {}
+  }
+
+  var storageOk = probeStorage();
+  var items = load();
+  var copyBtn;
+
+  function addItem(item) {
+    item.ts = new Date().toISOString();
+    items.push(item);
+    save(items);
+    refresh();
+  }
+
+  function removeItem(idx) {
+    items.splice(idx, 1);
+    save(items);
+    refresh();
+  }
+
+  function feedbackText() {
+    var title = document.title || location.pathname;
+    var date = new Date().toISOString().slice(0, 10);
+    var lines = ['## Feedback on "' + title + '" (' + date + ')'];
+    items.forEach(function (it, i) {
+      var n = (i + 1) + '. ';
+      if (it.kind === 'selection') {
+        lines.push(n + '[selection in #' + it.blockId + '] quoted: "' + it.quote + '" — ' + it.text);
+      } else if (it.kind === 'section') {
+        lines.push(n + '[section: ' + it.blockId + '] ' + it.text);
+      } else {
+        lines.push(n + '[' + it.kind + '] ' + it.text);
+      }
+    });
+    return lines.join('\n');
+  }
+
+  function copy(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text);
+    }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    return Promise.resolve();
+  }
+
+  function refresh() {
+    if (copyBtn) copyBtn.textContent = 'Feedback (' + items.length + ') — Copy for agent';
+    document.querySelectorAll('.mn-block').forEach(function (b) {
+      var has = items.some(function (it) { return it.blockId === b.id; });
+      b.classList.toggle('mn-has-note', has);
+    });
+  }
+
+  function commentBox(blockId, quote, onDone) {
+    var box = document.createElement('div');
+    box.className = 'mn-box';
+    if (quote) {
+      var q = document.createElement('p');
+      q.className = 'mn-quote';
+      q.textContent = quote;
+      box.appendChild(q);
+    }
+    var saved = items
+      .map(function (it, i) { return { it: it, i: i }; })
+      .filter(function (e) { return e.it.blockId === blockId && (!quote || e.it.quote === quote); });
+    saved.forEach(function (e) {
+      var p = document.createElement('p');
+      p.className = 'mn-saved';
+      p.textContent = '💬 ' + e.it.text + ' ';
+      var del = document.createElement('button');
+      del.className = 'mn-del';
+      del.textContent = '[delete]';
+      del.onclick = function () { removeItem(e.i); box.remove(); };
+      p.appendChild(del);
+      box.appendChild(p);
+    });
+    var ta = document.createElement('textarea');
+    ta.placeholder = 'Comment for the agent…';
+    box.appendChild(ta);
+    var ok = document.createElement('button');
+    ok.textContent = 'Save';
+    ok.onclick = function () {
+      if (ta.value.trim()) {
+        addItem({ kind: quote ? 'selection' : 'section', blockId: blockId, quote: quote || '', text: ta.value.trim() });
+      }
+      box.remove();
+      if (onDone) onDone();
+    };
+    var cancel = document.createElement('button');
+    cancel.textContent = 'Cancel';
+    cancel.onclick = function () { box.remove(); if (onDone) onDone(); };
+    box.appendChild(ok);
+    box.appendChild(cancel);
+    return box;
+  }
+
+  function decorateBlocks() {
+    var blocks = document.querySelectorAll('[data-note]');
+    if (!blocks.length) blocks = document.querySelectorAll('section, p, h2, h3');
+    var n = 0;
+    blocks.forEach(function (b) {
+      if (b.closest('.mn-box') || b.id === 'mn-copy') return;
+      if (!b.id) b.id = 'mn-' + (++n);
+      b.classList.add('mn-block');
+      var btn = document.createElement('button');
+      btn.className = 'mn-btn';
+      btn.textContent = '💬';
+      btn.title = 'Comment on this block';
+      btn.onclick = function (ev) {
+        ev.stopPropagation();
+        var existing = b.querySelector('.mn-box');
+        if (existing) { existing.remove(); return; }
+        b.appendChild(commentBox(b.id, null));
+        b.querySelector('.mn-box textarea').focus();
+      };
+      b.insertBefore(btn, b.firstChild);
+    });
+  }
+
+  var selBtn;
+  function watchSelection() {
+    document.addEventListener('mouseup', function () {
+      setTimeout(function () {
+        if (selBtn) { selBtn.remove(); selBtn = null; }
+        var sel = window.getSelection();
+        var text = sel ? String(sel).trim() : '';
+        if (!text || text.length < 3) return;
+        var node = sel.anchorNode && sel.anchorNode.parentElement;
+        var block = node && node.closest('.mn-block');
+        if (!block || node.closest('.mn-box')) return;
+        var rect = sel.getRangeAt(0).getBoundingClientRect();
+        selBtn = document.createElement('button');
+        selBtn.id = 'mn-sel';
+        selBtn.textContent = '💬 Comment on selection';
+        selBtn.style.left = (window.scrollX + rect.left) + 'px';
+        selBtn.style.top = (window.scrollY + rect.bottom + 6) + 'px';
+        selBtn.onclick = function () {
+          var box = commentBox(block.id, text);
+          block.appendChild(box);
+          box.querySelector('textarea').focus();
+          selBtn.remove();
+          selBtn = null;
+        };
+        document.body.appendChild(selBtn);
+      }, 0);
+    });
+  }
+
+  function installCopyButton() {
+    copyBtn = document.createElement('button');
+    copyBtn.id = 'mn-copy';
+    copyBtn.onclick = function () {
+      copy(feedbackText()).then(function () {
+        var old = copyBtn.textContent;
+        copyBtn.textContent = 'Copied ✓';
+        setTimeout(function () { copyBtn.textContent = old; refresh(); }, 1200);
+      });
+    };
+    document.body.appendChild(copyBtn);
+  }
+
+  function showStorageWarning() {
+    var warn = document.createElement('div');
+    warn.id = 'mn-warn';
+    warn.textContent = 'This browser blocks persistent storage for files opened directly ' +
+      '(file://) — comments will work for this session but won’t survive a reload. Copy ' +
+      'your feedback before closing this tab, or open this file via a local server ' +
+      '(e.g. python3 -m http.server) for full persistence.';
+    var dismiss = document.createElement('button');
+    dismiss.textContent = '✕';
+    dismiss.onclick = function () { warn.remove(); };
+    warn.appendChild(dismiss);
+    document.body.insertBefore(warn, document.body.firstChild);
+  }
+
+  function init() {
+    try {
+      var style = document.createElement('style');
+      style.textContent = CSS;
+      document.head.appendChild(style);
+      decorateBlocks();
+      installCopyButton();
+      watchSelection();
+      if (!storageOk) showStorageWarning();
+      refresh();
+      window.MarginNotes = { addItem: addItem, removeItem: removeItem, items: items, feedbackText: feedbackText };
+    } catch (e) {
+      if (window.console) console.error('margin-notes failed to init:', e);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+
+</script>
+<!-- DIAGRAMS: if (and only if) this document contains Mermaid figures, fetch the
+     renderer at generation time and inline it here, then the init block:
+
+<script>
+  ...full contents of: curl -sL https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js...
+</script>
+<script>
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'base',
+  themeVariables: {
+    background: '#1e1e2e', primaryColor: '#313244', primaryTextColor: '#cdd6f4',
+    primaryBorderColor: '#6c7086', lineColor: '#7f849c', secondaryColor: '#45475a',
+    tertiaryColor: '#181825', mainBkg: '#313244', nodeBorder: '#6c7086',
+    nodeTextColor: '#cdd6f4', titleColor: '#cba6f7', edgeLabelBackground: '#181825',
+    clusterBkg: '#181825', actorBkg: '#313244', actorBorder: '#6c7086',
+    actorTextColor: '#cdd6f4', signalColor: '#9399b2', signalTextColor: '#cdd6f4',
+    labelBoxBkgColor: '#181825', labelBoxBorderColor: '#45475a', labelTextColor: '#cba6f7',
+    loopTextColor: '#a6adc8', noteBkgColor: '#45475a', noteTextColor: '#cdd6f4',
+    noteBorderColor: '#585b70', activationBkgColor: '#585b70', activationBorderColor: '#6c7086',
+    sequenceNumberColor: '#11111b',
+    fontFamily: 'ui-monospace, SF Mono, Menlo, monospace', fontSize: '14px'
+  }
+});
+</script>
+-->
+</body>
+</html>
