@@ -1,0 +1,222 @@
+/* margin-notes v1 — inline annotation layer for agent-generated HTML documents.
+ * Source of truth: dotfiles/.claude/skills/zimakki-html-doc/margin-notes.js
+ * Inlined into documents by the zimakki-html-doc skill. No dependencies.
+ */
+(function () {
+  'use strict';
+
+  var STORE_KEY = 'margin-notes:' + location.pathname;
+
+  var CSS = [
+    '.mn-btn{position:absolute;left:-1.6em;top:0;border:none;background:none;cursor:pointer;',
+    'font-size:.85em;opacity:.25;padding:0}',
+    '.mn-btn:hover{opacity:1}',
+    '.mn-block{position:relative}',
+    '.mn-block.mn-has-note>.mn-btn{opacity:.9}',
+    '.mn-box{margin:.5em 0;padding:.5em;border:1px solid #c9c9d4;border-radius:6px;',
+    'background:#f7f7fb;font:14px/1.4 -apple-system,sans-serif;color:#222}',
+    '.mn-box textarea{width:100%;box-sizing:border-box;min-height:3em;margin-bottom:.4em;',
+    'font:inherit;padding:.3em}',
+    '.mn-box .mn-quote{font-style:italic;color:#555;margin:0 0 .4em;border-left:3px solid #bbb;',
+    'padding-left:.5em;white-space:pre-wrap}',
+    '.mn-box button{font:inherit;margin-right:.4em;cursor:pointer}',
+    '.mn-saved{font-size:13px;color:#333;margin:.2em 0;white-space:pre-wrap}',
+    '.mn-saved .mn-del{color:#a33;cursor:pointer;border:none;background:none;font:inherit}',
+    '#mn-copy{position:fixed;right:16px;bottom:16px;z-index:9999;padding:.6em 1em;',
+    'border-radius:999px;border:1px solid #888;background:#1f1f2e;color:#fff;cursor:pointer;',
+    'font:14px -apple-system,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.25)}',
+    '#mn-sel{position:absolute;z-index:9998;padding:.2em .6em;border-radius:6px;border:1px solid #888;',
+    'background:#1f1f2e;color:#fff;cursor:pointer;font:13px -apple-system,sans-serif}'
+  ].join('\n');
+
+  function load() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
+    catch (e) { return []; }
+  }
+  function save(items) {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(items)); } catch (e) {}
+  }
+
+  var items = load();
+  var copyBtn;
+
+  function addItem(item) {
+    item.ts = new Date().toISOString();
+    items.push(item);
+    save(items);
+    refresh();
+  }
+
+  function removeItem(idx) {
+    items.splice(idx, 1);
+    save(items);
+    refresh();
+  }
+
+  function feedbackText() {
+    var title = document.title || location.pathname;
+    var date = new Date().toISOString().slice(0, 10);
+    var lines = ['## Feedback on "' + title + '" (' + date + ')'];
+    items.forEach(function (it, i) {
+      var n = (i + 1) + '. ';
+      if (it.kind === 'selection') {
+        lines.push(n + '[selection in #' + it.blockId + '] quoted: "' + it.quote + '" — ' + it.text);
+      } else if (it.kind === 'section') {
+        lines.push(n + '[section: ' + it.blockId + '] ' + it.text);
+      } else {
+        lines.push(n + '[' + it.kind + '] ' + it.text);
+      }
+    });
+    return lines.join('\n');
+  }
+
+  function copy(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text);
+    }
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    return Promise.resolve();
+  }
+
+  function refresh() {
+    if (copyBtn) copyBtn.textContent = 'Feedback (' + items.length + ') — Copy for agent';
+    document.querySelectorAll('.mn-block').forEach(function (b) {
+      var has = items.some(function (it) { return it.blockId === b.id; });
+      b.classList.toggle('mn-has-note', has);
+    });
+  }
+
+  function commentBox(blockId, quote, onDone) {
+    var box = document.createElement('div');
+    box.className = 'mn-box';
+    if (quote) {
+      var q = document.createElement('p');
+      q.className = 'mn-quote';
+      q.textContent = quote;
+      box.appendChild(q);
+    }
+    var saved = items
+      .map(function (it, i) { return { it: it, i: i }; })
+      .filter(function (e) { return e.it.blockId === blockId && (!quote || e.it.quote === quote); });
+    saved.forEach(function (e) {
+      var p = document.createElement('p');
+      p.className = 'mn-saved';
+      p.textContent = '💬 ' + e.it.text + ' ';
+      var del = document.createElement('button');
+      del.className = 'mn-del';
+      del.textContent = '[delete]';
+      del.onclick = function () { removeItem(e.i); box.remove(); };
+      p.appendChild(del);
+      box.appendChild(p);
+    });
+    var ta = document.createElement('textarea');
+    ta.placeholder = 'Comment for the agent…';
+    box.appendChild(ta);
+    var ok = document.createElement('button');
+    ok.textContent = 'Save';
+    ok.onclick = function () {
+      if (ta.value.trim()) {
+        addItem({ kind: quote ? 'selection' : 'section', blockId: blockId, quote: quote || '', text: ta.value.trim() });
+      }
+      box.remove();
+      if (onDone) onDone();
+    };
+    var cancel = document.createElement('button');
+    cancel.textContent = 'Cancel';
+    cancel.onclick = function () { box.remove(); if (onDone) onDone(); };
+    box.appendChild(ok);
+    box.appendChild(cancel);
+    return box;
+  }
+
+  function decorateBlocks() {
+    var blocks = document.querySelectorAll('[data-note]');
+    if (!blocks.length) blocks = document.querySelectorAll('section, p, h2, h3');
+    var n = 0;
+    blocks.forEach(function (b) {
+      if (b.closest('.mn-box') || b.id === 'mn-copy') return;
+      if (!b.id) b.id = 'mn-' + (++n);
+      b.classList.add('mn-block');
+      var btn = document.createElement('button');
+      btn.className = 'mn-btn';
+      btn.textContent = '💬';
+      btn.title = 'Comment on this block';
+      btn.onclick = function (ev) {
+        ev.stopPropagation();
+        var existing = b.querySelector('.mn-box');
+        if (existing) { existing.remove(); return; }
+        b.appendChild(commentBox(b.id, null));
+        b.querySelector('.mn-box textarea').focus();
+      };
+      b.insertBefore(btn, b.firstChild);
+    });
+  }
+
+  var selBtn;
+  function watchSelection() {
+    document.addEventListener('mouseup', function () {
+      setTimeout(function () {
+        if (selBtn) { selBtn.remove(); selBtn = null; }
+        var sel = window.getSelection();
+        var text = sel ? String(sel).trim() : '';
+        if (!text || text.length < 3) return;
+        var node = sel.anchorNode && sel.anchorNode.parentElement;
+        var block = node && node.closest('.mn-block');
+        if (!block || node.closest('.mn-box')) return;
+        var rect = sel.getRangeAt(0).getBoundingClientRect();
+        selBtn = document.createElement('button');
+        selBtn.id = 'mn-sel';
+        selBtn.textContent = '💬 Comment on selection';
+        selBtn.style.left = (window.scrollX + rect.left) + 'px';
+        selBtn.style.top = (window.scrollY + rect.bottom + 6) + 'px';
+        selBtn.onclick = function () {
+          var box = commentBox(block.id, text);
+          block.appendChild(box);
+          box.querySelector('textarea').focus();
+          selBtn.remove();
+          selBtn = null;
+        };
+        document.body.appendChild(selBtn);
+      }, 0);
+    });
+  }
+
+  function installCopyButton() {
+    copyBtn = document.createElement('button');
+    copyBtn.id = 'mn-copy';
+    copyBtn.onclick = function () {
+      copy(feedbackText()).then(function () {
+        var old = copyBtn.textContent;
+        copyBtn.textContent = 'Copied ✓';
+        setTimeout(function () { copyBtn.textContent = old; refresh(); }, 1200);
+      });
+    };
+    document.body.appendChild(copyBtn);
+  }
+
+  function init() {
+    try {
+      var style = document.createElement('style');
+      style.textContent = CSS;
+      document.head.appendChild(style);
+      decorateBlocks();
+      installCopyButton();
+      watchSelection();
+      refresh();
+      window.MarginNotes = { addItem: addItem, items: items, feedbackText: feedbackText };
+    } catch (e) {
+      if (window.console) console.error('margin-notes failed to init:', e);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
