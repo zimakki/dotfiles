@@ -87,6 +87,38 @@ dest_roots=("$HOME/.agents/skills" "$HOME/.claude/skills" "${CODEX_HOME:-$HOME/.
 echo "Checking global discovery links"
 for dest_root in "${dest_roots[@]}"; do
   if $fix; then mkdir -p "$dest_root"; fi
+  manifest="$dest_root/.dotfiles-managed-skills"
+  desired_names=()
+  for skill in "${discovery_skills[@]}"; do
+    desired_names+=("$(basename "$skill")")
+  done
+
+  if [[ -f "$manifest" ]]; then
+    while IFS= read -r managed_name; do
+      [[ -n "$managed_name" ]] || continue
+      desired=false
+      for desired_name in "${desired_names[@]}"; do
+        if [[ "$managed_name" == "$desired_name" ]]; then
+          desired=true
+          break
+        fi
+      done
+      $desired && continue
+
+      obsolete="$dest_root/$managed_name"
+      if [[ -L "$obsolete" ]]; then
+        if $fix; then
+          rm "$obsolete"
+          pass "removed obsolete managed link $obsolete"
+        else
+          fail "obsolete managed skill link remains at $obsolete"
+        fi
+      elif [[ -e "$obsolete" ]]; then
+        fail "obsolete managed skill path is no longer a symlink: $obsolete"
+      fi
+    done < "$manifest"
+  fi
+
   for skill in "${discovery_skills[@]}"; do
     name="$(basename "$skill")"
     dest="$dest_root/$name"
@@ -107,6 +139,12 @@ for dest_root in "${dest_roots[@]}"; do
     ln -s "$skill" "$dest"
     pass "linked $dest"
   done
+  if $fix; then
+    printf '%s\n' "${desired_names[@]}" | sort > "$manifest"
+    pass "recorded managed skills in $manifest"
+  elif [[ ! -f "$manifest" ]]; then
+    fail "missing managed skill manifest $manifest; run with --fix"
+  fi
 done
 
 echo "Audit complete: ${#skill_dirs[@]} canonical skills, ${#discovery_skills[@]} discoverable skills, $errors failures, $warnings warnings"

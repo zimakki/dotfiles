@@ -50,7 +50,9 @@ scripts/sync_agent_skills.sh --fix
 
 The repair is idempotent. It creates missing discovery directories and links.
 If a destination is unmanaged, it preserves it as a timestamped backup before
-creating the link.
+creating the link. Each discovery root records repo-managed names in
+`.dotfiles-managed-skills`, allowing later audits to detect renamed or removed
+skills and `--fix` to prune only obsolete managed symlinks.
 
 Run the read-only audit again, then `scripts/verify_setup.sh` when a full machine
 verification is appropriate. Tell the user that already-running agent sessions
