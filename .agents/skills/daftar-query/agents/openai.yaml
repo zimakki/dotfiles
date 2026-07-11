@@ -1,0 +1,4 @@
+interface:
+  display_name: "Daftar Query"
+  short_description: "Answer questions from the Daftar HTML vault"
+  default_prompt: "Use $daftar-query to answer this question from the Daftar vault with source links."

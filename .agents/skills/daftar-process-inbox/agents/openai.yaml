@@ -1,0 +1,4 @@
+interface:
+  display_name: "Daftar Process Inbox"
+  short_description: "Classify and file items from the Daftar inbox"
+  default_prompt: "Use $daftar-process-inbox to classify and file everything currently in the Daftar inbox."

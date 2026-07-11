@@ -1,0 +1,4 @@
+interface:
+  display_name: "Daftar Lint"
+  short_description: "Audit and repair the Daftar HTML vault"
+  default_prompt: "Use $daftar-lint to audit the Daftar vault and safely repair integrity problems."

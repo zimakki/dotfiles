@@ -1,0 +1,4 @@
+interface:
+  display_name: "Daftar Ingest"
+  short_description: "Capture external sources in the Daftar vault"
+  default_prompt: "Use $daftar-ingest to capture this source in the Daftar vault."
