@@ -86,9 +86,10 @@ If the highlighting colors change, update
 `~/.zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh` and sourced immediately
 before the Homebrew zsh-syntax-highlighting plugin.
 
-Project-local Claude skills live in `.claude/skills/` in this repo. Do not add a
-global symlink for that directory: `~/.claude/skills` is reserved for the shared
-agent skills tree.
+Project-local shared skills live in `.agents/skills/` in this repo. Do not add
+separate repo-owned copies under client-specific directories; `~/.agents/skills`,
+`~/.claude/skills`, and `${CODEX_HOME:-~/.codex}/skills` are synchronized from
+the canonical tree by `scripts/sync_agent_skills.sh`.
 
 ## 4. Commit
 

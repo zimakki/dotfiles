@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cleanup Report"
+  short_description: "Audit this Mac and dotfiles for cleanup candidates"
+  default_prompt: "Audit this machine against the dotfiles repo and report cleanup candidates without removing anything."
