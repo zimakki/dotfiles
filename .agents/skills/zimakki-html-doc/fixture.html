@@ -1,5 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>margin-notes fixture</title>
+<style>
+  body { font: 16px/1.6 -apple-system, sans-serif; max-width: 42em; margin: 2em auto; padding: 0 3em; }
+</style>
+</head>
+<body>
+<h1>margin-notes fixture</h1>
+<section data-note id="intro">
+  <h2>Introduction</h2>
+  <p>This section exists to verify block-level commenting on an element with an explicit id.</p>
+</section>
+<section data-note>
+  <h2>Auto-id section</h2>
+  <p>This section has no id and must receive a generated one (mn-1).</p>
+</section>
+<script>
 /* margin-notes v1 — inline annotation layer for agent-generated HTML documents.
- * Source of truth: dotfiles/.claude/skills/zimakki-html-doc/margin-notes.js
+ * Source of truth: dotfiles/.agents/skills/zimakki-html-doc/margin-notes.js
  * Inlined into documents by the zimakki-html-doc skill. No dependencies.
  */
 (function () {
@@ -279,3 +300,7 @@
     init();
   }
 })();
+
+</script>
+</body>
+</html>
