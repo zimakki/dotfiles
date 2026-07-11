@@ -63,11 +63,31 @@ for skill in "${skill_dirs[@]}"; do
   [[ $(wc -l < "$file") -le 500 ]] || warn "$name/SKILL.md exceeds 500 lines; use progressive disclosure"
 done
 
+discovery_skills=("${skill_dirs[@]}")
+if command -v hunk >/dev/null 2>&1; then
+  hunk_skill_file="$(hunk skill path 2>/dev/null || true)"
+  if [[ -f "$hunk_skill_file" && "$(basename "$hunk_skill_file")" == "SKILL.md" ]]; then
+    hunk_skill_dir="$(dirname "$hunk_skill_file")"
+    if command -v brew >/dev/null 2>&1; then
+      hunk_opt_dir="$(brew --prefix hunk 2>/dev/null || true)/libexec/skills/hunk-review"
+      if [[ -f "$hunk_opt_dir/SKILL.md" && "$(realpath "$hunk_opt_dir")" == "$(realpath "$hunk_skill_dir")" ]]; then
+        hunk_skill_dir="$hunk_opt_dir"
+      fi
+    fi
+    discovery_skills+=("$hunk_skill_dir")
+    pass "found Hunk's bundled hunk-review skill"
+  else
+    fail "hunk is installed but 'hunk skill path' did not return a SKILL.md"
+  fi
+else
+  warn "hunk is not installed; skipping its bundled hunk-review skill"
+fi
+
 dest_roots=("$HOME/.agents/skills" "$HOME/.claude/skills" "${CODEX_HOME:-$HOME/.codex}/skills")
 echo "Checking global discovery links"
 for dest_root in "${dest_roots[@]}"; do
   if $fix; then mkdir -p "$dest_root"; fi
-  for skill in "${skill_dirs[@]}"; do
+  for skill in "${discovery_skills[@]}"; do
     name="$(basename "$skill")"
     dest="$dest_root/$name"
     resolved_dest="$(realpath "$dest" 2>/dev/null || true)"
@@ -89,5 +109,5 @@ for dest_root in "${dest_roots[@]}"; do
   done
 done
 
-echo "Audit complete: ${#skill_dirs[@]} canonical skills, $errors failures, $warnings warnings"
+echo "Audit complete: ${#skill_dirs[@]} canonical skills, ${#discovery_skills[@]} discoverable skills, $errors failures, $warnings warnings"
 (( errors == 0 ))
