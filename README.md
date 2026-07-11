@@ -1,7 +1,7 @@
 # dotfiles
 
 This repo manages my macOS dotfiles, terminal/TUI app configs, shared theme
-assets, and project-local Claude skills. The symlink manifest in
+assets, and cross-agent skills. The symlink manifest in
 `setup_sim_links.zsh` is the source of truth for machine-linked files.
 
 Managed areas currently include:
@@ -11,10 +11,17 @@ Managed areas currently include:
 - Developer tooling: Git config, global gitignore, mise global tools, Claude settings
 - System/app config: Karabiner and Homebrew bundle
 
-Not every tracked config-like artifact is symlinked. `.claude/skills/` is loaded
-as project-local Claude skills from the repo, while `~/.claude/skills` remains
-the shared agent skills directory. `raycast.rayconfig` is a manual Raycast import
+Not every tracked config-like artifact is symlinked. `.agents/skills/` is the
+vendor-neutral source of truth for skills. `scripts/sync_agent_skills.sh --fix`
+links each one into `~/.agents/skills`, `~/.claude/skills`, and
+`${CODEX_HOME:-~/.codex}/skills`; `setup_sim_links.zsh` runs it automatically.
+Run the script without `--fix` for a read-only lint/audit. `raycast.rayconfig` is a manual Raycast import
 artifact and should not be symlinked.
+
+Project instructions follow the same low-drift pattern: `AGENTS.md` is the
+repo-authored source of truth for shared agent guidance, and `CLAUDE.md` is a
+thin Claude Code shim that imports `@AGENTS.md`. Keep shared instructions in
+`AGENTS.md` rather than duplicating them across agent-specific files.
 
 ## Get up and running
 
