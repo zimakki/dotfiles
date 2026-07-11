@@ -37,6 +37,19 @@ I'm currently running [AstroVim](https://astronvim.com/) and you can find the as
 Run the below command from the root of this folder:
 `brew bundle install`
 
+## Validation
+
+Run the same portable checks as CI before committing:
+
+```sh
+scripts/ci_checks.sh
+```
+
+This checks shell syntax and common shell errors, JSON/TOML/YAML and Brewfile
+syntax, the symlink manifest, and cross-agent skill metadata and discovery. The
+full `scripts/verify_setup.sh` remains the machine-level check for installed
+apps, runtimes, and live dotfile links.
+
 ### 2. Sim links
 
 To run `setup_sim_links.zsh`:
