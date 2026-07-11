@@ -94,7 +94,11 @@ for root in $expected_link_roots; do
   done
   (( covered )) && pass "manifest covers $root" || fail "tracked config root not in LINKS: $root"
 done
-skip ".claude/skills is project-local; do not replace ~/.claude/skills"
+if "$REPO/scripts/sync_agent_skills.sh" >/dev/null; then
+  pass "cross-agent skills and instruction shims validate from every discovery root"
+else
+  fail "cross-agent skill or instruction validation drift — run scripts/sync_agent_skills.sh --fix"
+fi
 skip "raycast.rayconfig is imported manually; do not symlink app state"
 
 hdr "macOS defaults (read-back vs macos_defaults.sh)"

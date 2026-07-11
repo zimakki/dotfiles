@@ -29,7 +29,6 @@ LINKS=(
   "bat_config:~/.config/bat/config"
   "hunk/config.toml:~/.config/hunk/config.toml"
   "zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh:~/.zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh"
-  ".claude/skills/zimakki-html-doc:~/.claude/skills/zimakki-html-doc"
 )
 
 # ─── Logic ─────────────────────────────────────────────────────────
@@ -50,4 +49,6 @@ echo "Setting up dotfile symlinks..."
 for entry in "${LINKS[@]}"; do
   link "${entry%%:*}" "${entry#*:}"
 done
+echo "Syncing cross-agent skills..."
+"$DOTFILES/scripts/sync_agent_skills.sh" --fix
 echo "Done."
