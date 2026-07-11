@@ -35,6 +35,10 @@ done
 ```
 
 Do not modify third-party or client-owned system skills during an audit.
+Hunk is the exception to canonical repo ownership: when installed, its bundled
+`hunk-review` skill is linked directly from the path reported by
+`hunk skill path`, preferring Homebrew's stable `opt` path. Do not copy that
+skill into the repo, because Hunk upgrades should update it in place.
 
 ## Repair
 

@@ -15,8 +15,11 @@ Not every tracked config-like artifact is symlinked. `.agents/skills/` is the
 vendor-neutral source of truth for skills. `scripts/sync_agent_skills.sh --fix`
 links each one into `~/.agents/skills`, `~/.claude/skills`, and
 `${CODEX_HOME:-~/.codex}/skills`; `setup_sim_links.zsh` runs it automatically.
-Run the script without `--fix` for a read-only lint/audit. `raycast.rayconfig` is a manual Raycast import
-artifact and should not be symlinked.
+Run the script without `--fix` for a read-only lint/audit. When Hunk is
+installed, the synchronizer also links its bundled `hunk-review` skill directly
+from Hunk's stable Homebrew path so upgrades do not leave a stale copied skill.
+`raycast.rayconfig` is a manual Raycast import artifact and should not be
+symlinked.
 
 Project instructions follow the same low-drift pattern: `AGENTS.md` is the
 repo-authored source of truth for shared agent guidance, and `CLAUDE.md` is a
