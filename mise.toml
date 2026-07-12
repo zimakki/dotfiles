@@ -1,0 +1,69 @@
+# Discoverable workstation bootstrap config. This same file is linked to
+# ~/.config/mise/config.toml so the tools remain global outside this checkout.
+min_version = "2026.7.4"
+
+[env]
+# kerl reads this while Erlang is compiled, before managed shell files exist.
+KERL_BUILD_DOCS = "yes"
+
+[tools]
+bun = "1.3.14"
+elixir = "1.20.2-otp-29"
+erlang = "29.0.2"
+fnox = "1.29.0"
+node = "24.13.1"
+"npm:portless" = "0.15.1"
+python = "3.13.14"
+
+[settings]
+dotfiles.default_mode = "symlink"
+
+# BrewFile deliberately remains the sole package/cask inventory. This hook is
+# before tools so Erlang's build dependencies are installed before compilation.
+[bootstrap.hooks.pre-tools]
+run = "brew bundle --file=\"$(git rev-parse --show-toplevel)/BrewFile\""
+
+[dotfiles]
+"~/.zshenv" = "zshenv"
+"~/.zprofile" = "zprofile"
+"~/.zshrc" = "zshrc"
+"~/.gitconfig" = "gitconfig"
+"~/Brewfile" = "BrewFile"
+"~/.gitignore_global" = "gitignore_global"
+"~/.claude/settings.json" = "claude_settings.json"
+"~/.config/starship.toml" = "starship.toml"
+"~/.config/atuin/config.toml" = "atuin_config.toml"
+"~/.config/atuin/themes/catppuccin-mocha-mauve.toml" = "atuin_themes/catppuccin-mocha-mauve.toml"
+"~/.config/mise/config.toml" = "mise.toml"
+"~/.config/karabiner/karabiner.json" = "karabiner.json"
+"~/.config/television" = "television"
+"~/.config/ghostty/config" = "ghostty_config"
+"~/.warp/keybindings.yaml" = "warp_keybindings.yaml"
+"~/.warp/themes/catppuccin_mocha.yml" = "warp_themes/catppuccin_mocha.yml"
+"~/.config/bat/config" = "bat_config"
+"~/.config/hunk/config.toml" = "hunk/config.toml"
+"~/.zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh" = "zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh"
+
+[bootstrap.macos.keyboard]
+initial_key_repeat = 10
+key_repeat = 1
+press_and_hold = false
+fn_state = true
+
+[bootstrap.macos.finder]
+show_all_files = true
+show_pathbar = true
+preferred_view_style = "list"
+
+[bootstrap.macos.dock]
+autohide = true
+tilesize = 39
+orientation = "right"
+
+[bootstrap.macos.defaults]
+NSGlobalDomain = { AppleShowAllExtensions = true }
+"com.apple.finder" = { _FXSortFoldersFirst = true }
+
+[tasks.bootstrap]
+description = "Apply the small machine-setup exceptions mise cannot express"
+run = "./scripts/bootstrap_exceptions.zsh"
