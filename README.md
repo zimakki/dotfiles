@@ -1,88 +1,89 @@
 # dotfiles
 
-This repo manages my macOS dotfiles, terminal/TUI app configs, shared theme
-assets, and cross-agent skills. The `[dotfiles]` section of `mise.toml` is the
-source of truth for static machine-linked files; `setup_sim_links.zsh` owns only
-the dynamic Lazygit destination.
+This repository is the reproducible entry point for a macOS setup. It keeps
+package inventory, runtimes, app configuration, shell configuration, macOS
+preferences, and shared agent skills understandable without mirroring the
+entire home directory.
 
-Managed areas currently include:
+## Repository map
 
-- Shell: `.zshenv`, `.zprofile`, `.zshrc`, Starship, Atuin, zsh syntax highlighting
-- Terminal/TUI tools: Ghostty, Lazygit, Hunk, bat, Television, Warp keybindings/themes
-- Developer tooling: Git config, global gitignore, mise global tools, Claude settings
-- System/app config: Karabiner and Homebrew bundle
+| Path | Owns |
+| --- | --- |
+| `BrewFile` | The only Homebrew formula, cask, and Mac App Store inventory |
+| `mise.toml` | Pinned mise tools, static dotfile destinations, and typed macOS defaults |
+| `config/<app>/` | Canonical, app-oriented configuration sources |
+| `scripts/bootstrap/` | Preflight, verification, and the few bootstrap exceptions |
+| `scripts/maintenance/` | Explicit maintenance such as agent-skill synchronization |
+| `.agents/skills/` | Vendor-neutral source for repo-managed agent skills |
+| `tests/bootstrap/` | Bootstrap contract and isolated-machine tests |
+| `docs/` | Current decisions, conventions, and runbooks |
 
-Not every tracked config-like artifact is symlinked. `.agents/skills/` is the
-vendor-neutral source of truth for skills. `scripts/sync_agent_skills.sh --fix`
-links each one into `~/.agents/skills`, `~/.claude/skills`, and
-`${CODEX_HOME:-~/.codex}/skills`; the bootstrap exception task runs it automatically.
-Run the script without `--fix` for a read-only lint/audit. When Hunk is
-installed, the synchronizer also links its bundled `hunk-review` skill directly
-from Hunk's stable Homebrew path so upgrades do not leave a stale copied skill.
-`raycast.rayconfig` is a manual Raycast import artifact and should not be
-symlinked.
+Root-level legacy config names may temporarily exist as compatibility symlinks
+while machines are relinked. Do not add new config there; add it under
+`config/<app>/` and declare its destination in `[dotfiles]` in `mise.toml`.
 
-Project instructions follow the same low-drift pattern: `AGENTS.md` is the
-repo-authored source of truth for shared agent guidance, and `CLAUDE.md` is a
-thin Claude Code shim that imports `@AGENTS.md`. Keep shared instructions in
-`AGENTS.md` rather than duplicating them across agent-specific files.
+## Ownership model
+
+- Plain, user-authored config is linked from `config/<app>/`.
+- App-mutated JSON is merged into the live app-owned file. Claude and Karabiner
+  use repository-owned overlays, preserving live keys the overlay does not
+  manage.
+- Opaque exports, caches, generated defaults, credentials, and app state stay
+  outside Git. Track only intentional overrides.
+- App-specific themes stay with their app because their schemas and loading
+  rules differ.
+
+`mise bootstrap` is the coordinator. It applies the canonical `BrewFile`
+before tools, manages static links and typed defaults, then calls the narrow
+exception scripts. Never run bootstrap from a secondary or disposable
+worktree; preflight intentionally rejects it.
+
+The architecture rationale is recorded in
+[`docs/decisions/0001-app-oriented-config.md`](docs/decisions/0001-app-oriented-config.md)
+and
+[`docs/decisions/0002-safe-bootstrap.md`](docs/decisions/0002-safe-bootstrap.md).
 
 ## Fresh-machine setup
 
-Install Xcode Command Line Tools, Homebrew, Git, and mise **2026.7.4 or newer**, then clone this repo. Prerequisites are deliberately separate; the repo never silently upgrades the live mise binary. From the checkout:
+Install Xcode Command Line Tools, Homebrew, Git, and a mise version satisfying
+`min_version` in `mise.toml`. Clone this repository at its canonical location,
+then run:
 
 ```sh
-./scripts/phase2_preflight.sh
+scripts/bootstrap/preflight.zsh
 mise trust ./mise.toml
 mise bootstrap --dry-run
 mise bootstrap
-# Bootstrap links the managed zshrc first; KEEP_ZSHRC then preserves that link.
+
+# Bootstrap links zshrc first; preserve it when installing Oh My Zsh.
 [ -d ~/.oh-my-zsh ] || KEEP_ZSHRC=yes RUNZSH=no CHSH=no \
   sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-[ -f ~/.oh-my-zsh/oh-my-zsh.sh ] && echo "✅ oh-my-zsh" || echo "❌ oh-my-zsh"
-# bootstrap trusts the identical global config symlink during its final task
+
 mise bootstrap status
-./scripts/verify_setup.sh
+scripts/bootstrap/verify.zsh
 ```
 
-On the first dry-run, mise may warn that the planned global config target is
-not trusted yet because the symlink does not exist. The actual bootstrap creates
-that link, and its final task trusts the identical reviewed config.
+Inspect every conflict before considering `--force-dotfiles`. The full capture,
+recovery, and manual follow-up procedure is in
+[`docs/runbooks/migrate-mac.md`](docs/runbooks/migrate-mac.md).
 
-`mise bootstrap` is the conductor. Its pre-tools hook runs the canonical
-`BrewFile` first, then installs seven pinned tools. It owns 19 static dotfile
-links and 12 typed macOS defaults. The final task handles the dynamic Lazygit
-destination, skill links, host-scoped battery preference, app restarts, and the
-manual GUI/credential reminder. Inspect conflicts before deliberately using
-`--force-dotfiles`.
+## Validate changes
 
-The same discoverable `mise.toml` is linked globally at
-`~/.config/mise/config.toml`, preserving global runtime behavior without a
-second inventory. After that link exists, `mise run bootstrap` resolves the
-exception script through it and works outside the checkout as well. The full
-`mise bootstrap` conductor remains checkout-scoped because its Brew hook and
-managed sources belong to this repository.
-
-## Validation
-
-Run the same portable checks as CI before committing:
+Run the portable suite before committing:
 
 ```sh
 scripts/ci_checks.sh
 ```
 
-This checks shell syntax and common shell errors, JSON/TOML/YAML and Brewfile
-syntax, the mise bootstrap ownership contract, exception manifest, and
-cross-agent `SKILL.md` metadata, Codex interface metadata, and discovery. The
-full `scripts/verify_setup.sh` remains the machine-level check for installed
-apps, runtimes, and live dotfile links.
+For a live-machine convergence check, run:
 
-Migration and manual GUI details live in [`MIGRATION.md`](MIGRATION.md). The
-completed incremental rollout and its recovery procedure are preserved as a
-historical record in
-[`docs/mise-bootstrap-rollout.md`](docs/mise-bootstrap-rollout.md).
+```sh
+scripts/bootstrap/verify.zsh
+```
 
-### Theme
+Use the project-local `install-app`, `uninstall-app`, `cleanup-report`, and
+`dotfiles-skill-linter` skills for routine maintenance. Agent skills are linked
+into supported clients by `scripts/maintenance/sync-agent-skills.sh --fix`.
 
-The terminal/TUI theme target is Catppuccin Mocha, using the Mauve accent where
-an app asks for an accent choice.
+The shared visual target is Catppuccin Mocha, using Mauve where an app exposes
+an accent choice.

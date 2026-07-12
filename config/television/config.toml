@@ -1,0 +1,47 @@
+# Keep only deliberate behavior; Television owns the remaining defaults.
+default_channel = "files"
+history_size = 200
+
+[ui]
+theme = "catppuccin-mocha-mauve.toml"
+
+[shell_integration]
+fallback_channel = "files"
+
+# Ctrl-T chooses a channel from the command being edited. Every referenced
+# channel below is either built into Television or maintained in cable/.
+[shell_integration.channel_triggers]
+"env" = ["export", "unset"]
+"dirs" = ["cd", "ls", "rmdir", "z"]
+"files" = [
+  "cat",
+  "less",
+  "head",
+  "tail",
+  "vim",
+  "nvim",
+  "nano",
+  "bat",
+  "cp",
+  "mv",
+  "rm",
+  "touch",
+  "chmod",
+  "chown",
+  "ln",
+  "tar",
+  "zip",
+  "unzip",
+  "gzip",
+  "gunzip",
+  "xz",
+]
+"git-diff" = ["git add", "git restore"]
+"git-branch" = ["git checkout", "git branch", "git merge", "git rebase", "git pull", "git push"]
+"git-log" = ["git log", "git show"]
+"docker-images" = ["docker run"]
+"git-repos" = ["nvim", "code", "hx", "git clone"]
+
+[shell_integration.keybindings]
+"smart_autocomplete" = "ctrl-t"
+# Deliberately omit command_history: Atuin owns Ctrl-R.

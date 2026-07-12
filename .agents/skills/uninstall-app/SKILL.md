@@ -5,89 +5,98 @@ description: Cleanly remove an application or tool — uninstall it, update Brew
 
 # Uninstall an app via the dotfiles repo
 
-Removal is the mirror of install: the machine AND the repo both change, and the
-repo records *why* (prune-by-commenting, per BrewFile convention).
+Treat removal as a coordinated machine and repository change. Before changing
+shell config or PATH, read `docs/conventions/shell-config.md`.
 
-Before touching shell config or PATH cleanup, read
-`docs/conventions/shell-config.md`.
+Ask for the app or tool name when missing. Confirm the exact package token and
+show the complete removal set before performing destructive actions.
 
-Input: an app/tool name. Confirm the exact BrewFile token before acting.
+## 1. Find every trace
 
-## 1. Find every trace first (read-only)
+Search the canonical manifests, app-oriented config, bootstrap exceptions,
+shell config, and current docs:
 
 ```sh
-grep -in "<app>" BrewFile mise.toml setup_sim_links.zsh zshenv zprofile zshrc hosts/*.zsh macos_defaults.sh MIGRATION.md
-brew list | grep -i <app>; brew list --cask | grep -i <app>
+rg -n -i '<app>' \
+  BrewFile mise.toml config scripts/bootstrap docs .agents/skills
+brew list | rg -i '<app>'
+brew list --cask | rg -i '<app>'
 ls -d ~/.config/<app>* ~/Library/Application\ Support/<App>* ~/.<app>* 2>/dev/null
-ls ~/Library/Preferences/ | grep -i <app>
-ls ~/Library/LaunchAgents/ | grep -i <app>
+ls ~/Library/Preferences/ ~/Library/LaunchAgents/ 2>/dev/null | rg -i '<app>'
 ```
 
-Also check whether anything else depends on it: `brew uses --installed <formula>`.
-If there are dependents, stop and discuss.
+Run `brew uses --installed <formula>` for a formula. Stop and discuss installed
+dependents before uninstalling it.
 
-Present the full list of what will be touched and get a confirmation —
-uninstalls are destructive.
+## 2. Uninstall deliberately
 
-## 2. Uninstall
+- For Homebrew, use `brew uninstall [--cask] <token>`. Offer `--zap` only after
+  showing the cask's zap stanza and confirming the user wants its data removed.
+- For mise, remove the declaration, preview unused versions with `mise prune
+  --dry-run`, then preview the exact version with `mise uninstall --dry-run`
+  before uninstalling it.
+- For Mac App Store apps, remove the manifest entry and uninstall by ID when
+  supported.
+- Show `brew autoremove --dry-run` afterward. Run the real autoremove only after
+  the user approves that exact list.
 
-- brew formula/cask: `brew uninstall [--cask] <token>`. For casks, prefer
-  `brew uninstall --zap --cask <token>` if the user wants config/caches gone too
-  (show what zap would remove first: `brew info --cask <token>` stanza).
-- mise runtime: remove from `[tools]` in `mise.toml`, preview the now-unused
-  versions with `mise prune --dry-run <tool>`, then preview the exact removal
-  with `mise uninstall --dry-run <tool>@<version>`. Run the same `mise
-  uninstall` command without `--dry-run` only after reviewing that version.
-- mas app: `mas uninstall <id>` (may need `sudo`) or drag-to-trash; remove the
-  `mas` line from the BrewFile.
-- Afterwards: show now-orphaned dependencies with `brew autoremove --dry-run`.
-  Run `brew autoremove` only after the user confirms that list.
+## 3. Update the repository
 
-## 3. Update the repo
+1. Delete the inactive entry from `BrewFile`; it is an inventory, not a removal
+   log. Put a durable rationale in an ADR only when future maintainers need it,
+   and otherwise let the commit explain the change. Remove an unused
+   third-party tap when appropriate.
+2. Remove the app's `[dotfiles]` entry and its canonical `config/<app>/`
+   content. If it uses a JSON overlay, remove its apply and verification calls
+   instead; preserve the app-owned live file unless the user separately asks
+   to delete it. Treat any root compatibility symlink as transitional; remove
+   it with the app rather than turning it back into a source file.
+3. Identify the old live destination explicitly. Mise does not infer that a
+   now-undeclared symlink should be deleted, so ask before removing it from
+   `$HOME`.
+4. Remove interactive behavior from `config/zsh/zshrc` and the matching
+   `config/zsh/lib/` module, PATH and shared environment from
+   `config/zsh/zshenv`, and deliberate machine-only entries from
+   `config/zsh/hosts/*.zsh`.
+5. Remove supported macOS settings from `[bootstrap.macos.*]`. Touch
+   `scripts/bootstrap/apply-macos-exceptions.zsh` only for an actual exception.
+   Removing a declaration does not restore the old live preference; never
+   guess its previous value.
+6. Update current docs and bootstrap tests when their contract changes. Do not
+   preserve completed rollout notes as a substitute for current guidance.
 
-1. **BrewFile**: comment the line out with a reason and date rather than deleting —
-   `# brew "<token>"  # removed 2026-06: <reason>` — matching the existing
-   pruned-entry style. Delete outright only if the user says it was a mistake to
-   ever have it. If this was the last active token from a custom tap, review
-   whether its `tap "owner/repo"` declaration should be removed too.
-2. **mise.toml `[dotfiles]`**: remove the static entry. The old symlink remains
-   because mise's declarative dotfiles are stateless; identify it explicitly and
-   ask before removing the link from `$HOME`. Only edit `setup_sim_links.zsh`
-   for the dynamic Lazygit exception.
-3. **Repo config files**: `git rm` the app's tracked config (it stays in history).
-4. **Shell config**: remove aliases, `eval` init lines, completions, and other
-   interactive behavior from `zshrc`; remove the tool's PATH entry from the
-   guarded `path` array in `zshenv`; remove deliberate machine-specific entries
-   from matching `hosts/*.zsh` files.
-5. **mise macOS defaults / exceptions / docs**: remove supported typed settings
-   from `[bootstrap.macos.*]`; touch `macos_defaults.sh` only for an exception;
-   update MIGRATION.md where the app has manual follow-up. Removing a declaration
-   does not restore the live preference: inspect its current and pre-change
-   values, then ask whether to leave it or explicitly restore/delete it. Never
-   guess the prior value.
+For mutable app config, remove only managed overlay keys unless the user asks to
+remove all app state. Do not discard app-written Claude or Karabiner keys merely
+because a managed source exists.
 
-## 4. Sweep leftovers on disk
+## 4. Sweep leftovers
 
-Offer to delete (ask per item, never blanket-delete):
+Offer each path separately; never blanket-delete:
 
-```sh
-~/.config/<app>/   ~/Library/Application Support/<App>/
-~/Library/Preferences/<bundle-id>.plist   ~/Library/Caches/<bundle-id>/
+```text
+~/.config/<app>/
+~/Library/Application Support/<App>/
+~/Library/Preferences/<bundle-id>.plist
+~/Library/Caches/<bundle-id>/
 ~/Library/LaunchAgents/<bundle-id>*.plist
 ```
 
 ## 5. Validate and hand off
 
+Run the repository checks from any checkout:
+
 ```sh
 scripts/ci_checks.sh
+```
+
+Run the machine preview only from the canonical checkout:
+
+```sh
+scripts/bootstrap/preflight.zsh
 mise bootstrap --dry-run
 ```
 
-When the change alters the number of tools, dotfiles, typed defaults, dynamic
-links, or exception writes, update the corresponding ownership assertions in
-`scripts/test_bootstrap_config.py` and any exact counts or version lists in
-`README.md` and `MIGRATION.md` before running CI.
-
-Commit or push only when requested or explicitly included in the current task.
-Report: what was uninstalled, what was kept (and why), and any follow-ups
-(e.g. revoke an API key the app held).
+Update derived assertions under `tests/bootstrap/` when ownership changes.
+Commit or push only when requested or explicitly included in the task. Report
+what was removed, what was retained and why, and follow-ups such as credential
+revocation.

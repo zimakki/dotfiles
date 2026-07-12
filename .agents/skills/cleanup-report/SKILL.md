@@ -5,92 +5,106 @@ description: Audit the machine against the dotfiles repo and report cleanup cand
 
 # Cleanup report
 
-Read-only audit first; print the full report; THEN offer fixes one finding at a
-time (each fix follows the `uninstall-app` skill's conventions). Never remove
-anything during the audit phase.
+Run a read-only audit, report all findings, then offer fixes one at a time using
+the `uninstall-app` conventions. Never remove anything during the audit.
 
 Before auditing shell config, read `docs/conventions/shell-config.md`.
+Parallelize independent checks where possible.
 
-Run the checks below (parallelize where possible). For each, report findings
-with a short "why it's suspect" note, or "✅ clean".
-
-## 1. BrewFile ↔ reality drift
+## 1. Homebrew drift
 
 ```sh
-brew bundle check --file=BrewFile --verbose        # in BrewFile, not installed
-brew bundle cleanup --file=BrewFile                # installed, not in BrewFile (DRY-RUN — never --force)
+brew bundle check --file=BrewFile --verbose
+brew bundle cleanup --file=BrewFile
+brew autoremove --dry-run
+brew leaves -r
 ```
 
-Caveat: commented-out BrewFile entries are intentional prunes — anything
-`cleanup` lists that matches a commented line is "pruned in repo but still
-installed" (strong removal candidate). Anything not in the file at all was
-installed ad-hoc and never recorded — candidate to either add (via
-`install-app`) or remove.
+Never pass `--force` to cleanup. Classify a commented `BrewFile` match as
+“pruned in repo but still installed”; classify a token absent from the file as
+an ad-hoc install that should be added or removed.
 
-## 2. Orphaned dependencies & forgotten CLIs
+## 2. Stale tools and apps
+
+Run the tested Atuin/Homebrew usage audit, which defaults to a 120-day stale
+threshold:
 
 ```sh
-brew autoremove --dry-run     # deps nothing needs anymore
-brew leaves -r                # formulae installed on request — eyeball against BrewFile
+scripts/maintenance/audit-cli-usage.zsh
 ```
 
-## 3. Stale CLI usage (atuin history cross-reference)
+Report its never-used and stale formulae. Do not reimplement its binary
+discovery or timestamp loop inline; the script handles zsh arrays without
+implicit whitespace splitting.
 
-Run the audit script from MIGRATION.md §1c (brew leaves → each formula's real
-binaries → newest atuin timestamp). Report `NEVER`/`STALE >120d` items. Apply
-its caveats: libraries/build-deps and editor-invoked tools (fd, rg, pkg-config,
-openssl…) look unused but aren't — mark those "indirect use, keep".
+Treat this only as evidence. Libraries, build dependencies, editor-invoked
+tools, and commands used before Atuin history began can look unused.
 
-## 4. Unused GUI apps
+For GUI apps, prefer the macOS activity database when the terminal has Full
+Disk Access; otherwise use visible launcher recency and filesystem timestamps.
+Treat Spotlight `kMDItemLastUsedDate` as a weak hint. Cross-reference candidates
+with active `BrewFile` casks.
+
+## 3. Repository structure drift
+
+- Confirm canonical app config lives below `config/<app>/` and every stable
+  managed source has the intended `[dotfiles]` destination.
+- Flag new root-level regular config files. Temporary compatibility symlinks
+  from the staged migration are allowed only while a live target still needs
+  relinking.
+- Flag opaque exports, caches, databases, automatic backups, secrets, and
+  unmodified generated defaults tracked in Git.
+- Treat Claude and Karabiner as app-owned live files with managed JSON overlays.
+  Run `scripts/bootstrap/json-overlay.py --check` for each one and report drift;
+  never apply an overlay during the audit.
+- Treat `scripts/bootstrap/` as an exception boundary. Package inventory,
+  static links, typed defaults, and tools belong in their manifests.
+
+## 4. Machine drift and dead references
+
+Run `mise bootstrap status --missing` with a mise version satisfying
+`min_version` in `mise.toml`. Report static-link, typed-default, and tool drift.
+Do not apply bootstrap from a secondary worktree.
+
+Audit:
+
+- `~/.config` directories for apps no longer installed; use modification time
+  only as a hint.
+- retired home-directory state such as old runtime managers and project version
+  files.
+- missing PATH entries from `${(s/:/)PATH}` and the line in
+  `config/zsh/zshenv`, `config/zsh/zshrc`, or `config/zsh/hosts/*.zsh` that
+  added each one.
+- PATH mutations in `config/zsh/zshrc`; environment belongs in
+  `config/zsh/zshenv` even when the directory exists.
+- shell hooks, sources, aliases, and exported tool variables whose command or
+  file no longer exists.
+- dangling destinations declared in `[dotfiles]`, the dynamic Lazygit link
+  managed by `scripts/bootstrap/link-lazygit-config.zsh`, and discovery links
+  managed by `scripts/maintenance/sync-agent-skills.sh`.
+- timestamped conflict backups that are no longer needed.
+
+Use a scoped dangling-link search rather than deleting its output:
 
 ```sh
-mdls -name kMDItemLastUsedDate /Applications/*.app 2>/dev/null | paste - - | grep -v null
+find "$HOME" "$HOME/.config" -maxdepth 3 -type l \
+  ! -exec test -e {} \; -print 2>/dev/null
 ```
 
-(mdls is unreliable on modern macOS — treat as a hint. The knowledgeC.db query
-in MIGRATION.md §1d is better if the terminal has Full Disk Access.)
-Cross-reference rarely-used apps against BrewFile casks.
+## 5. Optional deep scan
 
-## 5. Bootstrap, orphaned config & dead references
+If Mole is already installed, offer its dry-run for app remnants and orphaned
+data. Do not install audit tooling without permission.
 
-Run `mise bootstrap status --missing` with mise >= the `min_version` declared in
-`mise.toml`. Report drift in static dotfiles, typed macOS defaults, and tools.
-Treat `setup_sim_links.zsh` and `macos_defaults.sh` as exception-only surfaces.
+## Report
 
-- `~/.config` dirs for apps no longer installed:
-  `for d in ~/.config/*/; do` … check the app still exists via
-  `command -v` / `brew list` / `/Applications`. Also sort by mtime (`ls -lt ~/.config`) —
-  untouched >1y is a hint.
-- Home-dir dotfiles/dirs from retired tools (e.g. `~/.asdf`, `~/.doom_emacs.d`,
-  `~/.tool-versions` files in projects).
-- **Dead PATH entries**: `for p in ${(s/:/)PATH}; do [[ -d $p ]] || echo "MISSING: $p"; done`
-  — then find which `zshenv`, `zshrc`, or `hosts/*.zsh` line adds each missing
-  one.
-- **Misplaced PATH entries**: flag PATH exports or path mutations in `zshrc`
-  that should live in the guarded `path` array in `zshenv`. These are findings
-  even if the target directory exists.
-- **Shell references to absent commands**: grep `zshrc`, `zshenv`, and
-  `hosts/*.zsh` for `eval "$(`, `source`, aliases, PATH/path entries, and
-  exported tool vars; flag any whose underlying command/file no longer exists
-  (this is what catches asdf-style residue).
-- **Dangling symlinks** from `[dotfiles]` destinations and the dynamic Lazygit
-  destination in `setup_sim_links.zsh`:
-  `find ~ -maxdepth 3 -type l ! -exec test -e {} \; -print 2>/dev/null` (plus `~/.config`).
-- Stray `*.bak` files left by the dynamic exception's conflict backup.
+Group findings as:
 
-## 6. Optional deep scan
+- **Safe to remove** — clear pruned installs, dead references, dangling links,
+  or reviewed backups.
+- **Probably unused; confirm** — stale tools, apps, and config directories.
+- **Keep; indirect dependency** — libraries and automation-invoked tools.
 
-If `mole` is installed (`brew install mole`), offer `mole --dry-run` for app
-remnants and orphaned data. Don't install it unprompted.
-
-## Report format
-
-Group by confidence:
-- **Safe to remove** (pruned-in-repo-but-installed, dead PATH lines, dangling symlinks, .bak files)
-- **Probably unused — confirm** (stale CLIs, unused apps, old config dirs)
-- **Keep — looks unused but isn't** (libraries, editor-invoked tools)
-
-Then ask which findings to act on. Apply fixes one at a time. Commit only when
-requested or when the current task explicitly includes it, using one atomic
-commit per logical change. Never run `brew bundle cleanup --force` or bulk
-deletions in one shot.
+Ask which findings to act on. Apply one reviewed fix at a time. Never run
+`brew bundle cleanup --force`, force a dotfile conflict, or perform a bulk
+deletion.

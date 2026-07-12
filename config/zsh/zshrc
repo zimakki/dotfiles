@@ -1,0 +1,72 @@
+#!/bin/zsh
+
+# ── Oh My Zsh ────────────────────────────────────────────────────────────────
+export ZSH="$HOME/.oh-my-zsh"
+ZSH_THEME=""
+ENABLE_CORRECTION="true"
+HIST_STAMPS="yyyy-mm-dd"
+plugins=(dotenv mix git)
+[[ -f "$ZSH/oh-my-zsh.sh" ]] && source "$ZSH/oh-my-zsh.sh"
+
+_dotfiles_zsh_dir="${${(%):-%N}:A:h}"
+source "$_dotfiles_zsh_dir/lib/functions.zsh"
+source "$_dotfiles_zsh_dir/lib/aliases.zsh"
+source "$_dotfiles_zsh_dir/lib/secrets.zsh"
+
+# ── Completions and interactive tools ───────────────────────────────────────
+if [[ -t 1 ]] && command -v ngrok >/dev/null 2>&1; then
+  eval "$(ngrok completion)"
+fi
+
+export FZF_DEFAULT_OPTS=" \
+--color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
+--color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
+--color=marker:#b4befe,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8 \
+--color=selected-bg:#45475a \
+--color=border:#6c7086,label:#cdd6f4"
+
+if [[ -t 1 ]] && command -v fzf >/dev/null 2>&1; then
+  eval "$(fzf --zsh)"
+  bindkey -r '^T'
+fi
+
+if (( $+commands[mise] )); then
+  eval "$(mise activate zsh)"
+fi
+
+if (( $+commands[zoxide] )); then
+  eval "$(zoxide init --cmd cd zsh)"
+fi
+
+if [[ -s "$HOME/.bun/_bun" ]]; then
+  source "$HOME/.bun/_bun"
+fi
+
+if [[ -z "${DOTFILES_SKIP_SECRET_REFRESH:-}" ]]; then
+  _load_api_keys
+fi
+
+# Television owns Ctrl-T; Atuin owns Ctrl-R.
+if [[ -t 1 ]]; then
+  if (( $+commands[tv] )); then
+    eval "$(tv init zsh)"
+    bindkey -r '^R'
+  fi
+  (( $+commands[atuin] )) && eval "$(atuin init zsh)"
+fi
+
+# ── Prompt and line-editor widgets ──────────────────────────────────────────
+# Keep zsh-syntax-highlighting last.
+export STARSHIP_LOG=error
+export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#6c7086"
+if [[ -t 1 ]]; then
+  [[ -f /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]] &&
+    source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+  (( $+commands[starship] )) && eval "$(starship init zsh)"
+
+  source "$HOME/.zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh"
+  source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+fi
+
+unset _dotfiles_zsh_dir
