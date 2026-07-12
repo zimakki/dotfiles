@@ -1,7 +1,8 @@
 #!/usr/bin/env zsh
 #
 # Phase 2 pre-flight — confirm the new Mac is ready to install BEFORE running
-# anything. Read-only. Exits non-zero if any blocker is found; warnings don't block.
+# anything. Non-destructive, but it fetches remote refs while checking whether
+# the checkout is current. Exits non-zero if any blocker is found; warnings don't block.
 #
 #   ./scripts/phase2_preflight.sh
 #
@@ -61,7 +62,7 @@ for s in setup_sim_links.zsh macos_defaults.sh scripts/bootstrap_exceptions.zsh;
   [[ -x "$REPO/$s" ]] && ok "$s executable" || warn "$REPO/$s not executable (chmod +x)"
 done
 
-hdr "Brewfile tokens (every formula/cask must resolve)"
+hdr "Brewfile formula/cask tokens"
 if [[ ! -f "$BREWFILE" ]]; then
   bad "BrewFile not found at $BREWFILE"
 else
@@ -70,6 +71,12 @@ else
   casks_list=$(brew casks 2>/dev/null)
   have_lists=1; [[ -z "$formulae_list" || -z "$casks_list" ]] && have_lists=0
   (( have_lists )) || warn "couldn't fetch Homebrew catalog — falling back to per-token lookups"
+
+  declared_taps=()
+  while IFS= read -r line; do
+    [[ "$line" =~ '^[[:space:]]*tap[[:space:]]+"([^"]+)"' ]] \
+      && declared_taps+=("${match[1]}")
+  done < "$BREWFILE"
 
   resolves() {  # kind tok -> 0 ok / 1 bad / 2 soft(tap-qualified)
     local kind=$1 tok=$2 flag
@@ -90,11 +97,17 @@ else
     resolves "$kind" "$tok"
     case $? in
       1) bad_hard+=("$kind \"$tok\"") ;;
-      2) bad_soft+=("$tok") ;;
+      2)
+        tap_declared=0
+        for declared_tap in $declared_taps; do
+          [[ "${tok%/*}" == "$declared_tap" ]] && tap_declared=1 && break
+        done
+        (( tap_declared )) || bad_soft+=("$tok")
+        ;;
     esac
   done < "$BREWFILE"
-  if (( ${#bad_hard} == 0 )); then ok "all $n tokens resolve"; else for t in $bad_hard; do bad "unknown $t (wrong brew/cask type or renamed)"; done; fi
-  for t in $bad_soft; do warn "tap token $t — ensure its tap is available"; done
+  if (( ${#bad_hard} == 0 )); then ok "all $n tokens are catalog-resolved or backed by declared taps"; else for t in $bad_hard; do bad "unknown $t (wrong brew/cask type or renamed)"; done; fi
+  for t in $bad_soft; do warn "tap token $t has no matching tap declaration"; done
 fi
 
 print "\n========================================"
