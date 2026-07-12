@@ -5,115 +5,123 @@ description: Install a new application or tool through the dotfiles repo — pic
 
 # Install an app via the dotfiles repo
 
-The dotfiles repo is the single entry point for machine setup. Record automated
-installs here before applying them so a new machine reproduces them and `git
-log` explains them. Explicitly document rare manual or npm-global exceptions;
-do not imply that a comment installs software.
+Record automated installs before applying them so a new machine reproduces the
+result and Git explains it. Before changing shell config, PATH, or an installer
+snippet, read `docs/conventions/shell-config.md`.
 
-Before touching shell config, PATH, or installer shell snippets, read
-`docs/conventions/shell-config.md`.
-
-Input: an app/tool name (and optionally a URL). If no argument given, ask what
-to install.
+Ask for the app or tool name when it is missing. Resolve ambiguous package
+names before making changes.
 
 ## 1. Pick the channel
 
-In priority order:
+Use the first suitable channel:
 
-1. **Language runtime** (node, python, elixir, erlang, ruby, go…) → **mise**,
-   never brew. Add a pinned version to `mise.toml` under `[tools]`, confirm the
-   installed mise satisfies `min_version`, then run `mise bootstrap --only
-   tools` so the BrewFile pre-tools hook preserves the required build order.
-2. **GUI app** → `brew search --cask <name>`. If found: `cask "<token>"`.
-3. **CLI tool** → `brew search <name>` / `brew info <name>`. If found: `brew "<token>"`.
-4. **Mac App Store only** → `mas search "<name>"`. Add `mas "<App Name>", id: NNNN`
-   to the BrewFile. If `brew "mas"` isn't in the BrewFile yet, add it (above the
-   casks) and install it first.
-5. **npm global** (rare — prefer per-project) → confirm with the user it really
-   needs to be global, then `npm i -g` and note it in MIGRATION.md §1e.
-6. **Nothing found** → check the project's official website/docs for a brew tap
-   or alternate cask token. Record a custom `tap "owner/repo"` and use the fully
-   qualified `owner/repo/token` so fresh-machine preflight can recognize it
-   before the tap is installed. If it's truly manual-install-only, say so and
-   add a commented line to the BrewFile as a record: `# cask "<name>" — not on
-   brew, manual install from <url>`.
+1. Add language runtimes and mise-supported global tools to `[tools]` in
+   `mise.toml`; pin a version. Do not install runtimes such as Node or Python as
+   direct Homebrew entries.
+2. Add GUI apps as Homebrew casks.
+3. Add CLI tools as Homebrew formulae.
+4. Add Mac App Store-only apps with a `mas` entry; ensure `mas` itself is in
+   `BrewFile`.
+5. Prefer a mise backend over a raw global npm install. Use a raw global install
+   only after confirming it is truly machine-wide; report it as an unmanaged
+   exception rather than implying the repo will reproduce it.
+6. For a third-party tap, verify the official project source, record the tap,
+   and use the fully qualified token. If no automated channel exists, keep it
+   out of `BrewFile` and document a genuinely repeatable manual step in the
+   current setup runbook.
 
-If the name is ambiguous (multiple plausible tokens), show `brew info` for the
-candidates and ask.
+Use `brew search`, `brew info`, `mas search`, and official project
+documentation to verify the selection. Do not infer a token from the display
+name.
 
-## 2. Record, then install
+## 2. Record, install, and verify
 
-1. Edit the **BrewFile** (note: capital F, `BrewFile` not `Brewfile`): add the
-   line in alphabetical position within its section (formulae first, then casks).
-2. Install: `brew install [--cask] <token>` (or `mise bootstrap --only tools` /
-   `mas install <id>`).
-3. Verify: `command -v <bin>` for CLIs, or `ls /Applications | grep -i <name>`
-   for casks.
+Add formulae and casks in the existing sorted sections of `BrewFile` (capital
+F). For mise tools, update `[tools]` and preserve the minimum-version and build
+ordering contract.
 
-## 3. Capture config (the part that's easy to forget)
+Install through the chosen channel, then verify the actual executable or app.
+Run `scripts/bootstrap/preflight.zsh` before any `mise bootstrap` apply. If the
+checkout is a secondary worktree, record and test the repo change but do not
+apply bootstrap to the machine.
 
-After install (and ideally after the user has launched/configured the app once),
-look for config the app writes:
+## 3. Capture only intentional config
+
+Inspect likely locations after the app has been configured once:
 
 ```sh
 ls -d ~/.config/<app>* 2>/dev/null
 ls -d ~/Library/Application\ Support/<App>* 2>/dev/null
-ls ~/Library/Preferences/ | grep -i <app>
-ls ~/.<app>* 2>/dev/null
+ls ~/Library/Preferences/ | rg -i '<app>'
+ls -d ~/.<app>* 2>/dev/null
 ```
 
-Decide with the user what's worth tracking:
+Classify the result before adding it:
 
-- **Plain-text config you'd edit by hand** (toml/yaml/json/lua) → copy into the
-  repo root (follow existing naming: `<app>_config.toml`, `<app>.json`, or a
-  directory like `television/`) and add a static symlink entry under
-  `[dotfiles]` in `mise.toml`. Preview with `mise bootstrap --dry-run --only
-  dotfiles`; do not use `--force-dotfiles` without reviewing conflicts.
-- **Binary plists / app-managed state** → don't symlink. If the app has its own
-  export (like Raycast's `.rayconfig`), note that in MIGRATION.md instead.
-- **Anything containing secrets/tokens** → NEVER commit. Point the user at
-  `~/.zsh_secrets` / 1Password instead.
-- **macOS `defaults` the app needs** → add typed values under
-  `[bootstrap.macos.*]` in `mise.toml` when supported. Reserve
-  `macos_defaults.sh` for unsupported `-currentHost` writes and app restarts.
+- Put stable, user-authored text under `config/<app>/` and add its destination
+  to `[dotfiles]` in `mise.toml`. Use names meaningful inside the app folder,
+  such as `config.toml`, `settings.json`, or `themes/<name>.toml`. Never create
+  a new root-level app config source.
+- For app-mutated files, prefer a supported import or owned-fragment workflow.
+  For JSON without one, use a repository-owned overlay applied through
+  `scripts/bootstrap/json-overlay.py`; add its invocation to the exception
+  coordinator and a read-only check to verification. Do not introduce a
+  whole-file symlink. Claude and Karabiner are existing overlay examples.
+- Keep opaque exports, binary plists, caches, databases, automatic backups, and
+  generated app state outside Git.
+- Track generated upstream material only when it is an intentional override;
+  do not vendor an app's full default catalog.
+- Keep secrets and tokens in 1Password or ignored local files. Never commit
+  them.
+- Add supported scalar macOS preferences under `[bootstrap.macos.*]`. Use
+  `scripts/bootstrap/apply-macos-exceptions.zsh` only for unsupported
+  host-scoped writes or necessary app restarts.
 
-If the app needs shell init, split the installer snippet by what each line does:
+From the canonical checkout, preview static config changes without forcing
+conflicts:
 
-- A bin directory belongs in the guarded `path` array in `zshenv`, with an
-  existence guard. Do not add PATH entries to `zshrc`. If the tool is
-  mise-managed, no PATH entry is needed because the shim covers it.
-- A shell init hook, completion, prompt widget, alias, or interactive function
-  belongs in `zshrc`. Guard terminal UI setup with `[[ -t 1 ]]`.
-- A non-secret exported env var needed by scripts, IDEs, agents, or commands
-  belongs in `zshenv`.
-- Deliberate machine-specific environment belongs in
-  `hosts/<LocalHostName>.zsh`.
+```sh
+mise bootstrap --dry-run --only dotfiles
+```
 
-Keep zsh-syntax-highlighting as the LAST sourced line among interactive widgets.
-If the highlighting colors change, update
-`zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh`; it is symlinked to
-`~/.zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh` and sourced immediately
-before the Homebrew zsh-syntax-highlighting plugin.
+Split shell installer snippets by purpose:
 
-Project-local shared skills live in `.agents/skills/` in this repo. Do not add
-separate repo-owned copies under client-specific directories; `~/.agents/skills`,
-`~/.claude/skills`, and `${CODEX_HOME:-~/.codex}/skills` are synchronized from
-the canonical tree by `scripts/sync_agent_skills.sh`.
+- Add bin directories to the guarded `path` array in `config/zsh/zshenv` with
+  an existence check. Mise-managed tools need no separate PATH entry.
+- Add interactive hooks, completions, and widgets to `config/zsh/zshrc`; put
+  reusable aliases and functions in the matching `config/zsh/lib/` module.
+  Guard terminal UI setup with `[[ -t 1 ]]`.
+- Add non-secret environment needed by scripts, IDEs, or agents to
+  `config/zsh/zshenv`.
+- Add deliberate machine-only environment to
+  `config/zsh/hosts/<LocalHostName>.zsh`.
+
+Keep zsh-syntax-highlighting last among interactive widgets. Its app-owned
+theme lives in `config/zsh/themes/`.
+
+Repo-managed shared skills live only in `.agents/skills/`. Synchronize their
+discovery links with `scripts/maintenance/sync-agent-skills.sh --fix`; never
+commit home-directory links.
 
 ## 4. Validate and hand off
 
-Run the portable checks and inspect the bootstrap preview:
+Run the repository checks from any checkout:
 
 ```sh
 scripts/ci_checks.sh
+```
+
+Run the machine preview only from the canonical checkout:
+
+```sh
+scripts/bootstrap/preflight.zsh
 mise bootstrap --dry-run
 ```
 
-When the change alters the number of tools, dotfiles, typed defaults, dynamic
-links, or exception writes, update the corresponding ownership assertions in
-`scripts/test_bootstrap_config.py` and any exact counts or version lists in
-`README.md` and `MIGRATION.md` before running CI.
+When ownership changes, update derived assertions under `tests/bootstrap/`.
+Avoid duplicating exact tool, link, or defaults counts in prose.
 
-Commit or push only when requested or when the current task explicitly includes
-that workflow. Prefer one atomic commit per app. Report what was installed,
-what config was captured, and anything left manual.
+Commit or push only when requested or explicitly included in the task. Prefer
+one atomic commit per app. Report what was installed, what config was captured,
+and every manual follow-up.

@@ -14,7 +14,7 @@ client-specific directories beyond the required compatibility shims.
 From the dotfiles repository root, run:
 
 ```sh
-scripts/sync_agent_skills.sh
+scripts/maintenance/sync-agent-skills.sh
 ```
 
 Report every failure and warning. The command validates canonical `SKILL.md`
@@ -25,6 +25,12 @@ skill resolves from these user-level discovery roots:
 - `~/.agents/skills`
 - `~/.claude/skills`
 - `${CODEX_HOME:-~/.codex}/skills`
+
+From a secondary worktree, live discovery links are expected to resolve to the
+canonical checkout and therefore appear as mismatches. Do not repair those
+links from the worktree; use `scripts/ci_checks.sh` for its temporary-HOME
+discovery test, and run the live audit again from the canonical checkout after
+the change is merged.
 
 Also run the current Codex validator against every canonical skill when both
 the script and its Python `yaml` dependency are available:
@@ -50,7 +56,7 @@ skill into the repo, because Hunk upgrades should update it in place.
 After reviewing the audit, run:
 
 ```sh
-scripts/sync_agent_skills.sh --fix
+scripts/maintenance/sync-agent-skills.sh --fix
 ```
 
 The repair is idempotent. It creates missing discovery directories and links.
@@ -59,9 +65,9 @@ creating the link. Each discovery root records repo-managed names in
 `.dotfiles-managed-skills`, allowing later audits to detect renamed or removed
 skills and `--fix` to prune only obsolete managed symlinks.
 
-Run the read-only audit again, then `scripts/verify_setup.sh` when a full machine
-verification is appropriate. Tell the user that already-running agent sessions
-may need to restart before newly discovered skill metadata appears.
+Run the read-only audit again, then `scripts/bootstrap/verify.zsh` when a full
+machine verification is appropriate. Tell the user that already-running agent
+sessions may need to restart before newly discovered skill metadata appears.
 
 ## Add or update a skill
 
