@@ -67,6 +67,8 @@ full `scripts/verify_setup.sh` remains the machine-level check for installed
 apps, runtimes, and live dotfile links.
 
 Migration, rollback, and manual GUI details live in [`MIGRATION.md`](MIGRATION.md).
+For the incremental rollout on the current Mac, including the recovery anchor,
+see [`docs/mise-bootstrap-rollout.md`](docs/mise-bootstrap-rollout.md).
 
 ### Theme
 
