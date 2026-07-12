@@ -51,7 +51,11 @@ mdls -name kMDItemLastUsedDate /Applications/*.app 2>/dev/null | paste - - | gre
 in MIGRATION.md §1d is better if the terminal has Full Disk Access.)
 Cross-reference rarely-used apps against BrewFile casks.
 
-## 5. Orphaned config & dead references
+## 5. Bootstrap, orphaned config & dead references
+
+Run `mise bootstrap status --missing` with mise >= the `min_version` declared in
+`mise.toml`. Report drift in static dotfiles, typed macOS defaults, and tools.
+Treat `setup_sim_links.zsh` and `macos_defaults.sh` as exception-only surfaces.
 
 - `~/.config` dirs for apps no longer installed:
   `for d in ~/.config/*/; do` … check the app still exists via
@@ -69,9 +73,10 @@ Cross-reference rarely-used apps against BrewFile casks.
   `hosts/*.zsh` for `eval "$(`, `source`, aliases, PATH/path entries, and
   exported tool vars; flag any whose underlying command/file no longer exists
   (this is what catches asdf-style residue).
-- **Dangling symlinks** from `setup_sim_links.zsh` destinations:
+- **Dangling symlinks** from `[dotfiles]` destinations and the dynamic Lazygit
+  destination in `setup_sim_links.zsh`:
   `find ~ -maxdepth 3 -type l ! -exec test -e {} \; -print 2>/dev/null` (plus `~/.config`).
-- Stray `*.bak` files left by `setup_sim_links.zsh`.
+- Stray `*.bak` files left by the dynamic exception's conflict backup.
 
 ## 6. Optional deep scan
 
@@ -85,7 +90,7 @@ Group by confidence:
 - **Probably unused — confirm** (stale CLIs, unused apps, old config dirs)
 - **Keep — looks unused but isn't** (libraries, editor-invoked tools)
 
-Then ask which findings to act on. Apply fixes one at a time, committing to
-master with a message per logical change (e.g. "Remove dead PATH entries for
-doom-emacs and rebar3"). Never run `brew bundle cleanup --force` or bulk
+Then ask which findings to act on. Apply fixes one at a time. Commit only when
+requested or when the current task explicitly includes it, using one atomic
+commit per logical change. Never run `brew bundle cleanup --force` or bulk
 deletions in one shot.

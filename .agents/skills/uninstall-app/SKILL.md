@@ -1,6 +1,6 @@
 ---
 name: uninstall-app
-description: Cleanly remove an application or tool — uninstall it, update the BrewFile/mise config, remove symlink entries and zshrc references, and sweep leftover config/cache directories. Use when the user wants to uninstall, remove, or stop using an app.
+description: Cleanly remove an application or tool — uninstall it, update BrewFile or mise.toml, remove managed dotfiles and shell references, and sweep leftover config/cache directories. Use when the user wants to uninstall, remove, or stop using an app.
 ---
 
 # Uninstall an app via the dotfiles repo
@@ -16,7 +16,7 @@ Input: an app/tool name. Confirm the exact BrewFile token before acting.
 ## 1. Find every trace first (read-only)
 
 ```sh
-grep -in "<app>" BrewFile mise_config.toml setup_sim_links.zsh zshenv zshrc hosts/*.zsh macos_defaults.sh MIGRATION.md
+grep -in "<app>" BrewFile mise.toml setup_sim_links.zsh zshenv zprofile zshrc hosts/*.zsh macos_defaults.sh MIGRATION.md
 brew list | grep -i <app>; brew list --cask | grep -i <app>
 ls -d ~/.config/<app>* ~/Library/Application\ Support/<App>* ~/.<app>* 2>/dev/null
 ls ~/Library/Preferences/ | grep -i <app>
@@ -34,7 +34,8 @@ uninstalls are destructive.
 - brew formula/cask: `brew uninstall [--cask] <token>`. For casks, prefer
   `brew uninstall --zap --cask <token>` if the user wants config/caches gone too
   (show what zap would remove first: `brew info --cask <token>` stanza).
-- mise runtime: remove from `mise_config.toml`, then `mise prune`.
+- mise runtime: remove from `[tools]` in `mise.toml`, then review `mise prune`
+  output before removing an installed version.
 - mas app: `mas uninstall <id>` (may need `sudo`) or drag-to-trash; remove the
   `mas` line from the BrewFile.
 - Afterwards: `brew autoremove` to drop now-orphaned dependencies (show the list).
@@ -45,14 +46,18 @@ uninstalls are destructive.
    `# brew "<token>"  # removed 2026-06: <reason>` — matching the existing
    pruned-entry style. Delete outright only if the user says it was a mistake to
    ever have it.
-2. **setup_sim_links.zsh**: remove the `LINKS` entry. Remove the now-dangling
-   symlink in `$HOME` (`rm` the link only, not repo content).
+2. **mise.toml `[dotfiles]`**: remove the static entry. The old symlink remains
+   because mise's declarative dotfiles are stateless; identify it explicitly and
+   ask before removing the link from `$HOME`. Only edit `setup_sim_links.zsh`
+   for the dynamic Lazygit exception.
 3. **Repo config files**: `git rm` the app's tracked config (it stays in history).
 4. **Shell config**: remove aliases, `eval` init lines, completions, and other
    interactive behavior from `zshrc`; remove the tool's PATH entry from the
    guarded `path` array in `zshenv`; remove deliberate machine-specific entries
    from matching `hosts/*.zsh` files.
-5. **macos_defaults.sh / MIGRATION.md**: remove or annotate related lines.
+5. **mise macOS defaults / exceptions / docs**: remove supported typed settings
+   from `[bootstrap.macos.*]`; touch `macos_defaults.sh` only for an exception;
+   update MIGRATION.md where the app has manual follow-up.
 
 ## 4. Sweep leftovers on disk
 
@@ -64,11 +69,13 @@ Offer to delete (ask per item, never blanket-delete):
 ~/Library/LaunchAgents/<bundle-id>*.plist
 ```
 
-## 5. Commit
+## 5. Validate and hand off
 
 ```sh
-git add -A && git commit -m "Remove <app>: <reason>" && git push
+scripts/ci_checks.sh
+mise bootstrap --dry-run
 ```
 
+Commit or push only when requested or explicitly included in the current task.
 Report: what was uninstalled, what was kept (and why), and any follow-ups
 (e.g. revoke an API key the app held).
