@@ -1,8 +1,9 @@
 # Shell Config Convention
 
 This is the canonical convention for shell startup files in this dotfiles repo.
-Read it before editing `zshenv`, `zprofile`, `zshrc`, `hosts/*.zsh`, PATH, shell
-init hooks, or tool installer snippets.
+Read it before editing `config/zsh/zshenv`, `config/zsh/zprofile`,
+`config/zsh/zshrc`, `config/zsh/hosts/*.zsh`, PATH, shell init hooks, or tool
+installer snippets.
 
 ## Contents
 
@@ -17,34 +18,37 @@ init hooks, or tool installer snippets.
 
 ## The One Rule
 
-Environment belongs in `zshenv`. Interactive behavior belongs in `zshrc`.
+Environment belongs in `config/zsh/zshenv`. Interactive behavior belongs in
+`config/zsh/zshrc`.
 
-Use `zshenv` for:
+Use `config/zsh/zshenv` for:
 
 - PATH entries
 - exported environment variables needed by commands, scripts, IDEs, agents, or
   other non-interactive shells
-- machine-specific environment loaded through `hosts/<LocalHostName>.zsh`
+- machine-specific environment loaded through
+  `config/zsh/hosts/<LocalHostName>.zsh`
 
-Use `zshrc` for:
+Use `config/zsh/zshrc` for:
 
-- aliases and functions that change command behavior
+- loading aliases and functions from `config/zsh/lib/`
 - prompt setup
 - completion setup
 - line-editor widgets
 - interactive-only tool hooks
 
-Do not add PATH entries to `zshrc`. A tool that only appears in `zshrc` will be
-missing from non-interactive shells.
+Do not add PATH entries to `config/zsh/zshrc`. A tool that only appears there
+will be missing from non-interactive shells.
 
 ## Startup-File Model
 
-`zshenv` is sourced for every zsh invocation. That includes interactive shells,
-login shells, scripts, and commands launched by tools through `zsh -c` or
-`zsh -lc`.
+The installed `~/.zshenv`, linked from `config/zsh/zshenv`, is read for every
+zsh invocation. That includes interactive shells, login shells, scripts, and
+commands launched by tools through `zsh -c` or `zsh -lc`.
 
-`zshrc` is sourced only for interactive zsh shells. It is the right place for
-terminal behavior, but the wrong place for environment required by automation.
+The installed `~/.zshrc`, linked from `config/zsh/zshrc`, is read only for
+interactive zsh shells. It is the right place for terminal behavior, but the
+wrong place for environment required by automation.
 
 This matters because agents, IDEs, daemons, and scripts often shell out with
 commands like:
@@ -53,12 +57,14 @@ commands like:
 zsh -lc 'command -v psql'
 ```
 
-That command reads `zshenv`, but it does not read `zshrc`. A PATH fix in
-`zshrc` will look correct in a terminal and still fail for those callers.
+That command reads `~/.zshenv`, but it does not read `~/.zshrc`. A PATH fix in
+`config/zsh/zshrc` will look correct in a terminal and still fail for those
+callers.
 
 ## Adding A PATH Entry
 
-Add tool directories to the guarded `path` array block in `zshenv`.
+Add tool directories to the guarded `path` array block in
+`config/zsh/zshenv`.
 
 Rules:
 
@@ -96,14 +102,13 @@ still safe in the shared list when it is guarded.
 
 ## Shell Hooks, Completions, And Prompt Widgets
 
-Interactive shell behavior belongs in `zshrc`.
+Interactive shell behavior belongs in `config/zsh/zshrc`.
 
-Put these in `zshrc`:
+Put these in `config/zsh/zshrc`:
 
 - `eval "$(tool init zsh)"` for prompt, widget, or completion setup
 - shell completions
-- aliases
-- functions that alter interactive command behavior
+- sources for `config/zsh/lib/functions.zsh`, `aliases.zsh`, and `secrets.zsh`
 - prompt setup such as starship
 
 Guard terminal UI setup with:
@@ -120,12 +125,19 @@ without a real TTY.
 Keep `zsh-syntax-highlighting` last among zle widgets and prompt-related
 interactive setup. Other widgets should load before it.
 
+Keep reusable interactive definitions small and grouped:
+
+- Put functions in `config/zsh/lib/functions.zsh`.
+- Put aliases in `config/zsh/lib/aliases.zsh`.
+- Put secret-cache loading and refresh behavior in
+  `config/zsh/lib/secrets.zsh`; never put secret values there.
+
 ## Per-Host Config
 
 Machine-specific environment goes in:
 
 ```text
-hosts/<LocalHostName>.zsh
+config/zsh/hosts/<LocalHostName>.zsh
 ```
 
 Find a machine key with:
@@ -134,12 +146,13 @@ Find a machine key with:
 scutil --get LocalHostName
 ```
 
-`zshenv` sources the matching host file if it exists. Missing host files are a
-clean no-op, so new machines do not require a bootstrap file.
+`config/zsh/zshenv` sources the matching host file if it exists. Missing host
+files are a clean no-op, so new machines do not require a bootstrap file.
 
 Use host files only for deliberate machine-specific intent, such as a proxy, a
 machine-only toolchain, or an override. Do not use them for ordinary
-presence-based tool directories; those belong in the guarded `zshenv` path list.
+presence-based tool directories; those belong in the guarded
+`config/zsh/zshenv` path list.
 
 Host files are committed. They must not contain secrets.
 
@@ -152,21 +165,22 @@ macOS login shells run `/etc/zprofile`, which calls `path_helper`. It can reorde
 PATH entries for login shells.
 
 This repo has verified that `path_helper` otherwise puts Homebrew Node and the
-system Python ahead of mise in login shells. The fully managed `zprofile`
-therefore reasserts the portable mise shims after `/etc/zprofile`. Keep that
-reassertion aligned with the shim setup in `zshenv`, and verify both shell modes
-after changing either file.
+system Python ahead of mise in login shells. The fully managed
+`config/zsh/zprofile` therefore reasserts the portable mise shims after
+`/etc/zprofile`. Keep that reassertion aligned with the shim setup in
+`config/zsh/zshenv`, and verify both shell modes after changing either file.
 
 ## Secrets
 
 Never commit secrets to this repo.
 
 Use 1Password and the generated `~/.zsh_secrets` cache for secret material. If a
-tool installer suggests an exported token, do not add it to `zshenv`, `zshrc`, or
-`hosts/*.zsh`.
+tool installer suggests an exported token, do not add it to
+`config/zsh/zshenv`, `config/zsh/zshrc`, or `config/zsh/hosts/*.zsh`.
 
-Non-secret exported settings may go in `zshenv` when they are needed outside
-interactive terminals. Interactive-only settings may stay in `zshrc`.
+Non-secret exported settings may go in `config/zsh/zshenv` when they are needed
+outside interactive terminals. Interactive-only settings may stay in
+`config/zsh/zshrc`.
 
 ## Decision Checklist
 
@@ -174,14 +188,14 @@ When an installer gives a shell snippet, split it by what each line does:
 
 | Snippet type | Destination |
 | --- | --- |
-| Bin directory such as `export PATH="$HOME/.tool/bin:$PATH"` | Guarded `path` array in `zshenv` |
+| Bin directory such as `export PATH="$HOME/.tool/bin:$PATH"` | Guarded `path` array in `config/zsh/zshenv` |
 | Mise-managed runtime or tool | `[tools]` in `mise.toml`; no tool-specific PATH entry |
-| Exported non-secret env var needed by scripts or tools | `zshenv` |
-| Exported non-secret env var only used in interactive terminals | `zshrc` |
+| Exported non-secret env var needed by scripts or tools | `config/zsh/zshenv` |
+| Exported non-secret env var only used in interactive terminals | `config/zsh/zshrc` |
 | Secret token or password | 1Password / `~/.zsh_secrets`, never committed |
-| Completion, prompt, or zle widget init | `zshrc`, usually guarded by `[[ -t 1 ]]` |
-| Alias or interactive function | `zshrc` |
-| Deliberate machine-only environment override | `hosts/<LocalHostName>.zsh` |
+| Completion, prompt, or zle widget init | `config/zsh/zshrc`, usually guarded by `[[ -t 1 ]]` |
+| Alias or interactive function | Matching module under `config/zsh/lib/`, sourced by `zshrc` |
+| Deliberate machine-only environment override | `config/zsh/hosts/<LocalHostName>.zsh` |
 
 Before committing shell config changes, verify from a non-interactive shell when
 the change affects command discovery:
