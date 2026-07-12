@@ -18,31 +18,72 @@ python = "3.13.14"
 [settings]
 dotfiles.default_mode = "symlink"
 
-# BrewFile deliberately remains the sole package/cask inventory. This hook is
-# before tools so Erlang's build dependencies are installed before compilation.
+# This is step zero of a full bootstrap. Refuse an ephemeral worktree before
+# any package, dotfile, default, tool, or exception task can mutate the machine.
+[bootstrap.hooks.pre-packages]
+run = '''
+repo="${MISE_CONFIG_ROOT:-}"
+if [ ! -x "$repo/scripts/bootstrap/preflight.zsh" ]; then
+  config="${MISE_GLOBAL_CONFIG_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/mise/config.toml}"
+  repo="$(dirname "$(realpath "$config")")"
+fi
+exec "$repo/scripts/bootstrap/preflight.zsh" --guard-only "$repo"
+'''
+
+# BrewFile deliberately remains the sole package/cask inventory. Guard again
+# so `mise bootstrap --only tools` is safe, then install Erlang build inputs.
 [bootstrap.hooks.pre-tools]
-run = "brew bundle --file=\"$(git rev-parse --show-toplevel)/BrewFile\""
+run = '''
+repo="${MISE_CONFIG_ROOT:-}"
+if [ ! -x "$repo/scripts/bootstrap/preflight.zsh" ]; then
+  config="${MISE_GLOBAL_CONFIG_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/mise/config.toml}"
+  repo="$(dirname "$(realpath "$config")")"
+fi
+"$repo/scripts/bootstrap/preflight.zsh" --guard-only "$repo"
+brew bundle --file="$repo/BrewFile"
+'''
+
+# Dotfile sources are checkout-relative. Refuse a secondary worktree before
+# mise can repoint HOME at a disposable path.
+[bootstrap.hooks.pre-dotfiles]
+run = '''
+repo="${MISE_CONFIG_ROOT:-}"
+if [ ! -x "$repo/scripts/bootstrap/preflight.zsh" ]; then
+  config="${MISE_GLOBAL_CONFIG_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/mise/config.toml}"
+  repo="$(dirname "$(realpath "$config")")"
+fi
+exec "$repo/scripts/bootstrap/preflight.zsh" --guard-only "$repo"
+'''
+
+# Direct `--only macos-defaults` runs skip pre-packages and pre-dotfiles.
+[bootstrap.hooks.pre-defaults]
+run = '''
+repo="${MISE_CONFIG_ROOT:-}"
+if [ ! -x "$repo/scripts/bootstrap/preflight.zsh" ]; then
+  config="${MISE_GLOBAL_CONFIG_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/mise/config.toml}"
+  repo="$(dirname "$(realpath "$config")")"
+fi
+exec "$repo/scripts/bootstrap/preflight.zsh" --guard-only "$repo"
+'''
 
 [dotfiles]
-"~/.zshenv" = "zshenv"
-"~/.zprofile" = "zprofile"
-"~/.zshrc" = "zshrc"
-"~/.gitconfig" = "gitconfig"
+"~/.zshenv" = "config/zsh/zshenv"
+"~/.zprofile" = "config/zsh/zprofile"
+"~/.zshrc" = "config/zsh/zshrc"
+"~/.gitconfig" = "config/git/config"
 "~/Brewfile" = "BrewFile"
-"~/.gitignore_global" = "gitignore_global"
-"~/.claude/settings.json" = "claude_settings.json"
-"~/.config/starship.toml" = "starship.toml"
-"~/.config/atuin/config.toml" = "atuin_config.toml"
-"~/.config/atuin/themes/catppuccin-mocha-mauve.toml" = "atuin_themes/catppuccin-mocha-mauve.toml"
+"~/.gitignore_global" = "config/git/ignore_global"
+"~/.config/starship.toml" = "config/starship/starship.toml"
+"~/.config/atuin/config.toml" = "config/atuin/config.toml"
+"~/.config/atuin/themes/catppuccin-mocha-mauve.toml" = "config/atuin/themes/catppuccin-mocha-mauve.toml"
 "~/.config/mise/config.toml" = "mise.toml"
-"~/.config/karabiner/karabiner.json" = "karabiner.json"
-"~/.config/television" = "television"
-"~/.config/ghostty/config" = "ghostty_config"
-"~/.warp/keybindings.yaml" = "warp_keybindings.yaml"
-"~/.warp/themes/catppuccin_mocha.yml" = "warp_themes/catppuccin_mocha.yml"
-"~/.config/bat/config" = "bat_config"
-"~/.config/hunk/config.toml" = "hunk/config.toml"
-"~/.zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh" = "zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh"
+"~/.config/television" = "config/television"
+"~/.config/ghostty/config" = "config/ghostty/config"
+"~/.warp/keybindings.yaml" = "config/warp/keybindings.yaml"
+"~/.warp/themes/catppuccin_mocha.yml" = "config/warp/themes/catppuccin_mocha.yml"
+"~/.config/bat/config" = "config/bat/config"
+"~/.config/hunk/config.toml" = "config/hunk/config.toml"
+"~/.zsh/catppuccin_mocha-zsh-syntax-highlighting.zsh" = "config/zsh/themes/catppuccin_mocha-zsh-syntax-highlighting.zsh"
 
 [bootstrap.macos.keyboard]
 initial_key_repeat = 10
@@ -69,9 +110,9 @@ description = "Apply the small machine-setup exceptions mise cannot express"
 dir = "{{cwd}}"
 run = '''
 repo="${MISE_CONFIG_ROOT:-}"
-if [ ! -x "$repo/scripts/bootstrap_exceptions.zsh" ]; then
+if [ ! -x "$repo/scripts/bootstrap/exceptions.zsh" ]; then
   config="${MISE_GLOBAL_CONFIG_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/mise/config.toml}"
   repo="$(dirname "$(realpath "$config")")"
 fi
-exec "$repo/scripts/bootstrap_exceptions.zsh"
+exec "$repo/scripts/bootstrap/exceptions.zsh"
 '''

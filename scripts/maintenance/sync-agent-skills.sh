@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source_root="$repo/.agents/skills"
 agents_file="$repo/AGENTS.md"
 claude_file="$repo/CLAUDE.md"
@@ -12,6 +12,10 @@ if [[ "${1:-}" == "--fix" ]]; then
 elif [[ $# -gt 0 ]]; then
   echo "usage: $0 [--fix]" >&2
   exit 2
+fi
+
+if $fix; then
+  zsh "$repo/scripts/bootstrap/preflight.zsh" --guard-only "$repo"
 fi
 
 errors=0
@@ -153,6 +157,11 @@ for dest_root in "${dest_roots[@]}"; do
     fi
     if [[ -e "$dest" || -L "$dest" ]]; then
       backup="$dest.bak.$(date +%Y%m%d%H%M%S)"
+      suffix=0
+      while [[ -e "$backup" || -L "$backup" ]]; do
+        suffix=$((suffix + 1))
+        backup="$dest.bak.$(date +%Y%m%d%H%M%S).$suffix"
+      done
       mv "$dest" "$backup"
       warn "backed up unmanaged $dest to $backup"
     fi
