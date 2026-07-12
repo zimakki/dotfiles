@@ -1,8 +1,9 @@
 # dotfiles
 
 This repo manages my macOS dotfiles, terminal/TUI app configs, shared theme
-assets, and cross-agent skills. The symlink manifest in
-`setup_sim_links.zsh` is the source of truth for machine-linked files.
+assets, and cross-agent skills. The `[dotfiles]` section of `mise.toml` is the
+source of truth for static machine-linked files; `setup_sim_links.zsh` owns only
+the dynamic Lazygit destination.
 
 Managed areas currently include:
 
@@ -14,7 +15,7 @@ Managed areas currently include:
 Not every tracked config-like artifact is symlinked. `.agents/skills/` is the
 vendor-neutral source of truth for skills. `scripts/sync_agent_skills.sh --fix`
 links each one into `~/.agents/skills`, `~/.claude/skills`, and
-`${CODEX_HOME:-~/.codex}/skills`; `setup_sim_links.zsh` runs it automatically.
+`${CODEX_HOME:-~/.codex}/skills`; the bootstrap exception task runs it automatically.
 Run the script without `--fix` for a read-only lint/audit. When Hunk is
 installed, the synchronizer also links its bundled `hunk-review` skill directly
 from Hunk's stable Homebrew path so upgrades do not leave a stale copied skill.
@@ -26,16 +27,30 @@ repo-authored source of truth for shared agent guidance, and `CLAUDE.md` is a
 thin Claude Code shim that imports `@AGENTS.md`. Keep shared instructions in
 `AGENTS.md` rather than duplicating them across agent-specific files.
 
-## Get up and running
+## Fresh-machine setup
 
-> note: I have not run this on a new computer so I imagine I will have to install everything I need before I am really able to use this file.
+Install Xcode Command Line Tools, Homebrew, Git, and mise **2026.7.4 or newer**, then clone this repo. Prerequisites are deliberately separate; the repo never silently upgrades the live mise binary. From the checkout:
 
-I'm currently running [AstroVim](https://astronvim.com/) and you can find the astro vim config here: [AstroNvim](https://github.com/zimakki/AstroNvim)
+```sh
+./scripts/phase2_preflight.sh
+mise trust ./mise.toml
+mise bootstrap --dry-run
+mise bootstrap
+# bootstrap trusts the identical global config symlink during its final task
+mise bootstrap status
+./scripts/verify_setup.sh
+```
 
-### 1. Install all the brew stuff
+`mise bootstrap` is the conductor. Its pre-tools hook runs the canonical
+`BrewFile` first, then installs seven pinned tools. It owns 19 static dotfile
+links and 12 typed macOS defaults. The final task handles the dynamic Lazygit
+destination, skill links, host-scoped battery preference, app restarts, and the
+manual GUI/credential reminder. Inspect conflicts before deliberately using
+`--force-dotfiles`.
 
-Run the below command from the root of this folder:
-`brew bundle install`
+The same discoverable `mise.toml` is linked globally at
+`~/.config/mise/config.toml`, preserving global runtime behavior without a
+second inventory.
 
 ## Validation
 
@@ -46,18 +61,12 @@ scripts/ci_checks.sh
 ```
 
 This checks shell syntax and common shell errors, JSON/TOML/YAML and Brewfile
-syntax, the symlink manifest, and cross-agent skill metadata and discovery. The
+syntax, the mise bootstrap ownership contract, exception manifest, and
+cross-agent skill metadata and discovery. The
 full `scripts/verify_setup.sh` remains the machine-level check for installed
 apps, runtimes, and live dotfile links.
 
-### 2. Sim links
-
-To run `setup_sim_links.zsh`:
-
-- make sure you give the file permissions:
-  `chmod +x ./setup_sim_links.zsh`
-- run it!:
-  `./setup_sim_links.zsh`
+Migration, rollback, and manual GUI details live in [`MIGRATION.md`](MIGRATION.md).
 
 ### Theme
 

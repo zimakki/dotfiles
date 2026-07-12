@@ -214,8 +214,8 @@ code --list-extensions 2>/dev/null                  # VS Code extensions
 Compare the `LINKS` manifest in `setup_sim_links.zsh` against what configs you
 actually rely on. Notable gaps to consider adding to the repo:
 
-- `~/.config/mise/config.toml` — global runtime versions. Now **tracked** in
-  this repo as `mise_config.toml` and symlinked via `setup_sim_links.zsh`.
+- `~/.config/mise/config.toml` — global runtime/bootstrap config. Tracked as
+  discoverable `mise.toml` and linked declaratively by mise bootstrap.
 - Neovim config — `NVIM_APPNAME=astronvim_v6`; confirm that config is its own
   repo and is pushed.
 - Ghostty terminal — already tracked (`ghostty_config` → `~/.config/ghostty/config`);
@@ -313,11 +313,11 @@ git push
 
 ---
 
-## Phase 2 — NEW machine: install (after Phase 1 is merged/pulled)
+## Phase 2 — NEW machine: mise bootstrap (after Phase 1 is merged/pulled)
 
-**Order matters** — build deps must exist before mise compiles erlang/elixir, and
-lazygit must exist before the symlink script runs. Each step is gated before and
-verified after; stop at the first failed check.
+Install Xcode Command Line Tools, Homebrew, Git, and mise >=2026.7.4 before
+cloning. The repo deliberately does not upgrade the live mise binary. Bootstrap
+then guarantees that the canonical BrewFile finishes before tool compilation.
 
 ### Pre-flight (gate the whole phase)
 
@@ -328,32 +328,21 @@ git pull
 ```
 Don't continue unless this exits ✅.
 
-### Steps
+### One operator flow
 
 ```sh
-# 1. oh-my-zsh (gate: not already installed; verify: oh-my-zsh.sh exists)
+# Install oh-my-zsh before applying the fully managed zshrc.
 [ -d ~/.oh-my-zsh ] || KEEP_ZSHRC=yes RUNZSH=no CHSH=no \
   sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 [ -f ~/.oh-my-zsh/oh-my-zsh.sh ] && echo "✅ oh-my-zsh" || echo "❌ oh-my-zsh"
 
-# 2. Homebrew packages — logged (some casks prompt for your Mac password)
-brew bundle --file=~/code/zimakki/dotfiles/BrewFile 2>&1 | tee /tmp/brew-bundle.log
-brew bundle check --file=~/code/zimakki/dotfiles/BrewFile     # verify: "dependencies are satisfied"
-
-# 3. Runtimes via mise — compiles erlang/elixir; logged
-mise trust
-mise install 2>&1 | tee /tmp/mise-install.log
-mise exec -- elixir --version          # verify: Elixir 1.20.1, compiled with Erlang/OTP 29
-
-# 4. Symlinks (gate: lazygit installed; backs up replaced files to *.bak)
-command -v lazygit >/dev/null && ./setup_sim_links.zsh || echo "❌ install lazygit first"
-
-# 5. macOS settings — snapshot first for rollback/diff
+# Snapshot defaults, trust the reviewed config, preview, apply, inspect, verify.
 defaults read > /tmp/defaults.before
-./macos_defaults.sh
-
-# 6. Reload the shell
-exec zsh
+mise trust ./mise.toml
+mise bootstrap --dry-run
+mise bootstrap
+mise bootstrap status
+./scripts/verify_setup.sh
 ```
 
 ### Verify everything
@@ -361,8 +350,8 @@ exec zsh
 ```sh
 ./scripts/verify_setup.sh    # runs all automated post-checks → PASS/FAIL report
 ```
-Re-runnable anytime. **Rollback:** `setup_sim_links.zsh` leaves `<file>.bak`
-beside anything it replaced; revert macOS tweaks by diffing against
+Re-runnable anytime. Mise refuses conflicting files by default; inspect them
+before deliberately using `--force-dotfiles`. Revert defaults by diffing against
 `/tmp/defaults.before`.
 
 ### Manual checklist (GUI / credentials — can't be automated)
@@ -378,7 +367,7 @@ beside anything it replaced; revert macOS tweaks by diffing against
 ## ✅ Done when
 
 - A fresh shell opens with no errors (prompt = starship, history = atuin).
-- `mise ls` shows node 22.13.x, python 3.13, elixir 1.20.1-otp-29, erlang 29.0.2.
+- `mise ls` shows node 24.13.1, python 3.13.14, elixir 1.20.2-otp-29, erlang 29.0.2, bun 1.3.14, fnox 1.29.0, and portless 0.15.1.
 - `brew bundle check` passes.
 - Your key apps launch, Karabiner remaps work, and Raycast config is imported.
 
@@ -388,7 +377,8 @@ beside anything it replaced; revert macOS tweaks by diffing against
 
 | Area | Change |
 |------|--------|
-| Runtimes | `node`/`python` removed from Brewfile → managed by mise. Tracked as `mise_config.toml` (node 22.13, python 3.13, elixir 1.20.1-otp-29, erlang 29.0.2) and symlinked to `~/.config/mise/config.toml` |
+| Bootstrap | `mise.toml` is the discoverable front door and global config source; BrewFile remains the only package/cask inventory |
+| Runtimes | Seven pinned mise tools: node 24.13.1, python 3.13.14, elixir 1.20.2-otp-29, erlang 29.0.2, bun 1.3.14, fnox 1.29.0, portless 0.15.1 |
 | Brewfile | Pruned monitors/disk/media/embedded/unused CLIs (commented out); dropped emacs tap, arc, arduino-ide; postgresql@14 → Postgres.app; added starship/atuin/television/zsh-autosuggestions |
 | zshrc | Removed tmux/run_iex/yazi/emacs/doom; commented unidentified `entire`; guarded atuin env + 1Password fetch; source zsh-syntax-highlighting last; removed leaked secret |
 | Files | Deleted orphaned `cmux_dev_layout.sh` |
