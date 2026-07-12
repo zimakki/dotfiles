@@ -64,7 +64,7 @@ RUBY
 section "Brewfile syntax"
 ruby -c BrewFile
 
-section "Symlink manifest sources"
+section "Exception manifest sources"
 missing=0
 while IFS= read -r source; do
 	if [[ ! -e "$source" ]]; then
