@@ -1,0 +1,17 @@
+# Keep this file intent-only. Atuin supplies stable defaults for everything else.
+
+# Start history searches in the current shell session, but let the up-arrow
+# binding search the surrounding Git workspace when one exists.
+filter_mode = "session"
+workspaces = true
+filter_mode_shell_up_key_binding = "workspace"
+
+# Enter executes the selected history entry immediately.
+enter_accept = true
+
+[sync]
+# Use Atuin's current record-based sync format.
+records = true
+
+[theme]
+name = "catppuccin-mocha-mauve"

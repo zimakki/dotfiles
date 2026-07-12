@@ -1,0 +1,50 @@
+git:
+  pagers:
+    - colorArg: always
+      pager: delta --dark --paging=never --width=${COLUMNS:-200}
+    - colorArg: always
+      pager: delta --dark --paging=never --features inline
+    - colorArg: always
+      pager: diff-so-fancy
+# Config relating to the Lazygit UI
+gui:
+  theme:
+    activeBorderColor:
+      - '#cba6f7'
+      - bold
+    inactiveBorderColor:
+      - '#a6adc8'
+    searchingActiveBorderColor:
+      - '#f9e2af'
+      - bold
+    optionsTextColor:
+      - '#89b4fa'
+    selectedLineBgColor:
+      - '#313244'
+    inactiveViewSelectedLineBgColor:
+      - '#6c7086'
+    cherryPickedCommitFgColor:
+      - '#cba6f7'
+    cherryPickedCommitBgColor:
+      - '#45475a'
+    markedBaseCommitFgColor:
+      - '#89b4fa'
+    markedBaseCommitBgColor:
+      - '#f9e2af'
+    unstagedChangesColor:
+      - '#f38ba8'
+    defaultFgColor:
+      - '#cdd6f4'
+  # If true, show the number of lines changed per file in the Files view
+  showNumstatInFilesView: true
+  # Nerd fonts version to use.
+  # One of: '2' | '3' | empty string (default)
+  # If empty, do not show icons.
+  nerdFontsVersion: 3
+  # If true (default), file icons are shown in the file views. Only relevant if NerdFontsVersion is not empty.
+  showFileIcons: true
+  # Whether to show the divergence from the base branch in the branches view.
+  # One of: 'none' | 'onlyArrow'  | 'arrowAndNumber'
+  showDivergenceFromBaseBranch: arrowAndNumber
+os:
+  editPreset: "nvim-remote"
