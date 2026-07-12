@@ -114,7 +114,7 @@ text = re.sub(
 path.write_text(text)
 PY
 printf '# intentionally empty fixture\n' > "$guard_primary/BrewFile"
-ln -s "$repo/scripts/bootstrap/preflight.zsh" \
+cp "$repo/scripts/bootstrap/preflight.zsh" \
   "$guard_primary/scripts/bootstrap/preflight.zsh"
 git -C "$guard_primary" add fixture mise.toml BrewFile zshenv config/zsh/zshenv \
   scripts/bootstrap/preflight.zsh scripts/bootstrap/json-overlay.py \
@@ -123,12 +123,12 @@ git -C "$guard_primary" -c user.name=Bootstrap -c user.email=bootstrap@example.i
   commit --quiet -m fixture
 git -C "$guard_primary" worktree add --quiet -b linked-test "$guard_linked"
 guard_linked_real="$(cd "$guard_linked" && pwd -P)"
-zsh "$repo/scripts/bootstrap/preflight.zsh" --guard-only "$guard_primary"
-if zsh "$repo/scripts/bootstrap/preflight.zsh" --guard-only "$guard_linked" >/dev/null 2>&1; then
+zsh "$guard_primary/scripts/bootstrap/preflight.zsh" --guard-only
+if zsh "$guard_linked/scripts/bootstrap/preflight.zsh" --guard-only >/dev/null 2>&1; then
   fail "mutation guard accepted a linked worktree"
 fi
 DOTFILES_BOOTSTRAP_TEST_ALLOW_WORKTREE=1 \
-  zsh "$repo/scripts/bootstrap/preflight.zsh" --guard-only "$guard_linked" >/dev/null
+  zsh "$guard_linked/scripts/bootstrap/preflight.zsh" --guard-only >/dev/null
 pass "canonical checkout passes, linked worktree fails, explicit test override passes"
 
 guard_home="$root/guard-home"
