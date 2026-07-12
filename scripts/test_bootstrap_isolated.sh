@@ -38,6 +38,7 @@ mise_env=(
   "MISE_DATA_DIR=$root/mise/data"
   "MISE_CACHE_DIR=$root/mise/cache"
   "MISE_STATE_DIR=$root/mise/state"
+  "MISE_GLOBAL_CONFIG_FILE=$home/.config/mise/config.toml"
   "MISE_TRUSTED_CONFIG_PATHS=$repo:$home/.config/mise/config.toml"
 )
 run_mise() { env "${mise_env[@]}" "$mise_bin" "$@"; }
@@ -84,6 +85,7 @@ conflict_env=(
   "MISE_DATA_DIR=$root/conflict-mise/data"
   "MISE_CACHE_DIR=$root/conflict-mise/cache"
   "MISE_STATE_DIR=$root/conflict-mise/state"
+  "MISE_GLOBAL_CONFIG_FILE=$conflict_home/.config/mise/config.toml"
   "MISE_TRUSTED_CONFIG_PATHS=$repo"
 )
 if env "${conflict_env[@]}" "$mise_bin" bootstrap dotfiles apply --yes >/dev/null 2>&1; then
