@@ -384,11 +384,15 @@ chmod +x "$root/shell-bin/zoxide" "$root/shell-bin/mise"
 printf '#!/bin/sh\nexit 0\n' > "$home/.local/bin/mise"
 chmod +x "$home/.local/bin/mise"
 for shell_mode in -ic -lic; do
+  # Ignore runner-owned global startup files. Ubuntu's /etc/zsh/zshrc invokes
+  # compinit, which requires a terminal and is unrelated to this repository's
+  # portable HOME configuration. zsh -d disables GLOBAL_RCS while retaining
+  # the user startup files under ZDOTDIR.
   if ! output="$(HOME="$home" ZDOTDIR="$zdot" DOTFILES_SKIP_SECRET_REFRESH=1 \
     MISE_DATA_DIR="$root/fake-mise-data" \
     MISE_GLOBAL_CONFIG_FILE="$home/.config/mise/config.toml" \
     MISE_TRUSTED_CONFIG_PATHS="$repo:$home/.config/mise/config.toml" \
-    PATH="$root/shell-bin:$PATH" TERM=xterm-256color zsh "$shell_mode" 'exit' 2>&1)"; then
+    PATH="$root/shell-bin:$PATH" TERM=xterm-256color zsh -d "$shell_mode" 'exit' 2>&1)"; then
     fail "portable HOME shell startup failed in mode $shell_mode: $output"
   fi
   [[ -z "$output" ]] || fail "portable HOME shell startup emitted output in mode $shell_mode: $output"
@@ -522,7 +526,7 @@ make_fake lazygit 'printf "lazygit %s\n" "$*" >> "$BOOTSTRAP_TEST_LOG"; printf "
 make_fake defaults '
 printf "defaults %s\n" "$*" >> "$BOOTSTRAP_TEST_LOG"
 case "$2" in
-  read) [[ -f "$BOOTSTRAP_DEFAULT_STATE" ]] && { printf "1\n"; exit 0; }; exit 1 ;;
+  read) [ -f "$BOOTSTRAP_DEFAULT_STATE" ] && { printf "1\n"; exit 0; }; exit 1 ;;
   write) : > "$BOOTSTRAP_DEFAULT_STATE" ;;
 esac'
 make_fake pgrep 'printf "pgrep %s\n" "$*" >> "$BOOTSTRAP_TEST_LOG"; exit 0'
