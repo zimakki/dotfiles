@@ -52,6 +52,9 @@ PY
 section "Bootstrap ownership contract"
 python3 scripts/test_bootstrap_config.py
 
+section "Isolated bootstrap behavior"
+scripts/test_bootstrap_isolated.sh
+
 section "YAML syntax"
 ruby - <<'RUBY'
 require "yaml"
