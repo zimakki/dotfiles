@@ -3,8 +3,13 @@
 # bootstrap exception. Source this file to call
 # bootstrap_require_canonical_checkout; execute it for the full preflight.
 
+# Capture the source path before entering a function. With Zsh's default
+# FUNCTION_ARGZERO behavior, $0 becomes the function name inside a function
+# and cannot be used to locate this file reliably.
+typeset -g _DOTFILES_PREFLIGHT_REPO="${${(%):-%N}:A:h:h:h}"
+
 bootstrap_require_canonical_checkout() {
-  local repo="${1:-${0:A:h:h:h}}"
+  local repo="${1:-$_DOTFILES_PREFLIGHT_REPO}"
   local git_dir common_dir_raw common_dir
 
   repo="$(cd "$repo" && pwd -P)" || return 1
@@ -35,7 +40,7 @@ bootstrap_preflight_main() {
   set -u
   setopt pipe_fail
 
-  local repo="${0:A:h:h:h}"
+  local repo="$_DOTFILES_PREFLIGHT_REPO"
   if [[ "${1:-}" == "--guard-only" ]]; then
     (( $# <= 2 )) || {
       print -u2 -- "usage: $0 --guard-only [repo]"
