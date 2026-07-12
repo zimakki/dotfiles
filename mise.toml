@@ -67,4 +67,11 @@ NSGlobalDomain = { AppleShowAllExtensions = true }
 [tasks.bootstrap]
 description = "Apply the small machine-setup exceptions mise cannot express"
 dir = "{{cwd}}"
-run = "./scripts/bootstrap_exceptions.zsh"
+run = '''
+repo="${MISE_CONFIG_ROOT:-}"
+if [ ! -x "$repo/scripts/bootstrap_exceptions.zsh" ]; then
+  config="${MISE_GLOBAL_CONFIG_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/mise/config.toml}"
+  repo="$(dirname "$(realpath "$config")")"
+fi
+exec "$repo/scripts/bootstrap_exceptions.zsh"
+'''
