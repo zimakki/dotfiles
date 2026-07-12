@@ -7,7 +7,7 @@ the dynamic Lazygit destination.
 
 Managed areas currently include:
 
-- Shell: `.zshenv`, `.zshrc`, Starship, Atuin, zsh syntax highlighting
+- Shell: `.zshenv`, `.zprofile`, `.zshrc`, Starship, Atuin, zsh syntax highlighting
 - Terminal/TUI tools: Ghostty, Lazygit, Hunk, bat, Television, Warp keybindings/themes
 - Developer tooling: Git config, global gitignore, mise global tools, Claude settings
 - System/app config: Karabiner and Homebrew bundle
@@ -36,10 +36,18 @@ Install Xcode Command Line Tools, Homebrew, Git, and mise **2026.7.4 or newer**,
 mise trust ./mise.toml
 mise bootstrap --dry-run
 mise bootstrap
+# Bootstrap links the managed zshrc first; KEEP_ZSHRC then preserves that link.
+[ -d ~/.oh-my-zsh ] || KEEP_ZSHRC=yes RUNZSH=no CHSH=no \
+  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+[ -f ~/.oh-my-zsh/oh-my-zsh.sh ] && echo "✅ oh-my-zsh" || echo "❌ oh-my-zsh"
 # bootstrap trusts the identical global config symlink during its final task
 mise bootstrap status
 ./scripts/verify_setup.sh
 ```
+
+On the first dry-run, mise may warn that the planned global config target is
+not trusted yet because the symlink does not exist. The actual bootstrap creates
+that link, and its final task trusts the identical reviewed config.
 
 `mise bootstrap` is the conductor. Its pre-tools hook runs the canonical
 `BrewFile` first, then installs seven pinned tools. It owns 19 static dotfile
@@ -50,7 +58,10 @@ manual GUI/credential reminder. Inspect conflicts before deliberately using
 
 The same discoverable `mise.toml` is linked globally at
 `~/.config/mise/config.toml`, preserving global runtime behavior without a
-second inventory.
+second inventory. After that link exists, `mise run bootstrap` resolves the
+exception script through it and works outside the checkout as well. The full
+`mise bootstrap` conductor remains checkout-scoped because its Brew hook and
+managed sources belong to this repository.
 
 ## Validation
 
@@ -62,13 +73,14 @@ scripts/ci_checks.sh
 
 This checks shell syntax and common shell errors, JSON/TOML/YAML and Brewfile
 syntax, the mise bootstrap ownership contract, exception manifest, and
-cross-agent skill metadata and discovery. The
+cross-agent `SKILL.md` metadata, Codex interface metadata, and discovery. The
 full `scripts/verify_setup.sh` remains the machine-level check for installed
 apps, runtimes, and live dotfile links.
 
-Migration, rollback, and manual GUI details live in [`MIGRATION.md`](MIGRATION.md).
-For the incremental rollout on the current Mac, including the recovery anchor,
-see [`docs/mise-bootstrap-rollout.md`](docs/mise-bootstrap-rollout.md).
+Migration and manual GUI details live in [`MIGRATION.md`](MIGRATION.md). The
+completed incremental rollout and its recovery procedure are preserved as a
+historical record in
+[`docs/mise-bootstrap-rollout.md`](docs/mise-bootstrap-rollout.md).
 
 ### Theme
 

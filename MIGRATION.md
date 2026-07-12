@@ -13,7 +13,7 @@ installing on the new machine.
 **Prerequisites:** the dotfiles repo is already cloned and your GitHub SSH
 access works on both machines (set up separately).
 
-> You can hand this file to Claude on the old machine:
+> You can hand this file to a coding agent on the old machine:
 > "Read MIGRATION.md and walk me through Phase 1."
 
 ---
@@ -27,11 +27,18 @@ access works on both machines (set up separately).
 
 ## Safety rules (read first)
 
-- **Phase 1 is capture-only and NON-DESTRUCTIVE.** It only reads what's installed.
-- **NEVER run `brew bundle cleanup`** — it uninstalls anything not in the Brewfile, including commented-out lines.
+- **Phase 1 is non-destructive to the live machine.** It audits installed state,
+  then edits and commits only in the separate migration worktree; it does not
+  run bootstrap, installers, defaults writes, or uninstalls.
+- **NEVER run `brew bundle cleanup --force`** — the unforced command is a safe
+  dry-run, while `--force` uninstalls anything not in the Brewfile, including
+  commented-out lines.
 - **NEVER run `brew bundle dump --force` onto `BrewFile`** — it overwrites the curated file (and all the explanatory comments). Always dump to a temp file.
 - This is **diff-and-decide**, not blind re-merge. The Brewfile was pruned on purpose; only add back what you actually want.
-- **`mise` owns `node` and `python`** now. Do not re-add them to the Brewfile. On the old machine, also remove the brew `node`/`python` to stop the version conflict.
+- **`mise` owns command selection for `node` and `python`** now. Do not add them
+  as direct BrewFile entries, but do not manually uninstall Homebrew dependency
+  kegs required by packages such as `mermaid-cli`, `agent-browser`, or PostGIS.
+  The managed shell precedence keeps mise's shims ahead of those dependencies.
 
 ---
 
@@ -119,8 +126,10 @@ the new machine. **Review the list, don't auto-remove** — important caveats:
 - Name≠command is handled (we read each formula's real `bin/`); formulae that
   install nothing into bin are skipped.
 
-(No atuin on the old machine? Point `$DB` logic at `~/.zsh_history` instead —
-it needs `EXTENDED_HISTORY` timestamps to be useful.)
+(No Atuin on the old machine? Do not point the SQLite query at
+`~/.zsh_history`; that file is plain text. Inspect it separately and only infer
+ages when zsh's `EXTENDED_HISTORY` format (`: <epoch>:<duration>;<command>`) is
+present.)
 
 ### 1d. Make sure the apps you use are in the Brewfile
 
@@ -176,16 +185,19 @@ brew search --cask "<app name>"     # find the cask token
 # then add to BrewFile:  cask "<token>"
 ```
 
-**Mac App Store apps** won't show under brew — capture them with `mas`:
+**Mac App Store apps** won't show under brew. If `mas` is already installed,
+capture them without changing the old machine:
 
 ```sh
-brew install mas      # if needed
-mas list              # App Store apps + their IDs
+command -v mas >/dev/null && mas list   # App Store apps + their IDs
 # add to BrewFile:  brew "mas"  and  mas "App Name", id: 1234567890
 ```
 
+If `mas` is absent, use the App Store's Purchased list and record the apps
+manually in the worktree; do not install audit tooling during Phase 1.
+
 > **If none of these produce a useful list** (Full Disk Access denied,
-> `knowledgeC.db` empty/locked, etc.), ask Claude to research current
+> `knowledgeC.db` empty/locked, etc.), ask your agent to research current
 > alternatives and adapt — e.g. `log show` launch events, `lsappinfo`, the
 > CoreDuet / Screen Time `RMAdminStore`, Raycast's own store, or a third-party
 > usage tool. These methods drift across macOS versions, so verify against your
@@ -265,6 +277,22 @@ on launch.
 > ever replaces the symlink with a real file, inspect the conflict before using
 > `--force-dotfiles`. Never track `~/.config/karabiner/automatic_backups/`.
 
+**Claude Code settings and Paseo hooks.** `claude_settings.json` is linked to
+`~/.claude/settings.json`, but Paseo writes provider-hook updates atomically.
+When its hook format changes, that write can replace the symlink with a regular
+file. If bootstrap reports this target as a conflict, diff the live file against
+`claude_settings.json`, carry intentional hook changes into the repo, preview
+the one target, then relink it:
+
+```sh
+diff -u claude_settings.json ~/.claude/settings.json
+mise bootstrap dotfiles apply --dry-run --force ~/.claude/settings.json
+mise bootstrap dotfiles apply --force --yes ~/.claude/settings.json
+```
+
+Do not force the target until the live differences have been reviewed; Claude
+plugins and permissions may also have changed intentionally.
+
 **macOS system settings (keyboard, function keys, etc.).** Supported scalar
 settings belong in `[bootstrap.macos.*]` in `mise.toml`. Reserve
 `macos_defaults.sh` for unsupported host-scoped writes and process restarts.
@@ -327,26 +355,33 @@ then guarantees that the canonical BrewFile finishes before tool compilation.
 ```sh
 cd ~/code/zimakki/dotfiles
 git pull
-./scripts/phase2_preflight.sh   # branch/toolchain/disk/network + validates every Brewfile token
+./scripts/phase2_preflight.sh   # branch/toolchain/disk/network + formula/cask catalog checks
 ```
 Don't continue unless this exits ✅.
 
 ### One operator flow
 
 ```sh
-# Install oh-my-zsh before applying the fully managed zshrc.
-[ -d ~/.oh-my-zsh ] || KEEP_ZSHRC=yes RUNZSH=no CHSH=no \
-  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-[ -f ~/.oh-my-zsh/oh-my-zsh.sh ] && echo "✅ oh-my-zsh" || echo "❌ oh-my-zsh"
-
-# Snapshot defaults, trust the reviewed config, preview, apply, inspect, verify.
+# Snapshot defaults, trust the reviewed config, preview, and apply.
 defaults read > /tmp/defaults.before
 mise trust ./mise.toml
 mise bootstrap --dry-run
 mise bootstrap
+
+# Bootstrap created the managed zshrc link. Install Oh My Zsh afterward so its
+# KEEP_ZSHRC path preserves that link instead of creating a conflicting file.
+[ -d ~/.oh-my-zsh ] || KEEP_ZSHRC=yes RUNZSH=no CHSH=no \
+  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+[ -f ~/.oh-my-zsh/oh-my-zsh.sh ] && echo "✅ oh-my-zsh" || echo "❌ oh-my-zsh"
+
+# Inspect and verify before opening a new shell.
 mise bootstrap status
 ./scripts/verify_setup.sh
 ```
+
+The first dry-run may warn that the planned global config target is not trusted
+because its symlink does not exist yet. The actual run creates the link, and the
+final exception task trusts that identical reviewed config.
 
 ### Verify everything
 
@@ -376,7 +411,7 @@ before deliberately using `--force-dotfiles`. Revert defaults by diffing against
 
 ---
 
-## Quick reference — what changed on this branch
+## Quick reference — managed setup
 
 | Area | Change |
 |------|--------|

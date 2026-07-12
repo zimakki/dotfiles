@@ -1,8 +1,8 @@
 # Shell Config Convention
 
 This is the canonical convention for shell startup files in this dotfiles repo.
-Read it before editing `zshenv`, `zshrc`, `hosts/*.zsh`, PATH, shell init hooks,
-or tool installer snippets.
+Read it before editing `zshenv`, `zprofile`, `zshrc`, `hosts/*.zsh`, PATH, shell
+init hooks, or tool installer snippets.
 
 ## Contents
 

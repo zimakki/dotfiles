@@ -24,5 +24,6 @@ When adding a supported macOS preference, update `[bootstrap.macos.*]`; reserve
 `macos_defaults.sh` for unsupported host-scoped writes and app restarts.
 
 Shell config rule: environment belongs in `zshenv`; interactive behavior belongs
-in `zshrc`. Before editing `zshenv`, `zshrc`, `hosts/*.zsh`, PATH, shell init
-hooks, or installing a tool, read `docs/conventions/shell-config.md`.
+in `zshrc`; `zprofile` only repairs login-shell ordering. Before editing
+`zshenv`, `zprofile`, `zshrc`, `hosts/*.zsh`, PATH, shell init hooks, or
+installing a tool, read `docs/conventions/shell-config.md`.
