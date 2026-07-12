@@ -49,6 +49,9 @@ for path in pathlib.Path(".").rglob("*"):
         tomllib.loads(path.read_text())
 PY
 
+section "Bootstrap ownership contract"
+python3 scripts/test_bootstrap_config.py
+
 section "YAML syntax"
 ruby - <<'RUBY'
 require "yaml"
