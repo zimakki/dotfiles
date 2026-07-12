@@ -6,6 +6,7 @@ import tomllib
 
 root = Path(__file__).resolve().parent.parent
 config = tomllib.loads((root / "mise.toml").read_text())
+brewfile = (root / "BrewFile").read_text()
 assert config["min_version"] >= "2026.7.4"
 assert len(config["tools"]) == 7
 assert all(value != "latest" for value in config["tools"].values())
@@ -17,6 +18,13 @@ assert "~/.config/lazygit/config.yml" not in config["dotfiles"]
 for entry in config["dotfiles"].values():
     source = entry if isinstance(entry, str) else entry["source"]
     assert (root / source).exists(), source
+
+bootstrap_task = config["tasks"]["bootstrap"]
+assert bootstrap_task["dir"] == "{{cwd}}"
+assert "MISE_CONFIG_ROOT" in bootstrap_task["run"]
+assert "MISE_GLOBAL_CONFIG_FILE" in bootstrap_task["run"]
+assert "realpath" in bootstrap_task["run"]
+assert "bootstrap_exceptions.zsh" in bootstrap_task["run"]
 
 defaults = config["bootstrap"]["macos"]
 typed_count = sum(len(defaults[group]) for group in ("keyboard", "finder", "dock"))
@@ -32,3 +40,11 @@ zshrc = (root / "zshrc").read_text()
 assert 'eval "$(mise activate zsh)"' in zshrc
 assert "/opt/homebrew/bin/mise" not in zshrc
 assert "KERL_BUILD_DOCS" in (root / "zshenv").read_text()
+for portable_file in ("gitconfig", "zshenv", "zprofile", "zshrc"):
+    assert "/Users/" not in (root / portable_file).read_text(), portable_file
+
+# Custom-tap entries must remain qualified so fresh-machine preflight can
+# accept them before Brew Bundle has installed the declared tap.
+assert 'tap "zimakki/tap"' in brewfile
+assert 'cask "zimakki/tap/inkwell"' in brewfile
+assert 'cask "inkwell"' not in brewfile

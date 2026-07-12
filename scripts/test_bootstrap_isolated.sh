@@ -111,6 +111,35 @@ for runtime in node python; do
 done
 pass "login and non-login shells use the same mise shims"
 
+printf 'Testing login and non-login user-bin precedence\n'
+mkdir -p "$home/.local/bin"
+printf '#!/bin/sh\nexit 0\n' > "$home/.local/bin/node"
+chmod +x "$home/.local/bin/node"
+expected="$home/.local/bin/node"
+nonlogin="$(HOME="$home" ZDOTDIR="$zdot" MISE_DATA_DIR="$root/fake-mise-data" zsh -c 'command -v node')"
+login="$(HOME="$home" ZDOTDIR="$zdot" MISE_DATA_DIR="$root/fake-mise-data" zsh -lc 'command -v node')"
+[[ "$nonlogin" == "$expected" && "$login" == "$expected" ]] \
+  || fail "user-bin precedence drift: non-login=$nonlogin login=$login"
+pass "login and non-login shells preserve user-bin precedence over mise shims"
+
+printf 'Testing interactive shell startup with a portable HOME\n'
+ln -s "$repo/zshrc" "$zdot/.zshrc"
+mkdir -p "$home/.oh-my-zsh" "$root/shell-bin"
+printf 'compdef() { :; }\n' > "$home/.oh-my-zsh/oh-my-zsh.sh"
+printf '#!/bin/sh\nexit 0\n' > "$root/shell-bin/zoxide"
+chmod +x "$root/shell-bin/zoxide"
+for mode in -ic -lic; do
+  if ! output=$(HOME="$home" ZDOTDIR="$zdot" DOTFILES_SKIP_SECRET_REFRESH=1 \
+    MISE_DATA_DIR="$root/fake-mise-data" \
+    MISE_GLOBAL_CONFIG_FILE="$home/.config/mise/config.toml" \
+    MISE_TRUSTED_CONFIG_PATHS="$repo:$home/.config/mise/config.toml" \
+    PATH="$root/shell-bin:$PATH" TERM=xterm-256color zsh "$mode" 'exit' 2>&1); then
+    fail "portable HOME shell startup failed in mode $mode: $output"
+  fi
+  [[ -z "$output" ]] || fail "portable HOME shell startup emitted output in mode $mode: $output"
+done
+pass "interactive login and non-login shells load cleanly outside the real HOME"
+
 printf 'Testing exception scripts with command fakes\n'
 fake_bin="$root/fake-bin"
 exception_home="$root/exception-home"
@@ -142,7 +171,8 @@ task_mise_env=(
 )
 run_bootstrap_task() {
   (
-    cd "$repo"
+    # Exercise the task as a genuinely global task, away from the checkout.
+    cd "$root/work"
     env "${task_mise_env[@]}" BOOTSTRAP_TEST_LOG="$log" PATH="$fake_path" \
       "$mise_bin" run bootstrap >/dev/null
   )
@@ -158,6 +188,18 @@ grep -q '^defaults -currentHost write com.apple.controlcenter BatteryShowPercent
 grep -q '^killall Finder Dock SystemUIServer$' "$log" || fail "restart exception was not exercised"
 [[ -L "$exception_home/.config/lazygit/config.yml" ]] || fail "dynamic Lazygit link was not created"
 [[ -f "$exception_home/.agents/skills/.dotfiles-managed-skills" ]] || fail "skill sync did not use temporary HOME"
-pass "mise task exceptions are idempotent under fakes and stay inside temporary HOME"
+pass "global mise task exceptions resolve the repo, remain idempotent, and stay inside temporary HOME"
+
+printf 'Testing exception failure propagation\n'
+: > "$log"
+make_fake mise 'printf "mise %s\\n" "$*" >> "$BOOTSTRAP_TEST_LOG"; exit 13'
+if run_bootstrap_task >/dev/null 2>&1; then
+  fail "bootstrap task hid a failing trust command"
+fi
+grep -q '^mise trust ' "$log" || fail "failing trust command was not exercised"
+if grep -q '^lazygit ' "$log"; then
+  fail "bootstrap continued to Lazygit after trust failed"
+fi
+pass "exception task stops and returns failure before later side effects"
 
 printf '\nAll isolated bootstrap checks passed with mise %s.\n' "$version"
