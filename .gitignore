@@ -1,6 +1,9 @@
-# Secrets file for API keys
+# Local secret material
 .zsh_secrets
 
-# Raycast export may contain secrets — commit only the password-protected
-# one, explicitly, with: git add -f raycast.rayconfig
+# Opaque app exports and generated backups stay outside the repository
 *.rayconfig
+config/karabiner/automatic_backups/
+
+# macOS filesystem metadata
+.DS_Store
