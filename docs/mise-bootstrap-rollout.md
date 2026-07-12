@@ -1,5 +1,11 @@
 # Mise bootstrap live rollout
 
+> **Status: completed 2026-07-12.** This is a historical rollout record, not the
+> current setup guide. Use [`../README.md`](../README.md) and
+> [`../MIGRATION.md`](../MIGRATION.md) for current operations. The true
+> pre-merge commit for this rollout is `2d3dfbb`; a recovery branch created
+> after merge does not provide that rollback point.
+
 This is the recovery-first sequence for merging the bootstrap branch and then
 applying it to the current Mac. Merging does not run Brew, mise bootstrap,
 defaults, or installers. Existing symlinks mean a new shell will immediately
@@ -8,12 +14,13 @@ the shell checks pass.
 
 ## Recovery anchor
 
-Before merging:
+Before merging, the recovery branch needed to point at the verified pre-merge
+commit:
 
 ```sh
 cd ~/code/zimakki/dotfiles
-git branch backup/pre-mise-bootstrap master
-git rev-parse HEAD
+git branch backup/pre-mise-bootstrap 2d3dfbb
+git rev-parse backup/pre-mise-bootstrap
 defaults read > /tmp/defaults.before-mise-bootstrap
 ```
 

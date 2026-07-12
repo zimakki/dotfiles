@@ -3,6 +3,12 @@
 **Date:** 2026-07-09
 **Status:** Implemented in PR #6
 
+> Historical design record. `AGENTS.md` is now the canonical shared instruction
+> file, `CLAUDE.md` is only its compatibility shim, and repo skills are
+> canonical under `.agents/skills/`. The Claude-specific paths and policies
+> below are preserved to explain the original design, not as current operating
+> instructions.
+
 ## Problem
 
 Twice now, PATH entries for tools (most recently `psql` from Postgres.app) were placed in `zshrc`, where non-interactive shells (agents/IDEs/daemons via `zsh -lc`) never source them — so the tool was "not found." An audit also revealed ~11 dead PATH lines accumulated from tool installers. Earlier PR #6 commits fixed this with a guarded `path` array in `zshenv`, per-host `hosts/<LocalHostName>.zsh`, and `zshrc` cleanup, but nothing yet **prevents recurrence**.
