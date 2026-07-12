@@ -17,22 +17,27 @@ From the dotfiles repository root, run:
 scripts/sync_agent_skills.sh
 ```
 
-Report every failure and warning. The command validates canonical skill metadata,
-checks the `AGENTS.md`/`CLAUDE.md` instruction arrangement, and confirms that
-each repo skill resolves from these user-level discovery roots:
+Report every failure and warning. The command validates canonical `SKILL.md`
+metadata and Codex `agents/openai.yaml` interface metadata, checks the
+`AGENTS.md`/`CLAUDE.md` instruction arrangement, and confirms that each repo
+skill resolves from these user-level discovery roots:
 
 - `~/.agents/skills`
 - `~/.claude/skills`
 - `${CODEX_HOME:-~/.codex}/skills`
 
-Also run the current Codex validator against every canonical skill when it is
-available:
+Also run the current Codex validator against every canonical skill when both
+the script and its Python `yaml` dependency are available:
 
 ```sh
 for skill in .agents/skills/*; do
   python3 ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py "$skill"
 done
 ```
+
+If either prerequisite is unavailable, report the secondary validator as
+unavailable; do not modify a client-owned system skill or the global Python
+interpreter during an audit.
 
 Do not modify third-party or client-owned system skills during an audit.
 Hunk is the exception to canonical repo ownership: when installed, its bundled

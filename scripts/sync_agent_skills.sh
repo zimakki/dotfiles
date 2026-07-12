@@ -61,6 +61,26 @@ for skill in "${skill_dirs[@]}"; do
   [[ "$declared" == "$name" ]] && pass "$name metadata" || fail "$name declares name '$declared'"
   [[ -n "$description" ]] || fail "$name has no description"
   [[ $(wc -l < "$file") -le 500 ]] || warn "$name/SKILL.md exceeds 500 lines; use progressive disclosure"
+
+  openai_file="$skill/agents/openai.yaml"
+  if [[ ! -f "$openai_file" ]]; then
+    fail "$name has no agents/openai.yaml"
+    continue
+  fi
+  display_name="$(sed -n 's/^  display_name: "\(.*\)"$/\1/p' "$openai_file" | head -1)"
+  short_description="$(sed -n 's/^  short_description: "\(.*\)"$/\1/p' "$openai_file" | head -1)"
+  default_prompt="$(sed -n 's/^  default_prompt: "\(.*\)"$/\1/p' "$openai_file" | head -1)"
+  openai_ok=true
+  [[ -n "$display_name" ]] || { fail "$name agents/openai.yaml has no quoted display_name"; openai_ok=false; }
+  if (( ${#short_description} < 25 || ${#short_description} > 64 )); then
+    fail "$name agents/openai.yaml short_description must be 25-64 characters"
+    openai_ok=false
+  fi
+  if [[ "$default_prompt" != *"\$$name"* ]]; then
+    fail "$name agents/openai.yaml default_prompt must mention \$$name"
+    openai_ok=false
+  fi
+  $openai_ok && pass "$name Codex interface metadata"
 done
 
 discovery_skills=("${skill_dirs[@]}")

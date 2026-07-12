@@ -1,4 +1,4 @@
 interface:
   display_name: "Install App"
   short_description: "Install and record an app through dotfiles"
-  default_prompt: "Install this application or tool through the dotfiles repo, recording its package and configuration reproducibly."
+  default_prompt: "Use $install-app to install this application or tool through the dotfiles repo with reproducible package and configuration records."

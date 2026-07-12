@@ -1,4 +1,4 @@
 interface:
   display_name: "Dotfiles Skill Linter"
   short_description: "Audit and repair cross-agent skill discovery"
-  default_prompt: "Audit the dotfiles skills for Agent Skills compliance and cross-agent discovery, then safely repair any drift."
+  default_prompt: "Use $dotfiles-skill-linter to audit the dotfiles skills for compliance and cross-agent discovery, then safely repair any drift."

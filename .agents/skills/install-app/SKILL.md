@@ -5,9 +5,10 @@ description: Install a new application or tool through the dotfiles repo — pic
 
 # Install an app via the dotfiles repo
 
-The dotfiles repo is the single entry point for machine setup. Nothing gets
-installed ad-hoc: every install is recorded here first, so a new machine
-reproduces it and `git log` explains it.
+The dotfiles repo is the single entry point for machine setup. Record automated
+installs here before applying them so a new machine reproduces them and `git
+log` explains them. Explicitly document rare manual or npm-global exceptions;
+do not imply that a comment installs software.
 
 Before touching shell config, PATH, or installer shell snippets, read
 `docs/conventions/shell-config.md`.
@@ -20,8 +21,9 @@ to install.
 In priority order:
 
 1. **Language runtime** (node, python, elixir, erlang, ruby, go…) → **mise**,
-   never brew. Add a pinned version to `mise.toml` under `[tools]`, then use
-   `mise install` after confirming the installed mise satisfies `min_version`.
+   never brew. Add a pinned version to `mise.toml` under `[tools]`, confirm the
+   installed mise satisfies `min_version`, then run `mise bootstrap --only
+   tools` so the BrewFile pre-tools hook preserves the required build order.
 2. **GUI app** → `brew search --cask <name>`. If found: `cask "<token>"`.
 3. **CLI tool** → `brew search <name>` / `brew info <name>`. If found: `brew "<token>"`.
 4. **Mac App Store only** → `mas search "<name>"`. Add `mas "<App Name>", id: NNNN`
@@ -29,9 +31,12 @@ In priority order:
    casks) and install it first.
 5. **npm global** (rare — prefer per-project) → confirm with the user it really
    needs to be global, then `npm i -g` and note it in MIGRATION.md §1e.
-6. **Nothing found** → check the project's website/docs (WebFetch) for a brew tap
-   or alternate cask token. If it's truly manual-install-only, say so and add a
-   commented line to the BrewFile as a record: `# cask "<name>" — not on brew, manual install from <url>`.
+6. **Nothing found** → check the project's official website/docs for a brew tap
+   or alternate cask token. Record a custom `tap "owner/repo"` and use the fully
+   qualified `owner/repo/token` so fresh-machine preflight can recognize it
+   before the tap is installed. If it's truly manual-install-only, say so and
+   add a commented line to the BrewFile as a record: `# cask "<name>" — not on
+   brew, manual install from <url>`.
 
 If the name is ambiguous (multiple plausible tokens), show `brew info` for the
 candidates and ask.
@@ -40,7 +45,8 @@ candidates and ask.
 
 1. Edit the **BrewFile** (note: capital F, `BrewFile` not `Brewfile`): add the
    line in alphabetical position within its section (formulae first, then casks).
-2. Install: `brew install [--cask] <token>` (or `mise install` / `mas install <id>`).
+2. Install: `brew install [--cask] <token>` (or `mise bootstrap --only tools` /
+   `mas install <id>`).
 3. Verify: `command -v <bin>` for CLIs, or `ls /Applications | grep -i <name>`
    for casks.
 
@@ -102,6 +108,11 @@ Run the portable checks and inspect the bootstrap preview:
 scripts/ci_checks.sh
 mise bootstrap --dry-run
 ```
+
+When the change alters the number of tools, dotfiles, typed defaults, dynamic
+links, or exception writes, update the corresponding ownership assertions in
+`scripts/test_bootstrap_config.py` and any exact counts or version lists in
+`README.md` and `MIGRATION.md` before running CI.
 
 Commit or push only when requested or when the current task explicitly includes
 that workflow. Prefer one atomic commit per app. Report what was installed,

@@ -1,4 +1,4 @@
 interface:
   display_name: "Uninstall App"
   short_description: "Safely remove an app and its dotfiles traces"
-  default_prompt: "Find every trace of this application, present the removal plan, and remove it only after confirmation."
+  default_prompt: "Use $uninstall-app to find every trace of this application, present the removal plan, and remove it only after confirmation."

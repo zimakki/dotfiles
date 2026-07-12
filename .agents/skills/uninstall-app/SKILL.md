@@ -34,18 +34,22 @@ uninstalls are destructive.
 - brew formula/cask: `brew uninstall [--cask] <token>`. For casks, prefer
   `brew uninstall --zap --cask <token>` if the user wants config/caches gone too
   (show what zap would remove first: `brew info --cask <token>` stanza).
-- mise runtime: remove from `[tools]` in `mise.toml`, then review `mise prune`
-  output before removing an installed version.
+- mise runtime: remove from `[tools]` in `mise.toml`, preview the now-unused
+  versions with `mise prune --dry-run <tool>`, then preview the exact removal
+  with `mise uninstall --dry-run <tool>@<version>`. Run the same `mise
+  uninstall` command without `--dry-run` only after reviewing that version.
 - mas app: `mas uninstall <id>` (may need `sudo`) or drag-to-trash; remove the
   `mas` line from the BrewFile.
-- Afterwards: `brew autoremove` to drop now-orphaned dependencies (show the list).
+- Afterwards: show now-orphaned dependencies with `brew autoremove --dry-run`.
+  Run `brew autoremove` only after the user confirms that list.
 
 ## 3. Update the repo
 
 1. **BrewFile**: comment the line out with a reason and date rather than deleting —
    `# brew "<token>"  # removed 2026-06: <reason>` — matching the existing
    pruned-entry style. Delete outright only if the user says it was a mistake to
-   ever have it.
+   ever have it. If this was the last active token from a custom tap, review
+   whether its `tap "owner/repo"` declaration should be removed too.
 2. **mise.toml `[dotfiles]`**: remove the static entry. The old symlink remains
    because mise's declarative dotfiles are stateless; identify it explicitly and
    ask before removing the link from `$HOME`. Only edit `setup_sim_links.zsh`
@@ -57,7 +61,10 @@ uninstalls are destructive.
    from matching `hosts/*.zsh` files.
 5. **mise macOS defaults / exceptions / docs**: remove supported typed settings
    from `[bootstrap.macos.*]`; touch `macos_defaults.sh` only for an exception;
-   update MIGRATION.md where the app has manual follow-up.
+   update MIGRATION.md where the app has manual follow-up. Removing a declaration
+   does not restore the live preference: inspect its current and pre-change
+   values, then ask whether to leave it or explicitly restore/delete it. Never
+   guess the prior value.
 
 ## 4. Sweep leftovers on disk
 
@@ -75,6 +82,11 @@ Offer to delete (ask per item, never blanket-delete):
 scripts/ci_checks.sh
 mise bootstrap --dry-run
 ```
+
+When the change alters the number of tools, dotfiles, typed defaults, dynamic
+links, or exception writes, update the corresponding ownership assertions in
+`scripts/test_bootstrap_config.py` and any exact counts or version lists in
+`README.md` and `MIGRATION.md` before running CI.
 
 Commit or push only when requested or explicitly included in the current task.
 Report: what was uninstalled, what was kept (and why), and any follow-ups
