@@ -3,6 +3,11 @@
 Date: 2026-07-10
 Status: approved
 
+> Historical design record. Current skills are canonical under
+> `.agents/skills/` and static links are owned by `[dotfiles]` in `mise.toml`.
+> Do not use the `.claude/skills` or `setup_sim_links.zsh` paths below as current
+> operating instructions.
+
 ## Problem
 
 Zi frequently asks agents to "create an HTML document that explains X" (explainers,
