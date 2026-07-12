@@ -129,14 +129,28 @@ make_fake defaults 'printf "defaults %s\\n" "$*" >> "$BOOTSTRAP_TEST_LOG"'
 make_fake killall 'printf "killall %s\\n" "$*" >> "$BOOTSTRAP_TEST_LOG"'
 
 fake_path="$fake_bin:/usr/bin:/bin"
-env HOME="$exception_home" CODEX_HOME="$exception_home/.codex" \
-  BOOTSTRAP_TEST_LOG="$log" PATH="$fake_path" \
-  zsh "$repo/scripts/bootstrap_exceptions.zsh" >/dev/null
+task_mise_env=(
+  "HOME=$exception_home"
+  "CODEX_HOME=$exception_home/.codex"
+  "MISE_DATA_DIR=$root/task-mise/data"
+  "MISE_CACHE_DIR=$root/task-mise/cache"
+  "MISE_STATE_DIR=$root/task-mise/state"
+  "MISE_GLOBAL_CONFIG_FILE=$exception_home/.config/mise/config.toml"
+  "MISE_TRUSTED_CONFIG_PATHS=$repo:$exception_home/.config/mise/config.toml"
+  "MISE_TASK_RUN_AUTO_INSTALL=false"
+  "MISE_OFFLINE=true"
+)
+run_bootstrap_task() {
+  (
+    cd "$repo"
+    env "${task_mise_env[@]}" BOOTSTRAP_TEST_LOG="$log" PATH="$fake_path" \
+      "$mise_bin" run bootstrap >/dev/null
+  )
+}
+run_bootstrap_task
 env HOME="$exception_home" BOOTSTRAP_TEST_LOG="$log" PATH="$fake_path" \
   zsh "$repo/macos_defaults.sh" >/dev/null
-env HOME="$exception_home" CODEX_HOME="$exception_home/.codex" \
-  BOOTSTRAP_TEST_LOG="$log" PATH="$fake_path" \
-  zsh "$repo/scripts/bootstrap_exceptions.zsh" >/dev/null
+run_bootstrap_task
 
 grep -q '^mise trust .*\.config/mise/config.toml$' "$log" || fail "global trust exception was not exercised"
 grep -q '^defaults -currentHost write com.apple.controlcenter BatteryShowPercentage -bool true$' "$log" \
@@ -144,6 +158,6 @@ grep -q '^defaults -currentHost write com.apple.controlcenter BatteryShowPercent
 grep -q '^killall Finder Dock SystemUIServer$' "$log" || fail "restart exception was not exercised"
 [[ -L "$exception_home/.config/lazygit/config.yml" ]] || fail "dynamic Lazygit link was not created"
 [[ -f "$exception_home/.agents/skills/.dotfiles-managed-skills" ]] || fail "skill sync did not use temporary HOME"
-pass "exceptions are idempotent under fakes and stay inside temporary HOME"
+pass "mise task exceptions are idempotent under fakes and stay inside temporary HOME"
 
 printf '\nAll isolated bootstrap checks passed with mise %s.\n' "$version"
