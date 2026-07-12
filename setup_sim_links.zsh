@@ -3,6 +3,7 @@
 # Legacy exception installer. Static links are owned by mise.toml [dotfiles].
 #
 # Invoked by scripts/bootstrap_exceptions.zsh after Brew installs lazygit.
+set -eu
 
 DOTFILES="$(realpath "$(dirname "$0")")"
 

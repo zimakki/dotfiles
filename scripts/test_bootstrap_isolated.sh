@@ -125,7 +125,6 @@ make_fake mise 'printf "mise %s\\n" "$*" >> "$BOOTSTRAP_TEST_LOG"'
 make_fake lazygit 'printf "lazygit %s\\n" "$*" >> "$BOOTSTRAP_TEST_LOG"; printf "%s\\n" "$HOME/.config/lazygit"'
 make_fake defaults 'printf "defaults %s\\n" "$*" >> "$BOOTSTRAP_TEST_LOG"'
 make_fake killall 'printf "killall %s\\n" "$*" >> "$BOOTSTRAP_TEST_LOG"'
-make_fake hunk 'exit 1'
 
 fake_path="$fake_bin:/usr/bin:/bin"
 env HOME="$exception_home" CODEX_HOME="$exception_home/.codex" \
