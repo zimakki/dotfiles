@@ -3,10 +3,13 @@
 # Cache mise env directive results (incl. fnox secret resolution) so secrets
 # aren't re-fetched from 1Password on every command — avoids repeated op/Touch ID prompts.
 export MISE_ENV_CACHE=1
+export KERL_BUILD_DOCS="yes"
 
-# mise: put managed-tool shims on PATH for non-interactive shells (scripts, IDEs, agents).
-# Interactive shells additionally get the full `mise activate` hook from ~/.zshrc, which layers on top.
-eval "$(/opt/homebrew/bin/mise activate zsh --shims)"
+# Put managed-tool shims on PATH without running mise during shell startup.
+# Interactive shells additionally get the live activation hook from ~/.zshrc.
+_mise_data_dir="${MISE_DATA_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/mise}"
+[[ -d "$_mise_data_dir/shims" ]] && path=("$_mise_data_dir/shims" $path)
+unset _mise_data_dir
 
 # ---------------------------------------------------------------------------
 # PATH — single source of truth for tool directories.
@@ -17,7 +20,7 @@ eval "$(/opt/homebrew/bin/mise activate zsh --shims)"
 # correct on every computer that shares this repo and self-heals as tools come
 # and go. `typeset -U` keeps entries unique (idempotent — safe to re-source).
 #
-# Precedence: mise shims (set on the `mise activate --shims` line above) > tool
+# Precedence: mise shims (prepended above) > tool
 # dirs below. That's why the variable tool dirs are APPENDED (path+=), not
 # prepended — a standalone install (e.g. a bare ~/.bun/bin on some machine) must
 # NOT shadow mise's managed shim. Only ~/.local/bin is prepended, so user

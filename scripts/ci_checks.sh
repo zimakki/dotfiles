@@ -49,6 +49,12 @@ for path in pathlib.Path(".").rglob("*"):
         tomllib.loads(path.read_text())
 PY
 
+section "Bootstrap ownership contract"
+python3 scripts/test_bootstrap_config.py
+
+section "Isolated bootstrap behavior"
+scripts/test_bootstrap_isolated.sh
+
 section "YAML syntax"
 ruby - <<'RUBY'
 require "yaml"
@@ -61,7 +67,7 @@ RUBY
 section "Brewfile syntax"
 ruby -c BrewFile
 
-section "Symlink manifest sources"
+section "Exception manifest sources"
 missing=0
 while IFS= read -r source; do
 	if [[ ! -e "$source" ]]; then

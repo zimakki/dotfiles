@@ -1,6 +1,6 @@
 ---
 name: install-app
-description: Install a new application or tool through the dotfiles repo — pick the right channel (brew cask/formula, mise runtime, mas, npm -g), record it in the BrewFile or mise_config.toml, install it, and capture+symlink any config it creates. Use when the user asks to install, add, or set up an app or CLI tool.
+description: Install a new application or tool through the dotfiles repo — pick the right channel, record it in BrewFile or mise.toml, install it, and capture any managed config. Use when the user asks to install, add, or set up an app or CLI tool.
 ---
 
 # Install an app via the dotfiles repo
@@ -20,7 +20,8 @@ to install.
 In priority order:
 
 1. **Language runtime** (node, python, elixir, erlang, ruby, go…) → **mise**,
-   never brew. Add to `mise_config.toml` under `[tools]`, then `mise install`.
+   never brew. Add a pinned version to `mise.toml` under `[tools]`, then use
+   `mise install` after confirming the installed mise satisfies `min_version`.
 2. **GUI app** → `brew search --cask <name>`. If found: `cask "<token>"`.
 3. **CLI tool** → `brew search <name>` / `brew info <name>`. If found: `brew "<token>"`.
 4. **Mac App Store only** → `mas search "<name>"`. Add `mas "<App Name>", id: NNNN`
@@ -59,14 +60,16 @@ Decide with the user what's worth tracking:
 
 - **Plain-text config you'd edit by hand** (toml/yaml/json/lua) → copy into the
   repo root (follow existing naming: `<app>_config.toml`, `<app>.json`, or a
-  directory like `television/`), add an entry to the `LINKS` array in
-  `setup_sim_links.zsh` (`"<repo-file>:~/.config/<app>/<file>"`), then run
-  `./setup_sim_links.zsh` (it backs up replaced files to `*.bak`).
+  directory like `television/`) and add a static symlink entry under
+  `[dotfiles]` in `mise.toml`. Preview with `mise bootstrap --dry-run --only
+  dotfiles`; do not use `--force-dotfiles` without reviewing conflicts.
 - **Binary plists / app-managed state** → don't symlink. If the app has its own
   export (like Raycast's `.rayconfig`), note that in MIGRATION.md instead.
 - **Anything containing secrets/tokens** → NEVER commit. Point the user at
   `~/.zsh_secrets` / 1Password instead.
-- **macOS `defaults` the app needs** → add to `macos_defaults.sh`.
+- **macOS `defaults` the app needs** → add typed values under
+  `[bootstrap.macos.*]` in `mise.toml` when supported. Reserve
+  `macos_defaults.sh` for unsupported `-currentHost` writes and app restarts.
 
 If the app needs shell init, split the installer snippet by what each line does:
 
@@ -91,15 +94,15 @@ separate repo-owned copies under client-specific directories; `~/.agents/skills`
 `~/.claude/skills`, and `${CODEX_HOME:-~/.codex}/skills` are synchronized from
 the canonical tree by `scripts/sync_agent_skills.sh`.
 
-## 4. Commit
+## 4. Validate and hand off
 
-Commit straight to master and push (the user's standing policy):
+Run the portable checks and inspect the bootstrap preview:
 
 ```sh
-git add <changed files>
-git commit -m "Add <app> (<one-line purpose>)"
-git push
+scripts/ci_checks.sh
+mise bootstrap --dry-run
 ```
 
-One commit per app. Report what was installed, what config was captured, and
-anything left manual (first-launch permissions, sign-in, etc.).
+Commit or push only when requested or when the current task explicitly includes
+that workflow. Prefer one atomic commit per app. Report what was installed,
+what config was captured, and anything left manual.

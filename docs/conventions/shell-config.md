@@ -151,12 +151,11 @@ otherwise silently stop sourcing it.
 macOS login shells run `/etc/zprofile`, which calls `path_helper`. It can reorder
 PATH entries for login shells.
 
-In this repo, the main requirement is usually presence rather than strict
-precedence: commands such as `psql` need to be discoverable in non-interactive
-shells. `zshenv` handles that.
-
-Only add a `.zprofile` re-assertion if a tool truly depends on PATH order in
-login shells and the need is verified. Do not add one preemptively.
+This repo has verified that `path_helper` otherwise puts Homebrew Node and the
+system Python ahead of mise in login shells. The fully managed `zprofile`
+therefore reasserts the portable mise shims after `/etc/zprofile`. Keep that
+reassertion aligned with the shim setup in `zshenv`, and verify both shell modes
+after changing either file.
 
 ## Secrets
 
@@ -176,7 +175,7 @@ When an installer gives a shell snippet, split it by what each line does:
 | Snippet type | Destination |
 | --- | --- |
 | Bin directory such as `export PATH="$HOME/.tool/bin:$PATH"` | Guarded `path` array in `zshenv` |
-| Mise-managed runtime or tool | `mise_config.toml`; no extra PATH entry |
+| Mise-managed runtime or tool | `[tools]` in `mise.toml`; no tool-specific PATH entry |
 | Exported non-secret env var needed by scripts or tools | `zshenv` |
 | Exported non-secret env var only used in interactive terminals | `zshrc` |
 | Secret token or password | 1Password / `~/.zsh_secrets`, never committed |

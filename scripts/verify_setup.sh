@@ -45,55 +45,21 @@ ev=$(mise exec -C "$HOME" -- elixir --version 2>/dev/null)
 [[ "$ev" == *"1.20.2"* ]] && pass "elixir 1.20.2" || fail "elixir: ${ev:-<none>}"
 [[ "$ev" == *"OTP 29"*  ]] && pass "erlang/OTP 29" || fail "OTP not 29: ${ev:-<none>}"
 
-hdr "Symlinks (LINKS → repo)"
-manifest_sources=()
-grep -oE '"[^"]+:(~|/|\$)[^"]*"' "$REPO/setup_sim_links.zsh" | tr -d '"' | while IFS=: read -r src dest; do
-  manifest_sources+=("$src")
-  d="${dest/#\~/$HOME}"
-  [[ "$d" == *'$('* ]] && d=$(eval echo "$d") 2>/dev/null
-  if [[ -L "$d" ]]; then
-    tgt=$(realpath "$d" 2>/dev/null)
-    [[ "$tgt" == "$REPO"/* ]] && pass "link $d" || fail "$d → $tgt (outside repo)"
-  elif [[ -e "$REPO/$src" ]]; then
-    fail "$d is not a symlink"
-  else
-    skip "$d (no repo source: $src)"
-  fi
-done
+hdr "mise bootstrap state"
+autoload -Uz is-at-least
+if is-at-least 2026.7.4 "$(mise --version | awk '{print $1}')"; then
+  pass "mise satisfies the bootstrap minimum"
+else
+  fail "mise >=2026.7.4 required"
+fi
+mise bootstrap status --missing >/dev/null 2>&1 \
+  && pass "declarative bootstrap state converged" \
+  || fail "bootstrap drift detected (run: mise bootstrap status --missing)"
 
-hdr "Symlink manifest coverage (repo → LINKS)"
-expected_link_roots=(
-  zshenv
-  zshrc
-  gitconfig
-  BrewFile
-  gitignore_global
-  claude_settings.json
-  starship.toml
-  atuin_config.toml
-  atuin_themes
-  mise_config.toml
-  karabiner.json
-  television
-  ghostty_config
-  warp_keybindings.yaml
-  warp_themes
-  lazygit_config.yml
-  bat_config
-  hunk
-  zsh
-)
-for root in $expected_link_roots; do
-  if [[ ! -e "$REPO/$root" ]]; then
-    fail "manifest coverage source missing: $root"
-    continue
-  fi
-  covered=0
-  for src in $manifest_sources; do
-    [[ "$src" == "$root" || "$src" == "$root"/* ]] && covered=1 && break
-  done
-  (( covered )) && pass "manifest covers $root" || fail "tracked config root not in LINKS: $root"
-done
+hdr "Bootstrap exceptions"
+lazygit_dest="$(lazygit -cd)/config.yml"
+[[ -L "$lazygit_dest" && "$(realpath "$lazygit_dest" 2>/dev/null)" == "$REPO/lazygit_config.yml" ]] \
+  && pass "dynamic Lazygit link" || fail "dynamic Lazygit link is missing or incorrect"
 if "$REPO/scripts/sync_agent_skills.sh" >/dev/null; then
   pass "cross-agent skills and instruction shims validate from every discovery root"
 else
@@ -101,22 +67,10 @@ else
 fi
 skip "raycast.rayconfig is imported manually; do not symlink app state"
 
-hdr "macOS defaults (read-back vs macos_defaults.sh)"
-grep -E '^[[:space:]]*defaults write' "$REPO/macos_defaults.sh" | while IFS= read -r line; do
-  rest=${line#*defaults write }
-  toks=(${(zQ)rest})   # z=shell-split, Q=strip one level of quotes
-  if [[ "${toks[1]}" == "-g" || "${toks[1]}" == "NSGlobalDomain" ]]; then
-    domain="-g"; key="${toks[2]}"; tflag="${toks[3]}"; val="${toks[4]:-}"
-  else
-    domain="${toks[1]}"; key="${toks[2]}"; tflag="${toks[3]}"; val="${toks[4]:-}"
-  fi
-  case "$tflag" in
-    -bool) [[ "$val" == "true" ]] && exp=1 || exp=0 ;;
-    *)     exp="$val" ;;
-  esac
-  if [[ "$domain" == "-g" ]]; then act=$(defaults read -g "$key" 2>/dev/null); else act=$(defaults read "$domain" "$key" 2>/dev/null); fi
-  [[ "$act" == "$exp" ]] && pass "$domain $key = $act" || fail "$domain $key = '${act:-<unset>}' (expected '$exp')"
-done
+if [[ "$OSTYPE" == darwin* ]]; then
+  battery=$(defaults -currentHost read com.apple.controlcenter BatteryShowPercentage 2>/dev/null)
+  [[ "$battery" == 1 ]] && pass "currentHost battery percentage" || fail "currentHost battery percentage differs"
+fi
 
 hdr "Integration: interactive shell loads clean"
 # Run under a pty (script) so ZLE-based plugins (atuin/tv) initialize exactly as
@@ -127,6 +81,17 @@ if [[ -z "$errout" ]]; then
 else
   fail "shell load produced unexpected output:"; print "$errout" | sed 's/^/        /'
 fi
+
+hdr "Integration: mise runtime precedence"
+for runtime in node python; do
+  nonlogin=$(zsh -c "command -v $runtime" 2>/dev/null)
+  login=$(zsh -lc "command -v $runtime" 2>/dev/null)
+  if [[ -n "$nonlogin" && "$login" == "$nonlogin" && "$login" == *"/.local/share/mise/"* ]]; then
+    pass "$runtime matches in login/non-login shells ($login)"
+  else
+    fail "$runtime path drift: zsh -c=${nonlogin:-<none>}, zsh -lc=${login:-<none>}"
+  fi
+done
 
 hdr "Brewfile drift (installed vs recorded)"
 # Direction 1: in BrewFile but not installed

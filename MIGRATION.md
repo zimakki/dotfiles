@@ -1,8 +1,8 @@
 # Dotfiles Migration Plan (old Mac → new Mac)
 
-This branch (`chore/curate-dotfiles-for-new-mac`) curates the dotfiles on the
-**new** MacBook: runtimes moved to mise, the Brewfile pruned, the zshrc cleaned
-up, and a leaked secret removed.
+This guide captures an old Mac and restores the curated state on a new one.
+The current setup uses `mise bootstrap` as its coordinator while preserving
+`BrewFile` as the package and cask inventory.
 
 **Goal:** stand up the new Mac from these curated dotfiles without losing
 anything you rely on. **Phase 1** (old Mac) is a full audit — it captures the
@@ -20,10 +20,10 @@ access works on both machines (set up separately).
 
 ## Git flow (do in this order)
 
-1. **New machine** (done): work committed on `chore/curate-dotfiles-for-new-mac`, pushed, PR opened.
-2. **Old machine**: `git fetch && git checkout chore/curate-dotfiles-for-new-mac`, run **Phase 1**, commit + push.
-3. **New machine**: `git pull`, run **Phase 2** (install).
-4. Merge the PR once both machines are happy.
+1. Create or check out the migration branch in a separate worktree.
+2. **Old machine**: run Phase 1, review and commit the captured state.
+3. Review and merge that branch through the normal repository workflow.
+4. **New machine**: clone/pull the reviewed state and run Phase 2.
 
 ## Safety rules (read first)
 
@@ -40,12 +40,12 @@ access works on both machines (set up separately).
 **Use a git worktree** so your live configs are never touched. Your dotfiles are
 symlinked from your *main* checkout; a worktree is a separate directory, so
 checking out this branch there leaves the main checkout — and your symlinks —
-untouched. (Don't run `setup_sim_links.zsh` here.)
+untouched. Do not apply bootstrap or either exception helper here.
 
 ```sh
 cd <your main dotfiles checkout>
 git fetch origin
-git worktree add ../dotfiles-migration chore/curate-dotfiles-for-new-mac
+git worktree add ../dotfiles-migration <migration-branch>
 cd ../dotfiles-migration
 # ...do Phase 1 here, then commit + push...
 # when finished: git worktree remove ../dotfiles-migration
@@ -211,16 +211,17 @@ code --list-extensions 2>/dev/null                  # VS Code extensions
 
 ### 1f. Capture configs/dotfiles not yet tracked in this repo
 
-Compare the `LINKS` manifest in `setup_sim_links.zsh` against what configs you
-actually rely on. Notable gaps to consider adding to the repo:
+Compare `[dotfiles]` in `mise.toml` against the configs you actually rely on.
+`setup_sim_links.zsh` contains only the dynamic Lazygit exception. Notable gaps
+to consider adding to the repo:
 
-- `~/.config/mise/config.toml` — global runtime versions. Now **tracked** in
-  this repo as `mise_config.toml` and symlinked via `setup_sim_links.zsh`.
+- `~/.config/mise/config.toml` — global runtime/bootstrap config. Tracked as
+  discoverable `mise.toml` and linked declaratively by mise bootstrap.
 - Neovim config — `NVIM_APPNAME=astronvim_v6`; confirm that config is its own
   repo and is pushed.
 - Ghostty terminal — already tracked (`ghostty_config` → `~/.config/ghostty/config`);
   just make sure the old Mac's version is committed.
-- Anything under `~/.config` you use that isn't in `LINKS`.
+- Anything under `~/.config` you use that isn't in `[dotfiles]`.
 
 **Audit `~/.config` by modification time.** Recently-touched config is a strong
 sign of an app you actively use and may want to track. Surface candidates and
@@ -233,21 +234,21 @@ find ~/.config -maxdepth 3 -type f -mtime -30 2>/dev/null | sort
 # everything in ~/.config, most-recently-modified first
 ls -lt ~/.config
 
-# destinations already symlinked from this repo (spot the gaps):
-grep -oE '~/[^"]+' setup_sim_links.zsh | sort
+# declarative destinations already managed by this repo:
+mise bootstrap status --json
 ```
 
-For any actively-used `~/.config/<app>` not already symlinked: copy it into the
-repo and add a `LINKS` entry (`<repo-file>:~/.config/<app>/<file>`). The same
-mtime trick works on `~/Library/Application Support` and `~/Library/Preferences`
-if an app keeps its config there instead.
+For any actively-used `~/.config/<app>` not already managed: copy it into the
+repo and add a static source/target entry under `[dotfiles]` in `mise.toml`.
+Preview with `mise bootstrap --dry-run --only dotfiles`. The same mtime trick
+works on `~/Library/Application Support` and `~/Library/Preferences` if an app
+keeps its config there instead.
 
 **Do NOT commit secrets:** `~/.zsh_secrets`, `~/.ssh/*`, 1Password data, or any
 file containing tokens/keys.
 
 **Karabiner-Elements (keyboard config).** The cask is already in the Brewfile,
-so only the config needs capturing. On the OLD machine, copy it into the repo (a
-symlink entry already exists in `setup_sim_links.zsh`):
+so only the config needs capturing. Its `[dotfiles]` entry already exists:
 
 ```sh
 cp ~/.config/karabiner/karabiner.json karabiner.json
@@ -255,21 +256,22 @@ cp ~/.config/karabiner/karabiner.json karabiner.json
 # cp -R ~/.config/karabiner/assets/complex_modifications ./karabiner_complex_modifications
 ```
 
-Commit it (step 1f). On the new machine, `setup_sim_links.zsh` symlinks
+Commit it (step 1f). On the new machine, mise bootstrap links
 `karabiner.json` → `~/.config/karabiner/karabiner.json` and Karabiner picks it up
 on launch.
 
 > Caveat: Karabiner rewrites `karabiner.json` whenever you change settings in its
 > UI. With the symlink that's normally fine (it writes in place), but if Karabiner
-> ever replaces the symlink with a real file, just re-run `setup_sim_links.zsh` to
-> re-link. Never track `~/.config/karabiner/automatic_backups/`.
+> ever replaces the symlink with a real file, inspect the conflict before using
+> `--force-dotfiles`. Never track `~/.config/karabiner/automatic_backups/`.
 
-**macOS system settings (keyboard, function keys, etc.).** These get captured
-into `macos_defaults.sh` (applied once on the new Mac in Phase 2). macOS has no
-"diff from default", so add only the settings you actually changed. On the OLD Mac:
+**macOS system settings (keyboard, function keys, etc.).** Supported scalar
+settings belong in `[bootstrap.macos.*]` in `mise.toml`. Reserve
+`macos_defaults.sh` for unsupported host-scoped writes and process restarts.
+macOS has no "diff from default", so add only settings you actually changed:
 
-1. Read current values and append a `defaults write` line for each to
-   `macos_defaults.sh`. Starting points:
+1. Read current values and encode each supported boolean, integer, float, or
+   string in the matching mise macOS section. Starting points:
    ```sh
    defaults read -g com.apple.keyboard.fnState   # F1/F2 as standard function keys
    defaults read -g InitialKeyRepeat             # key-repeat delay (already seeded)
@@ -278,8 +280,8 @@ into `macos_defaults.sh` (applied once on the new Mac in Phase 2). macOS has no
    defaults read com.apple.finder | less          # Finder settings
    defaults read com.apple.dock   | less          # Dock settings
    ```
-   `macos_defaults.sh` already has commented Finder/Dock templates — uncomment
-   the ones you use and set them to your old-Mac values.
+   Prefer the friendly keyboard/Finder/Dock keys; use
+   `[bootstrap.macos.defaults]` for other supported scalar pairs.
 2. To find the key behind a System Settings toggle you don't know, use the
    before/after diff:
    ```sh
@@ -288,7 +290,8 @@ into `macos_defaults.sh` (applied once on the new Mac in Phase 2). macOS has no
    defaults read > /tmp/after.txt
    diff /tmp/before.txt /tmp/after.txt
    ```
-   Add the discovered `defaults write …` line to `macos_defaults.sh`.
+   Add the discovered scalar to `mise.toml`. Only unsupported `-currentHost`
+   behavior belongs in `macos_defaults.sh`.
 
 **Raycast.** The raw files aren't portable/diffable, so use Raycast's own export:
 Raycast → Settings → Advanced → **Export** → a `.rayconfig` file (offer it a
@@ -304,7 +307,7 @@ like an unprotected `raycast.rayconfig`):
 
 ```sh
 git status                                            # eyeball every change
-git add BrewFile karabiner.json macos_defaults.sh    # add intended files explicitly
+git add BrewFile karabiner.json mise.toml            # add intended files explicitly
 # password-protected Raycast export only (it's gitignored):
 # git add -f raycast.rayconfig
 git commit -m "Capture old-machine packages, tools, and configs"
@@ -313,11 +316,11 @@ git push
 
 ---
 
-## Phase 2 — NEW machine: install (after Phase 1 is merged/pulled)
+## Phase 2 — NEW machine: mise bootstrap (after Phase 1 is merged/pulled)
 
-**Order matters** — build deps must exist before mise compiles erlang/elixir, and
-lazygit must exist before the symlink script runs. Each step is gated before and
-verified after; stop at the first failed check.
+Install Xcode Command Line Tools, Homebrew, Git, and mise >=2026.7.4 before
+cloning. The repo deliberately does not upgrade the live mise binary. Bootstrap
+then guarantees that the canonical BrewFile finishes before tool compilation.
 
 ### Pre-flight (gate the whole phase)
 
@@ -328,32 +331,21 @@ git pull
 ```
 Don't continue unless this exits ✅.
 
-### Steps
+### One operator flow
 
 ```sh
-# 1. oh-my-zsh (gate: not already installed; verify: oh-my-zsh.sh exists)
+# Install oh-my-zsh before applying the fully managed zshrc.
 [ -d ~/.oh-my-zsh ] || KEEP_ZSHRC=yes RUNZSH=no CHSH=no \
   sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 [ -f ~/.oh-my-zsh/oh-my-zsh.sh ] && echo "✅ oh-my-zsh" || echo "❌ oh-my-zsh"
 
-# 2. Homebrew packages — logged (some casks prompt for your Mac password)
-brew bundle --file=~/code/zimakki/dotfiles/BrewFile 2>&1 | tee /tmp/brew-bundle.log
-brew bundle check --file=~/code/zimakki/dotfiles/BrewFile     # verify: "dependencies are satisfied"
-
-# 3. Runtimes via mise — compiles erlang/elixir; logged
-mise trust
-mise install 2>&1 | tee /tmp/mise-install.log
-mise exec -- elixir --version          # verify: Elixir 1.20.1, compiled with Erlang/OTP 29
-
-# 4. Symlinks (gate: lazygit installed; backs up replaced files to *.bak)
-command -v lazygit >/dev/null && ./setup_sim_links.zsh || echo "❌ install lazygit first"
-
-# 5. macOS settings — snapshot first for rollback/diff
+# Snapshot defaults, trust the reviewed config, preview, apply, inspect, verify.
 defaults read > /tmp/defaults.before
-./macos_defaults.sh
-
-# 6. Reload the shell
-exec zsh
+mise trust ./mise.toml
+mise bootstrap --dry-run
+mise bootstrap
+mise bootstrap status
+./scripts/verify_setup.sh
 ```
 
 ### Verify everything
@@ -361,8 +353,8 @@ exec zsh
 ```sh
 ./scripts/verify_setup.sh    # runs all automated post-checks → PASS/FAIL report
 ```
-Re-runnable anytime. **Rollback:** `setup_sim_links.zsh` leaves `<file>.bak`
-beside anything it replaced; revert macOS tweaks by diffing against
+Re-runnable anytime. Mise refuses conflicting files by default; inspect them
+before deliberately using `--force-dotfiles`. Revert defaults by diffing against
 `/tmp/defaults.before`.
 
 ### Manual checklist (GUI / credentials — can't be automated)
@@ -378,7 +370,7 @@ beside anything it replaced; revert macOS tweaks by diffing against
 ## ✅ Done when
 
 - A fresh shell opens with no errors (prompt = starship, history = atuin).
-- `mise ls` shows node 22.13.x, python 3.13, elixir 1.20.1-otp-29, erlang 29.0.2.
+- `mise ls` shows node 24.13.1, python 3.13.14, elixir 1.20.2-otp-29, erlang 29.0.2, bun 1.3.14, fnox 1.29.0, and portless 0.15.1.
 - `brew bundle check` passes.
 - Your key apps launch, Karabiner remaps work, and Raycast config is imported.
 
@@ -388,7 +380,8 @@ beside anything it replaced; revert macOS tweaks by diffing against
 
 | Area | Change |
 |------|--------|
-| Runtimes | `node`/`python` removed from Brewfile → managed by mise. Tracked as `mise_config.toml` (node 22.13, python 3.13, elixir 1.20.1-otp-29, erlang 29.0.2) and symlinked to `~/.config/mise/config.toml` |
+| Bootstrap | `mise.toml` is the discoverable front door and global config source; BrewFile remains the only package/cask inventory |
+| Runtimes | Seven pinned mise tools: node 24.13.1, python 3.13.14, elixir 1.20.2-otp-29, erlang 29.0.2, bun 1.3.14, fnox 1.29.0, portless 0.15.1 |
 | Brewfile | Pruned monitors/disk/media/embedded/unused CLIs (commented out); dropped emacs tap, arc, arduino-ide; postgresql@14 → Postgres.app; added starship/atuin/television/zsh-autosuggestions |
 | zshrc | Removed tmux/run_iex/yazi/emacs/doom; commented unidentified `entire`; guarded atuin env + 1Password fetch; source zsh-syntax-highlighting last; removed leaked secret |
 | Files | Deleted orphaned `cmux_dev_layout.sh` |

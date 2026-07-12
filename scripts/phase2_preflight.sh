@@ -28,8 +28,18 @@ fi
 
 hdr "Toolchain"
 xcode-select -p >/dev/null 2>&1 && ok "Xcode CLT present" || bad "Xcode Command Line Tools missing (erlang won't compile): xcode-select --install"
-command -v brew >/dev/null && ok "Homebrew: $(brew --version | head -1)" || bad "Homebrew missing"
-command -v mise >/dev/null && ok "mise: $(mise --version)"              || bad "mise missing"
+command -v brew >/dev/null && ok "Homebrew: $(brew --version | head -1)" || bad "Homebrew missing — install the documented prerequisite first"
+if command -v mise >/dev/null; then
+  mise_version=$(mise --version | awk '{print $1}')
+  autoload -Uz is-at-least
+  if is-at-least 2026.7.4 "$mise_version"; then
+    ok "mise: $mise_version (bootstrap-compatible)"
+  else
+    bad "mise $mise_version is too old; >=2026.7.4 required (upgrade it through its install channel)"
+  fi
+else
+  bad "mise missing — install >=2026.7.4 as a documented prerequisite"
+fi
 command -v curl >/dev/null && ok "curl present"                         || bad "curl missing"
 command -v git  >/dev/null && ok "git present"                          || bad "git missing"
 
@@ -47,7 +57,7 @@ hdr "Power"
 pmset -g batt 2>/dev/null | grep -q "AC Power" && ok "on AC power" || warn "on battery — erlang build is long; plug in"
 
 hdr "Scripts"
-for s in setup_sim_links.zsh macos_defaults.sh; do
+for s in setup_sim_links.zsh macos_defaults.sh scripts/bootstrap_exceptions.zsh; do
   [[ -x "$REPO/$s" ]] && ok "$s executable" || warn "$REPO/$s not executable (chmod +x)"
 done
 

@@ -25,5 +25,15 @@ jobs:
       - name: Install validation tools
         run: sudo apt-get update && sudo apt-get install --yes shellcheck zsh
 
+      - name: Install compatible mise for isolated bootstrap tests
+        env:
+          MISE_VERSION: 2026.7.5
+        run: |
+          curl --fail --silent --show-error --location \
+            "https://github.com/jdx/mise/releases/download/v${MISE_VERSION}/mise-v${MISE_VERSION}-linux-x64" \
+            --output "$RUNNER_TEMP/mise"
+          chmod +x "$RUNNER_TEMP/mise"
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+
       - name: Run checks
         run: scripts/ci_checks.sh

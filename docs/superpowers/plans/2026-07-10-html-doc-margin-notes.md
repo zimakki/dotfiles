@@ -1,5 +1,10 @@
 # zimakki-html-doc Skill + margin-notes Implementation Plan
 
+> Historical implementation record. Current skills are canonical under
+> `.agents/skills/` and static links are owned by `[dotfiles]` in `mise.toml`.
+> The client-specific paths, direct-to-master policy, and legacy link-manifest
+> steps below are preserved only to explain the original implementation.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** A machine-global Claude Code skill that generates self-contained interactive HTML explainer documents with an inlined annotation layer (margin-notes) whose aggregated feedback the user copy-pastes back to the agent.

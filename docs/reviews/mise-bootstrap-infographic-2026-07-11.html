@@ -1,0 +1,1005 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Should we adopt mise bootstrap? — simple infographic</title>
+<style>
+/* ── Catppuccin Mocha tokens (matches bat, ghostty, warp, starship, atuin) ── */
+:root {
+  color-scheme: dark;
+  --base: #1e1e2e; --mantle: #181825; --crust: #11111b;
+  --text: #cdd6f4; --subtext1: #bac2de; --subtext0: #a6adc8;
+  --overlay2: #9399b2; --overlay1: #7f849c; --overlay0: #6c7086;
+  --surface2: #585b70; --surface1: #45475a; --surface0: #313244;
+  --mauve: #cba6f7; --blue: #89b4fa; --green: #a6e3a1; --peach: #fab387;
+  --yellow: #f9e2af; --red: #f38ba8; --teal: #94e2d5; --sky: #89dceb;
+  --sapphire: #74c7ec; --lavender: #b4befe; --maroon: #eba0ac;
+
+  --font-body: Charter, 'Iowan Old Style', Palatino, Georgia, serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* margin-notes annotation layer, retinted to Mocha */
+  --mn-box-bg: var(--mantle); --mn-box-fg: var(--text); --mn-input-bg: var(--crust);
+  --mn-border: var(--surface1); --mn-muted: var(--subtext0); --mn-danger: var(--red);
+  --mn-accent-bg: var(--mauve); --mn-accent-fg: var(--crust); --mn-accent-border: var(--mauve);
+  --mn-warn-bg: var(--mantle); --mn-warn-border: var(--peach); --mn-warn-fg: var(--peach);
+}
+
+/* ── Page ── */
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0;
+  background: var(--base);
+  color: var(--text);
+  font: 1.125rem/1.7 var(--font-body);
+}
+main {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 4rem 2.75rem 8rem;
+}
+::selection { background: rgba(203, 166, 247, .28); }
+:focus-visible { outline: 2px solid var(--mauve); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* ── Typography ── */
+h1, h2, h3, h4 {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -.01em;
+}
+/* Each level owns a Catppuccin color, so depth reads at a glance. */
+h1 { font-size: 1.55rem; margin: 0 0 .4rem;    color: var(--mauve); }
+h2 { font-size: 1.18rem; margin: 2.8rem 0 .8rem; color: var(--blue); }
+h3 { font-size: 1rem;    margin: 2rem 0 .6rem;   color: var(--green); }
+h4 { font-size: .92rem;  margin: 1.6rem 0 .5rem; color: var(--yellow); }
+/* Markdown made visible: the heading level is the heading's own syntax. */
+h1::before { content: '# ';    color: var(--overlay0); font-weight: 400; }
+h2::before { content: '## ';   color: var(--overlay0); font-weight: 400; }
+h3::before { content: '### ';  color: var(--overlay0); font-weight: 400; }
+h4::before { content: '#### '; color: var(--overlay0); font-weight: 400; }
+
+p { margin: 0 0 1.1em; }
+.subtitle { color: var(--subtext0); font-style: italic; margin-bottom: 3rem; }
+/* Links scan as cyan — distinct from body text and from blue h2 headings. */
+a { color: var(--sapphire); text-decoration: underline; text-decoration-color: var(--sapphire); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { color: var(--sky); text-decoration-color: var(--sky); text-decoration-thickness: 2px; }
+strong { font-weight: 700; color: var(--text); }
+em { font-style: italic; }
+ul, ol { padding-left: 1.3em; margin: 0 0 1.1em; }
+li { margin-bottom: .35em; }
+li::marker { color: var(--overlay1); }
+hr { border: none; border-top: 1px solid var(--surface0); margin: 2.5rem 0; }
+/* Blockquotes are callouts, not asides: they should pull the eye, not fade. */
+blockquote {
+  margin: 1.4em 0; padding: .7em 1.1em;
+  border-left: 3px solid var(--mauve);
+  border-radius: 0 8px 8px 0;
+  background: rgba(203, 166, 247, .07);
+  color: var(--text); font-style: italic;
+}
+blockquote p { margin: 0; }
+table { border-collapse: collapse; margin: 0 0 1.2em; font-size: .95em; }
+th, td { border: 1px solid var(--surface0); padding: .35em .8em; text-align: left; }
+th { font: .78rem var(--font-mono); color: var(--overlay2); text-transform: uppercase; letter-spacing: .05em; }
+
+/* Inline code: a peach chip — the page's only warm accent, so it scans instantly. */
+code {
+  font: .86em var(--font-mono);
+  color: var(--peach);
+  background: var(--surface0);
+  border: 1px solid var(--surface1);
+  border-radius: 4px;
+  padding: .08em .35em;
+}
+
+/* ── Code blocks: styled like bat output in a ghostty pane ── */
+pre.code {
+  position: relative;
+  background: var(--mantle);
+  border: 1px solid var(--surface0);
+  border-radius: 8px;
+  padding: 1.1rem 1.3rem;
+  overflow-x: auto;
+  font: .875rem/1.7 var(--font-mono);
+  color: var(--text);
+  margin: 1.4rem 0;
+}
+pre.code code { all: unset; font: inherit; }
+pre.code::before {
+  content: attr(data-lang);
+  position: absolute; top: .55rem; right: .95rem;
+  font-size: .7rem; color: var(--overlay0); letter-spacing: .05em;
+}
+/* Syntax token classes — the official Catppuccin mapping, hand-authored
+   by the generating agent (no highlighter library needed). */
+.tk-kw  { color: var(--mauve); }                     /* keywords            */
+.tk-fn  { color: var(--blue); }                      /* functions           */
+.tk-str { color: var(--green); }                     /* strings             */
+.tk-num { color: var(--peach); }                     /* numbers, constants  */
+.tk-type{ color: var(--yellow); }                    /* types, classes      */
+.tk-cm  { color: var(--overlay2); font-style: italic; } /* comments         */
+.tk-op  { color: var(--sky); }                       /* operators           */
+.tk-pr  { color: var(--lavender); }                  /* properties, params  */
+.tk-pmt { color: var(--overlay1); user-select: none; } /* shell prompts     */
+.tk-out { color: var(--subtext0); }                  /* command output      */
+
+/* ── Diagrams ── */
+.diagram {
+  background: var(--mantle);
+  border: 1px solid var(--surface0);
+  border-radius: 8px;
+  padding: 1.2rem;
+  margin: 1.4rem 0;
+  text-align: center;
+}
+.diagram pre.mermaid {
+  margin: 0;
+  font: .8rem/1.6 var(--font-mono);
+  color: var(--overlay1);
+  text-align: left;
+  white-space: pre-wrap;
+}
+.diagram figcaption {
+  font: .75rem var(--font-mono);
+  color: var(--overlay0);
+  margin-top: .8rem;
+}
+
+/* ── The living margin: each section wears its own feedback anchor ── */
+@media (min-width: 76rem) {
+  [data-note]::before {
+    content: '#' attr(id);
+    position: absolute;
+    top: .45em;
+    right: calc(100% + 2.4rem);
+    font: .72rem var(--font-mono);
+    color: var(--overlay0);
+    white-space: nowrap;
+    max-width: 9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+section[data-note] { position: relative; margin: 0; scroll-margin-top: 2.5rem; }
+
+/* ── Contents rail: auto-built from data-note sections (see script below).
+   Lives in the LEFT margin — visibility handled by the layout block at the
+   end of this sheet. ── */
+#toc {
+  display: none;
+  position: fixed;
+  top: 4.5rem;
+  left: 2rem;
+  width: 14rem;
+  font: .78rem/2 var(--font-mono);
+}
+#toc .toc-title { color: var(--overlay0); margin-bottom: .3rem; letter-spacing: .05em; }
+#toc a {
+  display: block;
+  color: var(--overlay1);
+  text-decoration: none;
+  padding: 0 .7rem;
+  border-left: 1px solid var(--surface0);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#toc a:hover { color: var(--text); }
+#toc a.active { color: var(--mauve); border-left-color: var(--mauve); }
+
+/* Layout past the prose measure. Kept last in the sheet: shorthand `margin`
+   in earlier rules must not re-zero the margins these rely on.
+
+   64–84rem: content stays centered; code/diagram panes break out symmetrically.
+   ≥84rem (laptop and up): docs-site asymmetry — the contents rail occupies the
+   left margin, the content column leans left-of-center (re-centering only on
+   very wide displays), and panes grow rightward from the prose edge into the
+   freed space. */
+@media (min-width: 64rem) {
+  pre.code, .diagram { width: 54rem; margin-left: 50%; transform: translateX(-50%); }
+}
+@media (min-width: 84rem) {
+  #toc { display: block; }
+  main { margin-left: max(28rem, calc(50vw - 26.75rem)); }
+  pre.code, .diagram {
+    width: min(60rem, calc(100vw - 34rem));
+    margin-left: 0;
+    transform: none;
+  }
+}
+
+footer {
+  margin-top: 4rem; padding-top: 1.2rem;
+  border-top: 1px solid var(--surface0);
+  font: .78rem var(--font-mono); color: var(--overlay0);
+}
+</style>
+<style>
+/* ── Infographic system ── */
+.kicker, .mini-label, .lane-label, .metric-label, .bar-label, .flow-tag,
+.reason-label, .stage-num, .legend, .source-note {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+.kicker { color: var(--mauve); font-size: .72rem; margin: 0 0 .55rem; }
+.visual-pane {
+  margin: 1.4rem 0 2rem;
+  padding: 1.25rem;
+  background: var(--mantle);
+  border: 1px solid var(--surface0);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.decision-board {
+  display: grid;
+  gap: .8rem;
+  align-items: stretch;
+}
+.decision-card {
+  position: relative;
+  min-height: 9rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.1rem;
+  border: 1px solid;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.decision-card::after {
+  content: attr(data-symbol);
+  position: absolute;
+  right: .55rem;
+  bottom: -.5rem;
+  color: currentColor;
+  opacity: .08;
+  font: 700 7rem/1 var(--font-mono);
+}
+.decision-card.adopt { color: var(--green); border-color: var(--green); background: rgba(166, 227, 161, .06); }
+.decision-card.keep { color: var(--peach); border-color: var(--peach); background: rgba(250, 179, 135, .06); }
+.decision-verb { font: 700 1.65rem/1 var(--font-mono); letter-spacing: .04em; }
+.decision-object { position: relative; z-index: 1; color: var(--text); font: 600 1.05rem/1.35 var(--font-mono); }
+.decision-detail { position: relative; z-index: 1; color: var(--subtext0); font: .72rem/1.5 var(--font-mono); }
+.decision-join {
+  display: grid;
+  place-items: center;
+  min-height: 4rem;
+  color: var(--mauve);
+  font: 700 .78rem/1.4 var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+.decision-join::before { content: '↓'; display: block; font-size: 1.4rem; }
+.urgent-strip {
+  margin-top: .9rem;
+  padding: .65rem .8rem;
+  color: var(--red);
+  border: 1px solid var(--red);
+  border-radius: 8px;
+  background: rgba(243, 139, 168, .05);
+  font: .76rem/1.5 var(--font-mono);
+}
+.metric-band {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 1px;
+  background: var(--surface1);
+  border: 1px solid var(--surface1);
+  border-radius: 9px;
+  overflow: hidden;
+}
+.metric { min-width: 0; padding: .8rem; background: var(--surface0); }
+.metric-value { display: block; color: var(--mauve); font: 700 1.35rem/1.1 var(--font-mono); }
+.metric-label { display: block; margin-top: .2rem; color: var(--subtext0); font-size: .59rem; }
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .55rem 1rem;
+  margin-bottom: .9rem;
+  color: var(--subtext0);
+  font-size: .62rem;
+}
+.legend span::before { content: ''; display: inline-block; width: .55rem; height: .55rem; margin-right: .35rem; border-radius: 2px; vertical-align: -.05rem; background: currentColor; }
+.legend .adopt-key { color: var(--green); }
+.legend .hybrid-key { color: var(--yellow); }
+.legend .outside-key { color: var(--overlay1); }
+.fit-lanes { display: grid; gap: .75rem; }
+.fit-lane {
+  display: grid;
+  gap: .7rem;
+  padding: .85rem;
+  border: 1px solid var(--surface1);
+  border-radius: 9px;
+  background: var(--surface0);
+}
+.lane-label { font-size: .64rem; align-self: center; }
+.fit-lane.adopt .lane-label { color: var(--green); }
+.fit-lane.hybrid .lane-label { color: var(--yellow); }
+.fit-lane.outside .lane-label { color: var(--overlay2); }
+.phase-set { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .45rem; }
+.phase-chip {
+  min-width: 0;
+  padding: .62rem .68rem;
+  border-left: 3px solid;
+  border-radius: 5px;
+  background: var(--mantle);
+  font: .68rem/1.35 var(--font-mono);
+}
+.phase-chip strong { display: block; font: 600 .76rem/1.3 var(--font-mono); }
+.adopt .phase-chip { border-color: var(--green); }
+.hybrid .phase-chip { border-color: var(--yellow); }
+.outside .phase-chip { border-color: var(--overlay1); }
+.phase-chip small { color: var(--subtext0); font: .62rem/1.4 var(--font-mono); }
+.coverage-grid { display: grid; gap: 1rem; }
+.coverage-card {
+  padding: .9rem;
+  border: 1px solid var(--surface1);
+  border-radius: 9px;
+  background: var(--surface0);
+}
+.coverage-head { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; margin-bottom: .55rem; }
+.coverage-title { font: 600 .8rem var(--font-mono); color: var(--text); }
+.coverage-ratio { font: 700 1rem var(--font-mono); color: var(--mauve); }
+.stacked-bar { display: flex; height: 1.1rem; overflow: hidden; border-radius: 999px; background: var(--crust); border: 1px solid var(--surface1); }
+.bar-segment { min-width: 4px; }
+.bar-segment.mise { background: var(--green); }
+.bar-segment.custom { background: var(--yellow); }
+.bar-segment.keep { background: var(--peach); }
+.bar-caption { display: flex; justify-content: space-between; gap: .7rem; margin-top: .45rem; color: var(--subtext0); font: .61rem/1.4 var(--font-mono); }
+.flow-group { display: grid; gap: .85rem; }
+.broken-pair, .target-flow { display: grid; gap: .55rem; align-items: stretch; }
+.flow-node {
+  position: relative;
+  min-width: 0;
+  padding: .75rem;
+  border: 1px solid var(--surface1);
+  border-radius: 8px;
+  background: var(--surface0);
+  font: .69rem/1.4 var(--font-mono);
+}
+.flow-node strong { display: block; margin-bottom: .25rem; font: 600 .76rem/1.3 var(--font-mono); }
+.flow-node.bad { border-color: var(--red); }
+.flow-node.good { border-color: var(--green); }
+.flow-tag { display: inline-block; margin-bottom: .35rem; font-size: .56rem; }
+.bad .flow-tag { color: var(--red); }
+.good .flow-tag { color: var(--green); }
+.flow-arrow {
+  display: grid;
+  place-items: center;
+  min-height: 1.5rem;
+  color: var(--overlay1);
+  font: 1.2rem var(--font-mono);
+}
+.flow-arrow.break { color: var(--red); }
+.flow-arrow.break::after { content: ' order break'; margin-left: .4rem; font: .55rem var(--font-mono); text-transform: uppercase; letter-spacing: .06em; }
+.flow-arrow.good { color: var(--green); }
+.flow-row-title { margin: 1.1rem 0 .6rem; color: var(--overlay2); font: .67rem var(--font-mono); text-transform: uppercase; letter-spacing: .07em; }
+.boundary-grid { display: grid; gap: .65rem; }
+.boundary-hub {
+  display: grid;
+  place-items: center;
+  min-height: 8rem;
+  padding: 1rem;
+  text-align: center;
+  color: var(--peach);
+  border: 2px solid var(--peach);
+  border-radius: 50%;
+  background: rgba(250, 179, 135, .07);
+}
+.boundary-hub strong { display: block; font: 700 1.25rem/1.2 var(--font-mono); }
+.boundary-hub span { color: var(--subtext0); font: .65rem/1.4 var(--font-mono); }
+.reason-card {
+  padding: .72rem;
+  border: 1px solid var(--surface1);
+  border-radius: 8px;
+  background: var(--surface0);
+}
+.reason-label { color: var(--red); font-size: .56rem; }
+.reason-card strong { display: block; margin: .2rem 0; font: 600 .74rem/1.35 var(--font-mono); }
+.reason-card p { margin: 0; color: var(--subtext0); font: .64rem/1.45 var(--font-mono); }
+.roadmap { position: relative; display: grid; gap: .7rem; }
+.roadmap::before { content: ''; position: absolute; left: 1.1rem; top: 1rem; bottom: 1rem; width: 1px; background: var(--surface2); }
+.stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.2rem 1fr;
+  gap: .75rem;
+  align-items: start;
+  padding: .8rem;
+  border: 1px solid var(--surface1);
+  border-radius: 8px;
+  background: var(--surface0);
+}
+.stage-num {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  background: var(--mantle);
+  border: 1px solid var(--mauve);
+  color: var(--mauve);
+  font-size: .68rem;
+}
+.stage strong { display: block; margin-bottom: .2rem; font: 600 .78rem/1.35 var(--font-mono); }
+.stage p { margin: 0; color: var(--subtext0); font: .66rem/1.5 var(--font-mono); }
+.command-ribbon {
+  margin-top: .85rem;
+  padding: .8rem 1rem;
+  border: 1px solid var(--green);
+  border-radius: 8px;
+  background: rgba(166, 227, 161, .05);
+  color: var(--green);
+  font: .68rem/1.65 var(--font-mono);
+}
+.source-note { color: var(--overlay1); font-size: .62rem; }
+.fix-grid, .tradeoff-grid { display: grid; gap: .65rem; }
+.fix-card, .tradeoff-card {
+  position: relative;
+  padding: .85rem;
+  border: 1px solid var(--surface1);
+  border-radius: 8px;
+  background: var(--surface0);
+}
+.fix-card { padding-left: 3.1rem; border-color: var(--green); }
+.fix-card .fix-num {
+  position: absolute;
+  left: .75rem;
+  top: .8rem;
+  color: var(--green);
+  font: 700 .72rem var(--font-mono);
+}
+.fix-card strong, .tradeoff-card strong { display: block; margin-bottom: .25rem; font: 600 .76rem/1.35 var(--font-mono); }
+.fix-card p, .tradeoff-card p { margin: 0; color: var(--subtext0); font: .65rem/1.45 var(--font-mono); }
+.tradeoff-card { border-top: 3px solid var(--peach); }
+.tradeoff-card span {
+  display: block;
+  margin-top: .55rem;
+  padding-top: .45rem;
+  border-top: 1px solid var(--surface1);
+  color: var(--green);
+  font: .6rem/1.4 var(--font-mono);
+}
+@media (min-width: 42rem) {
+  .decision-board { grid-template-columns: 1fr 5.5rem 1fr; }
+  .decision-join::before { content: '→'; }
+  .metric-band { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .fit-lane { grid-template-columns: 8rem 1fr; }
+  .phase-set { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .coverage-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fix-grid, .tradeoff-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .broken-pair { grid-template-columns: 1fr 5rem 1fr; }
+  .target-flow { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .4rem; }
+  .target-flow .flow-node:not(:last-child)::after {
+    content: '→'; position: absolute; right: -.65rem; top: 50%; transform: translateY(-50%); z-index: 2; color: var(--green);
+  }
+  .boundary-grid { grid-template-columns: 1fr 9rem 1fr; grid-template-rows: auto auto; align-items: center; }
+  .boundary-hub { grid-column: 2; grid-row: 1 / 3; }
+  .reason-card:nth-of-type(1), .reason-card:nth-of-type(2) { grid-column: 1; }
+  .reason-card:nth-of-type(4), .reason-card:nth-of-type(5) { grid-column: 3; }
+  .reason-card:nth-of-type(1), .reason-card:nth-of-type(4) { grid-row: 1; }
+  .reason-card:nth-of-type(2), .reason-card:nth-of-type(5) { grid-row: 2; }
+}
+@media (min-width: 64rem) {
+  .visual-pane { width: 60rem; margin-left: 50%; transform: translateX(-50%); }
+}
+@media (min-width: 84rem) {
+  .visual-pane { width: min(66rem, calc(100vw - 34rem)); margin-left: 0; transform: none; }
+}
+</style>
+</head>
+<body>
+<main>
+
+<p class="kicker">decision infographic · 2026-07-11</p>
+<h1>Should we adopt mise bootstrap?</h1>
+<p class="subtitle">Yes—as the coordinator. Fix four things first and keep four trade-offs in view.</p>
+
+<section data-note id="decision-at-a-glance">
+  <h2>Decision at a glance</h2>
+  <div class="visual-pane">
+    <div class="decision-board">
+      <div class="decision-card adopt" data-symbol="✓">
+        <div class="decision-verb">ADOPT</div>
+        <div class="decision-object">mise bootstrap</div>
+        <div class="decision-detail">as the inspectable, repeatable orchestrator</div>
+      </div>
+      <div class="decision-join">selective<br>adoption</div>
+      <div class="decision-card keep" data-symbol="≈">
+        <div class="decision-verb">KEEP</div>
+        <div class="decision-object">the Brewfile</div>
+        <div class="decision-detail">as the single package and app inventory</div>
+      </div>
+    </div>
+    <div class="urgent-strip"><strong>Fix first:</strong> mise version · config discovery · install order · shell startup</div>
+    <div class="metric-band" aria-label="Current setup metrics">
+      <div class="metric"><span class="metric-value">7</span><span class="metric-label">mise tools</span></div>
+      <div class="metric"><span class="metric-value">20</span><span class="metric-label">symlink targets</span></div>
+      <div class="metric"><span class="metric-value">64</span><span class="metric-label">brew entries</span></div>
+      <div class="metric"><span class="metric-value">12/13</span><span class="metric-label">defaults fit mise</span></div>
+    </div>
+  </div>
+</section>
+
+<section data-note id="ownership-map">
+  <h2>What moves—and what does not</h2>
+  <div class="visual-pane">
+    <div class="legend" aria-label="Fit legend">
+      <span class="adopt-key">move into mise</span>
+      <span class="hybrid-key">orchestrate, keep owner</span>
+      <span class="outside-key">leave alone</span>
+    </div>
+    <div class="fit-lanes">
+      <div class="fit-lane adopt">
+        <div class="lane-label">move into mise</div>
+        <div class="phase-set">
+          <div class="phase-chip"><strong>dotfiles</strong><small>19 static links</small></div>
+          <div class="phase-chip"><strong>macOS defaults</strong><small>12 typed values</small></div>
+          <div class="phase-chip"><strong>tools</strong><small>7 already owned</small></div>
+          <div class="phase-chip"><strong>drift status</strong><small>dry-run + missing</small></div>
+        </div>
+      </div>
+      <div class="fit-lane hybrid">
+        <div class="lane-label">orchestrate</div>
+        <div class="phase-set">
+          <div class="phase-chip"><strong>packages</strong><small>Brewfile stays canonical</small></div>
+          <div class="phase-chip"><strong>shell</strong><small>owned by full zsh files</small></div>
+          <div class="phase-chip"><strong>small exceptions</strong><small>one safe custom task</small></div>
+          <div class="phase-chip"><strong>verification</strong><small>explicit final gate</small></div>
+        </div>
+      </div>
+      <div class="fit-lane outside">
+        <div class="lane-label">leave alone</div>
+        <div class="phase-set">
+          <div class="phase-chip"><strong>first repo clone</strong><small>must predate config</small></div>
+          <div class="phase-chip"><strong>dynamic link</strong><small>Lazygit destination</small></div>
+          <div class="phase-chip"><strong>battery setting</strong><small>one host-only preference</small></div>
+          <div class="phase-chip"><strong>unused phases</strong><small>services + login shell</small></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-note id="coverage-split">
+  <h2>Declarative coverage</h2>
+  <div class="visual-pane">
+    <div class="coverage-grid">
+      <div class="coverage-card">
+        <div class="coverage-head"><span class="coverage-title">dotfile links</span><span class="coverage-ratio">19 / 20</span></div>
+        <div class="stacked-bar" aria-label="19 links move to mise, 1 stays custom">
+          <span class="bar-segment mise" style="width:94.74%"></span><span class="bar-segment custom" style="width:5.26%"></span>
+        </div>
+        <div class="bar-caption"><span>mise: 19 static</span><span>custom: 1 dynamic</span></div>
+      </div>
+      <div class="coverage-card">
+        <div class="coverage-head"><span class="coverage-title">macOS defaults</span><span class="coverage-ratio">12 / 13</span></div>
+        <div class="stacked-bar" aria-label="12 defaults move to mise, 1 stays custom">
+          <span class="bar-segment mise" style="width:92.31%"></span><span class="bar-segment custom" style="width:7.69%"></span>
+        </div>
+        <div class="bar-caption"><span>mise: 12 typed</span><span>hook: 1 currentHost</span></div>
+      </div>
+      <div class="coverage-card">
+        <div class="coverage-head"><span class="coverage-title">mise tools</span><span class="coverage-ratio">7 / 7</span></div>
+        <div class="stacked-bar" aria-label="All 7 tools stay managed by mise">
+          <span class="bar-segment mise" style="width:100%"></span>
+        </div>
+        <div class="bar-caption"><span>already owned</span><span>config discovery missing</span></div>
+      </div>
+      <div class="coverage-card">
+        <div class="coverage-head"><span class="coverage-title">brew inventory</span><span class="coverage-ratio">64 / 64</span></div>
+        <div class="stacked-bar" aria-label="All 64 Brewfile entries stay in the Brewfile for now">
+          <span class="bar-segment keep" style="width:100%"></span>
+        </div>
+        <div class="bar-caption"><span>keep one source</span><span>orchestrate the check</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-note id="fix-before-adoption">
+  <h2>Fix these four things first</h2>
+  <div class="visual-pane">
+    <div class="fix-grid">
+      <div class="fix-card"><span class="fix-num">01</span><strong>upgrade mise</strong><p>2026.7.1 → 2026.7.4+ and set min_version.</p></div>
+      <div class="fix-card"><span class="fix-num">02</span><strong>discover the config</strong><p>Use a repo-level mise.toml before mise install runs.</p></div>
+      <div class="fix-card"><span class="fix-num">03</span><strong>correct the order</strong><p>Prereqs and build settings must exist before tools.</p></div>
+      <div class="fix-card"><span class="fix-num">04</span><strong>repair shell startup</strong><p>Replace pasted activation and restore shim priority.</p></div>
+    </div>
+    <div class="flow-row-title">the resulting sequence · dependencies before consumers</div>
+    <div class="target-flow">
+      <div class="flow-node good"><span class="flow-tag">01</span><strong>prereqs</strong>Homebrew + mise</div>
+      <div class="flow-node good"><span class="flow-tag">02</span><strong>config</strong>discover mise.toml</div>
+      <div class="flow-node good"><span class="flow-tag">03</span><strong>packages</strong>brew + build env</div>
+      <div class="flow-node good"><span class="flow-tag">04</span><strong>tools</strong>mise install</div>
+      <div class="flow-node good"><span class="flow-tag">05</span><strong>machine</strong>links + defaults</div>
+      <div class="flow-node good"><span class="flow-tag">06</span><strong>verify</strong>zsh -c and -lc</div>
+    </div>
+  </div>
+</section>
+
+<section data-note id="brewfile-boundary">
+  <h2>The Brewfile boundary</h2>
+  <div class="visual-pane">
+    <div class="boundary-grid">
+      <div class="reason-card"><span class="reason-label">unsupported artifact</span><strong>3 font casks</strong><p>mise handles app, binary, and simple pkg—not Homebrew font artifacts.</p></div>
+      <div class="reason-card"><span class="reason-label">tap metadata</span><strong>Inkwell</strong><p>The current tap does not publish the API JSON mise expects.</p></div>
+      <div class="boundary-hub"><div><strong>BrewFile</strong><span>40 formulae<br>24 casks<br>1 source of truth</span></div></div>
+      <div class="reason-card"><span class="reason-label">lifecycle gap</span><strong>cask import + prune</strong><p>Not implemented; formula prune can affect real Homebrew installs.</p></div>
+      <div class="reason-card"><span class="reason-label">real dependency</span><strong>Homebrew Node</strong><p>agent-browser and mermaid-cli currently require it.</p></div>
+    </div>
+  </div>
+</section>
+
+<section data-note id="tradeoffs">
+  <h2>The disadvantages—and how we contain them</h2>
+  <div class="visual-pane">
+    <div class="tradeoff-grid">
+      <div class="tradeoff-card"><strong>powerful</strong><p>It can change packages, files, defaults, and run hooks.</p><span>trusted config · dry-run first · avoid blind --yes / --force</span></div>
+      <div class="tradeoff-card"><strong>newly stable</strong><p>The bootstrap surface only stabilized in 2026.7.4.</p><span>set min_version · start with a pilot</span></div>
+      <div class="tradeoff-card"><strong>incomplete Homebrew fit</strong><p>Fonts, tap metadata, and cask lifecycle still have gaps.</p><span>keep one complete BrewFile</span></div>
+      <div class="tradeoff-card"><strong>limited rollback</strong><p>Removing config does not automatically undo old state.</p><span>keep backups · snapshot defaults · verify</span></div>
+    </div>
+  </div>
+</section>
+
+<section data-note id="staged-path">
+  <h2>Staged path to the target</h2>
+  <div class="visual-pane">
+    <div class="roadmap">
+      <div class="stage"><span class="stage-num">01</span><div><strong>Repair the current order</strong><p>Bootstrap prerequisites explicitly; expose config and build settings before tool installation.</p></div></div>
+      <div class="stage"><span class="stage-num">02</span><div><strong>Upgrade the contract</strong><p>Move from installed mise 2026.7.1 to 2026.7.4+ and declare a minimum version.</p></div></div>
+      <div class="stage"><span class="stage-num">03</span><div><strong>Create a discoverable config</strong><p>Use one repo-level mise.toml so the first run can see it.</p></div></div>
+      <div class="stage"><span class="stage-num">04</span><div><strong>Pilot the easy wins</strong><p>Move 19 static links and 12 typed defaults; keep the small exceptions explicit.</p></div></div>
+      <div class="stage"><span class="stage-num">05</span><div><strong>Reassess packages later</strong><p>Translate only when font casks and tap metadata are representable without splitting ownership.</p></div></div>
+    </div>
+    <div class="command-ribbon"><span class="tk-pmt">$</span> mise bootstrap --dry-run<br><span class="tk-pmt">$</span> mise bootstrap --yes<br><span class="tk-pmt">$</span> mise bootstrap status --missing</div>
+  </div>
+</section>
+
+<section data-note id="sources">
+  <h2>Evidence behind the graphic</h2>
+  <p>
+    Read the <a href="mise-bootstrap-comparison-2026-07-11.html">plain-language guide</a>;
+    its collapsed technical appendix preserves command output and file-level evidence. Upstream references:
+    <a href="https://mise.jdx.dev/bootstrap.html">bootstrap overview</a>,
+    <a href="https://github.com/jdx/mise/releases/tag/v2026.7.4">2026.7.4 stabilization</a>,
+    <a href="https://mise.jdx.dev/dotfiles.html">dotfiles</a>, and
+    <a href="https://mise.jdx.dev/bootstrap/packages/brew.html">built-in brew limits</a>.
+  </p>
+  <p class="source-note">visual summary only · findings unchanged · no external assets</p>
+</section>
+
+<footer>infographic generated with zimakki-html-doc · margin-notes v1 inlined below · catppuccin mocha · 2026-07-11</footer>
+
+</main>
+<script>
+/* contents rail — built from data-note sections; no maintenance needed */
+(function () {
+  'use strict';
+  try {
+    var sections = document.querySelectorAll('section[data-note][id]');
+    if (sections.length < 2) return;
+    var nav = document.createElement('nav');
+    nav.id = 'toc';
+    nav.setAttribute('aria-label', 'Contents');
+    var title = document.createElement('div');
+    title.className = 'toc-title';
+    title.textContent = 'contents';
+    nav.appendChild(title);
+    var links = {};
+    sections.forEach(function (s) {
+      var h = s.querySelector('h2, h3');
+      if (!h) return;
+      var a = document.createElement('a');
+      a.href = '#' + s.id;
+      a.textContent = h.textContent;
+      nav.appendChild(a);
+      links[s.id] = a;
+    });
+    document.body.appendChild(nav);
+    if ('IntersectionObserver' in window) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (!e.isIntersecting) return;
+          for (var id in links) links[id].classList.toggle('active', id === e.target.id);
+        });
+      }, { rootMargin: '0px 0px -65% 0px' });
+      sections.forEach(function (s) { observer.observe(s); });
+    }
+  } catch (e) {
+    if (window.console) console.error('toc failed to build:', e);
+  }
+})();
+</script>
+<script>
+/* margin-notes v1 — inline annotation layer for agent-generated HTML documents.
+ * Source of truth: dotfiles/.agents/skills/zimakki-html-doc/margin-notes.js
+ * Inlined into documents by the zimakki-html-doc skill. No dependencies.
+ */
+(function () {
+  'use strict';
+
+  var STORE_KEY = 'margin-notes:' + location.pathname;
+
+  var CSS = [
+    '.mn-btn{position:absolute;left:-1.6em;top:0;border:none;background:none;cursor:pointer;',
+    'font-size:.85em;opacity:.25;padding:0}',
+    '.mn-btn:hover{opacity:1}',
+    '.mn-block{position:relative}',
+    '.mn-block.mn-has-note>.mn-btn{opacity:.9}',
+    '.mn-box{margin:.5em 0;padding:.5em;border:1px solid var(--mn-border,#c9c9d4);border-radius:6px;',
+    'background:var(--mn-box-bg,#f7f7fb);font:14px/1.4 -apple-system,sans-serif;color:var(--mn-box-fg,#222)}',
+    '.mn-box textarea{width:100%;box-sizing:border-box;min-height:3em;margin-bottom:.4em;',
+    'font:inherit;padding:.3em;color:inherit;background:var(--mn-input-bg,#fff);',
+    'border:1px solid var(--mn-border,#c9c9d4);border-radius:4px}',
+    '.mn-box .mn-quote{font-style:italic;color:var(--mn-muted,#555);margin:0 0 .4em;',
+    'border-left:3px solid var(--mn-border,#bbb);padding-left:.5em;white-space:pre-wrap}',
+    '.mn-box button{font:inherit;font-size:13px;margin-right:.4em;cursor:pointer;',
+    'padding:.3em 1em;border-radius:999px;border:1px solid transparent}',
+    '.mn-box .mn-save{background:var(--mn-accent-bg,#1f1f2e);color:var(--mn-accent-fg,#fff)}',
+    '.mn-box .mn-save:hover{filter:brightness(1.15)}',
+    '.mn-box .mn-cancel{background:none;color:var(--mn-muted,#555);border-color:var(--mn-border,#c9c9d4)}',
+    '.mn-box .mn-cancel:hover{color:var(--mn-box-fg,#222)}',
+    '.mn-box textarea:focus{outline:none;border-color:var(--mn-accent-border,#888)}',
+    '.mn-saved{font-size:13px;color:var(--mn-box-fg,#333);margin:.2em 0;white-space:pre-wrap}',
+    '.mn-saved .mn-del{color:var(--mn-danger,#a33);cursor:pointer;border:none;background:none;',
+    'font:inherit;padding:0;border-radius:0}',
+    '#mn-copy{position:fixed;right:16px;bottom:16px;z-index:9999;padding:.6em 1em;',
+    'border-radius:999px;border:1px solid var(--mn-accent-border,#888);',
+    'background:var(--mn-accent-bg,#1f1f2e);color:var(--mn-accent-fg,#fff);cursor:pointer;',
+    'font:14px -apple-system,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.25)}',
+    '#mn-sel{position:absolute;z-index:9998;padding:.2em .6em;border-radius:6px;',
+    'border:1px solid var(--mn-accent-border,#888);background:var(--mn-accent-bg,#1f1f2e);',
+    'color:var(--mn-accent-fg,#fff);cursor:pointer;font:13px -apple-system,sans-serif}',
+    '#mn-warn{position:relative;z-index:9999;margin:0 0 1em;padding:.6em .9em;border-radius:8px;',
+    'border:1px solid var(--mn-warn-border,#d8a23a);background:var(--mn-warn-bg,#fff8e6);',
+    'color:var(--mn-warn-fg,#5c4700);font:13px/1.4 -apple-system,sans-serif;',
+    'box-shadow:0 1px 4px rgba(0,0,0,.08)}',
+    '#mn-warn button{float:right;margin-left:.6em;border:none;background:none;cursor:pointer;',
+    'font:inherit;color:var(--mn-warn-fg,#5c4700)}'
+  ].join('\n');
+
+  function probeStorage() {
+    try {
+      var k = STORE_KEY + ':probe';
+      localStorage.setItem(k, '1');
+      localStorage.removeItem(k);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function load() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
+    catch (e) { return []; }
+  }
+  function save(items) {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(items)); } catch (e) {}
+  }
+
+  var storageOk = probeStorage();
+  var items = load();
+  var copyBtn;
+
+  function addItem(item) {
+    item.ts = new Date().toISOString();
+    items.push(item);
+    save(items);
+    refresh();
+  }
+
+  function removeItem(idx) {
+    if (idx < 0 || idx >= items.length) return false;
+    items.splice(idx, 1);
+    save(items);
+    refresh();
+    return true;
+  }
+
+  function feedbackText() {
+    var title = document.title || location.pathname;
+    var date = new Date().toISOString().slice(0, 10);
+    var lines = ['## Feedback on "' + title + '" (' + date + ')'];
+    items.forEach(function (it, i) {
+      var n = (i + 1) + '. ';
+      if (it.kind === 'selection') {
+        lines.push(n + '[selection in #' + it.blockId + '] quoted: "' + it.quote + '" — ' + it.text);
+      } else if (it.kind === 'section') {
+        lines.push(n + '[section: ' + it.blockId + '] ' + it.text);
+      } else {
+        lines.push(n + '[' + it.kind + '] ' + it.text);
+      }
+    });
+    return lines.join('\n');
+  }
+
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.top = '-1000px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    return ok ? Promise.resolve() : Promise.reject(new Error('copy failed'));
+  }
+
+  function copy(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        return navigator.clipboard.writeText(text).catch(function () { return fallbackCopy(text); });
+      } catch (e) {}
+    }
+    return fallbackCopy(text);
+  }
+
+  function refresh() {
+    if (copyBtn) copyBtn.textContent = 'Feedback (' + items.length + ') — Copy for agent';
+    document.querySelectorAll('.mn-block').forEach(function (b) {
+      var has = items.some(function (it) { return it.blockId === b.id; });
+      b.classList.toggle('mn-has-note', has);
+    });
+  }
+
+  function commentBox(blockId, quote, onDone) {
+    var box = document.createElement('div');
+    box.className = 'mn-box';
+    if (quote) {
+      var q = document.createElement('p');
+      q.className = 'mn-quote';
+      q.textContent = quote;
+      box.appendChild(q);
+    }
+    var saved = items
+      .map(function (it, i) { return { it: it, i: i }; })
+      .filter(function (e) { return e.it.blockId === blockId && (!quote || e.it.quote === quote); });
+    saved.forEach(function (e) {
+      var p = document.createElement('p');
+      p.className = 'mn-saved';
+      p.textContent = '💬 ' + e.it.text + ' ';
+      var del = document.createElement('button');
+      del.className = 'mn-del';
+      del.textContent = '[delete]';
+      del.onclick = function () { removeItem(e.i); box.remove(); };
+      p.appendChild(del);
+      box.appendChild(p);
+    });
+    var ta = document.createElement('textarea');
+    ta.placeholder = 'Comment for the agent…';
+    box.appendChild(ta);
+    var ok = document.createElement('button');
+    ok.className = 'mn-save';
+    ok.textContent = 'Save';
+    ok.onclick = function () {
+      if (ta.value.trim()) {
+        addItem({ kind: quote ? 'selection' : 'section', blockId: blockId, quote: quote || '', text: ta.value.trim() });
+      }
+      box.remove();
+      if (onDone) onDone();
+    };
+    var cancel = document.createElement('button');
+    cancel.className = 'mn-cancel';
+    cancel.textContent = 'Cancel';
+    cancel.onclick = function () { box.remove(); if (onDone) onDone(); };
+    box.appendChild(ok);
+    box.appendChild(cancel);
+    return box;
+  }
+
+  function decorateBlocks() {
+    var blocks = document.querySelectorAll('[data-note]');
+    if (!blocks.length) blocks = document.querySelectorAll('section, p, h2, h3');
+    var n = 0;
+    blocks.forEach(function (b) {
+      if (b.closest('.mn-box') || b.id === 'mn-copy') return;
+      if (!b.id) b.id = 'mn-' + (++n);
+      b.classList.add('mn-block');
+      var btn = document.createElement('button');
+      btn.className = 'mn-btn';
+      btn.textContent = '💬';
+      btn.title = 'Comment on this block';
+      btn.onclick = function (ev) {
+        ev.stopPropagation();
+        var existing = b.querySelector('.mn-box');
+        if (existing) { existing.remove(); return; }
+        b.appendChild(commentBox(b.id, null));
+        b.querySelector('.mn-box textarea').focus();
+      };
+      b.insertBefore(btn, b.firstChild);
+    });
+  }
+
+  var selBtn;
+  function watchSelection() {
+    document.addEventListener('mouseup', function () {
+      setTimeout(function () {
+        if (selBtn) { selBtn.remove(); selBtn = null; }
+        var sel = window.getSelection();
+        var text = sel ? String(sel).trim() : '';
+        if (!text || text.length < 3) return;
+        var node = sel.anchorNode && sel.anchorNode.parentElement;
+        var block = node && node.closest('.mn-block');
+        if (!block || node.closest('.mn-box')) return;
+        var rect = sel.getRangeAt(0).getBoundingClientRect();
+        selBtn = document.createElement('button');
+        selBtn.id = 'mn-sel';
+        selBtn.textContent = '💬 Comment on selection';
+        selBtn.style.left = (window.scrollX + rect.left) + 'px';
+        selBtn.style.top = (window.scrollY + rect.bottom + 6) + 'px';
+        selBtn.onclick = function () {
+          var box = commentBox(block.id, text);
+          block.appendChild(box);
+          box.querySelector('textarea').focus();
+          selBtn.remove();
+          selBtn = null;
+        };
+        document.body.appendChild(selBtn);
+      }, 0);
+    });
+  }
+
+  function installCopyButton() {
+    copyBtn = document.createElement('button');
+    copyBtn.id = 'mn-copy';
+    copyBtn.onclick = function () {
+      copy(feedbackText()).then(function () {
+        var old = copyBtn.textContent;
+        copyBtn.textContent = 'Copied ✓';
+        setTimeout(function () { copyBtn.textContent = old; refresh(); }, 1200);
+      }).catch(function () {
+        var old = copyBtn.textContent;
+        copyBtn.textContent = 'Copy failed';
+        setTimeout(function () { copyBtn.textContent = old; refresh(); }, 1600);
+      });
+    };
+    document.body.appendChild(copyBtn);
+  }
+
+  function showStorageWarning() {
+    var warn = document.createElement('div');
+    warn.id = 'mn-warn';
+    warn.textContent = 'This browser blocks persistent storage for files opened directly ' +
+      '(file://) — comments will work for this session but won’t survive a reload. Copy ' +
+      'your feedback before closing this tab, or open this file via a local server ' +
+      '(e.g. python3 -m http.server) for full persistence.';
+    var dismiss = document.createElement('button');
+    dismiss.textContent = '✕';
+    dismiss.onclick = function () { warn.remove(); };
+    warn.appendChild(dismiss);
+    document.body.insertBefore(warn, document.body.firstChild);
+  }
+
+  function init() {
+    try {
+      var style = document.createElement('style');
+      style.textContent = CSS;
+      document.head.appendChild(style);
+      decorateBlocks();
+      installCopyButton();
+      watchSelection();
+      if (!storageOk) showStorageWarning();
+      refresh();
+      window.MarginNotes = { addItem: addItem, removeItem: removeItem, items: items, feedbackText: feedbackText };
+    } catch (e) {
+      if (window.console) console.error('margin-notes failed to init:', e);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>
