@@ -3,7 +3,7 @@
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-export ZSH="/Users/zimakki/.oh-my-zsh"
+export ZSH="$HOME/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -245,7 +245,11 @@ _load_api_keys() {
 	source "$secrets_file"
 }
 
-_load_api_keys
+# The machine verifier sets this guard so its interactive-shell probe cannot
+# refresh the otherwise user-facing secret cache.
+if [[ -z "${DOTFILES_SKIP_SECRET_REFRESH:-}" ]]; then
+	_load_api_keys
+fi
 
 ####################################################################################################
 # iex history + television (tvf) helper
@@ -288,4 +292,6 @@ if [[ -t 1 ]]; then
 fi
 
 # bun completions
-[ -s "/Users/zimakki/.bun/_bun" ] && source "/Users/zimakki/.bun/_bun"
+if [[ -s "$HOME/.bun/_bun" ]]; then
+	source "$HOME/.bun/_bun"
+fi

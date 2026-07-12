@@ -75,7 +75,7 @@ fi
 hdr "Integration: interactive shell loads clean"
 # Run under a pty (script) so ZLE-based plugins (atuin/tv) initialize exactly as
 # in a real terminal; without a tty they emit harmless "can't change option: zle".
-errout=$(script -q /dev/null env TERM=xterm-256color zsh -ic 'exit' 2>&1 | perl -pe 's/\r//g; s/\x04//g; s/\x08//g; s/\^D//g' | grep -vE "Saving session|Restored session|^[[:space:]]*$")
+errout=$(script -q /dev/null env DOTFILES_SKIP_SECRET_REFRESH=1 TERM=xterm-256color zsh -ic 'exit' 2>&1 | perl -pe 's/\r//g; s/\x04//g; s/\x08//g; s/\^D//g' | grep -vE "Saving session|Restored session|^[[:space:]]*$")
 if [[ -z "$errout" ]]; then
   pass "interactive shell (pty) loaded clean"
 else
