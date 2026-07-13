@@ -49,8 +49,7 @@ dependents before uninstalling it.
 2. Remove the app's `[dotfiles]` entry and its canonical `config/<app>/`
    content. If it uses a JSON overlay, remove its apply and verification calls
    instead; preserve the app-owned live file unless the user separately asks
-   to delete it. Treat any root compatibility symlink as transitional; remove
-   it with the app rather than turning it back into a source file.
+   to delete it.
 3. Identify the old live destination explicitly. Mise does not infer that a
    now-undeclared symlink should be deleted, so ask before removing it from
    `$HOME`.

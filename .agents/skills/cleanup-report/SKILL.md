@@ -49,9 +49,8 @@ with active `BrewFile` casks.
 
 - Confirm canonical app config lives below `config/<app>/` and every stable
   managed source has the intended `[dotfiles]` destination.
-- Flag new root-level regular config files. Temporary compatibility symlinks
-  from the staged migration are allowed only while a live target still needs
-  relinking.
+- Flag root-level app config files or symlinks; canonical sources belong below
+  `config/<app>/`.
 - Flag opaque exports, caches, databases, automatic backups, secrets, and
   unmodified generated defaults tracked in Git.
 - Treat Claude and Karabiner as app-owned live files with managed JSON overlays.

@@ -18,9 +18,8 @@ entire home directory.
 | `tests/bootstrap/` | Bootstrap contract and isolated-machine tests |
 | `docs/` | Current decisions, conventions, and runbooks |
 
-Root-level legacy config names may temporarily exist as compatibility symlinks
-while machines are relinked. Do not add new config there; add it under
-`config/<app>/` and declare its destination in `[dotfiles]` in `mise.toml`.
+Do not add root-level app config. Add it under `config/<app>/` and declare its
+destination in `[dotfiles]` in `mise.toml`.
 
 ## Ownership model
 

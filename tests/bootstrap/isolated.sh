@@ -274,40 +274,6 @@ PY
 )
 pass "$link_count static links apply and converge on a second run"
 
-printf 'Testing transitional static-link migration\n'
-rm "$home/.zshenv" "$home/.config/television"
-ln -s "$repo/zshenv" "$home/.zshenv"
-ln -s "$repo/television" "$home/.config/television"
-(
-  cd "$repo"
-  run_mise bootstrap dotfiles apply --yes >/dev/null
-)
-[[ "$(readlink "$home/.zshenv")" == "$repo/zshenv" ]] \
-  || fail "mise unexpectedly normalized the compatibility-chain fixture"
-if run_static_relink --check >/dev/null 2>&1; then
-  fail "static-link check accepted indirect compatibility links"
-fi
-run_static_relink >/dev/null
-[[ "$(readlink "$home/.zshenv")" == "$repo/config/zsh/zshenv" ]] \
-  || fail "file compatibility link was not rewritten directly"
-[[ "$(readlink "$home/.config/television")" == "$repo/config/television" ]] \
-  || fail "directory compatibility link was not rewritten directly"
-run_static_relink --check >/dev/null
-
-outside_bridge="$root/outside-zprofile-link"
-ln -s "$repo/config/zsh/zprofile" "$outside_bridge"
-rm "$home/.zprofile"
-ln -s "$outside_bridge" "$home/.zprofile"
-if run_static_relink >/dev/null 2>&1; then
-  fail "static-link migration accepted an outside-repo first hop"
-fi
-[[ "$(readlink "$home/.zprofile")" == "$outside_bridge" ]] \
-  || fail "refused outside-repo link was not preserved"
-rm "$home/.zprofile"
-ln -s "$repo/config/zsh/zprofile" "$home/.zprofile"
-run_static_relink --check >/dev/null
-pass "repo-owned chains become direct while outside-repo chains are refused and preserved"
-
 printf 'Testing hermetic global config discovery\n'
 expected_node="$($python_bin - "$repo/mise.toml" <<'PY'
 import sys, tomllib
@@ -509,14 +475,6 @@ env "${link_env[@]}" zsh "$repo/scripts/bootstrap/link-lazygit-config.zsh" --bac
 backup_count="$(find "$link_home/.config/lazygit" -maxdepth 1 -name 'config.yml.bak.*' | wc -l | tr -d ' ')"
 [[ "$backup_count" == 1 ]] || fail "Lazygit backup mode did not preserve exactly one timestamped copy"
 env "${link_env[@]}" zsh "$repo/scripts/bootstrap/link-lazygit-config.zsh" --check >/dev/null
-rm "$link_home/.config/lazygit/config.yml"
-ln -s "$repo/lazygit_config.yml" "$link_home/.config/lazygit/config.yml"
-if env "${link_env[@]}" zsh "$repo/scripts/bootstrap/link-lazygit-config.zsh" --check >/dev/null 2>&1; then
-  fail "Lazygit check accepted an indirect compatibility link"
-fi
-env "${link_env[@]}" zsh "$repo/scripts/bootstrap/link-lazygit-config.zsh" >/dev/null
-[[ "$(readlink "$link_home/.config/lazygit/config.yml")" == "$repo/config/lazygit/config.yml" ]] \
-  || fail "Lazygit compatibility link was not normalized to a direct first hop"
 rm "$link_home/.config/lazygit/config.yml"
 printf 'replace me\n' > "$link_home/.config/lazygit/config.yml"
 env "${link_env[@]}" zsh "$repo/scripts/bootstrap/link-lazygit-config.zsh" --force >/dev/null
