@@ -1,12 +1,13 @@
 ---
 name: zimakki-html-doc
-description: Create a self-contained interactive HTML document (explainer, plan, concept walkthrough) with an inlined annotation layer so the user can comment on sections/selections in the browser and paste aggregated feedback back to the agent. Use whenever the user asks to "create an HTML document/page that explains/shows/plans" something.
+description: Create a self-contained, infographic-first interactive HTML decision brief, explainer, plan, review, or concept walkthrough with linked deep dives and an inlined annotation layer. Use whenever the user asks for an HTML document or page that explains, shows, compares, reviews, or plans something, especially when visual structure or explicit decisions would help.
 ---
 
 # zimakki-html-doc
 
-Produce a **single self-contained HTML file** — all CSS and JS inline, no external
-assets, no CDN — so the document works offline and on any device.
+Produce a **single self-contained HTML file** that shows the shape of the issue
+before asking the user to read the detail. Keep all CSS and JS inline, with no
+external assets or CDN, so the document works offline and on any device.
 
 ## Design (house style)
 
@@ -50,20 +51,74 @@ Mocha house style, matching the machine's bat/ghostty/starship/atuin setup.
   (declared in the template's `:root`); keep them when adapting the style so
   the comment UI stays Mocha-native.
 
-## Document structure
+## Default information architecture
+
+Build the page in this order:
+
+1. Title and a one-sentence purpose.
+2. **Decisions needed**, when unresolved choices exist. Put every unresolved
+   decision here, ordered by blocking importance or impact. Mark a recommendation
+   when one exists, but never preselect it for the user. Do not mix in settled
+   outcomes, recommendations that need no approval, or implementation tasks.
+3. **At a glance**, using one strong visual overview. If there are no decisions,
+   make this the first section after the title.
+4. Linked detail sections containing evidence, caveats, and reasoning.
+
+Do not reveal a new decision only in a later section: also surface it in the
+top decision dashboard. For a large set, group cards by theme while keeping all
+of them visible near the top.
+
+Every decision card and meaningful visual node should link to a stable detail
+anchor such as `#detail-storage-model`; the detail section should link back to
+the overview. Keep these deep dives in the same file so navigation, offline use,
+and annotation continue to work.
+
+## Visual-first explanation
+
+Prefer a visual form whenever it communicates a real relationship faster than
+prose:
+
+| Information | Preferred form |
+| --- | --- |
+| Process, lifecycle, cause/effect | flow or dependency chain |
+| Events, rollout, state changes | timeline |
+| Competing options | comparison cards or matrix |
+| System structure or ownership | architecture map or tree |
+| Risks, priorities, status | impact/status board |
+| Real quantities | bars or proportional chart |
+| Several key facts | metric strip or annotated cards |
+
+Use the reusable patterns in `template.html`. Prefer semantic HTML and CSS for
+cards, grids, timelines, and small flows; use inline SVG for bespoke diagrams.
+Use Mermaid only for relationship-heavy diagrams that would be substantially
+harder to author directly. A visual overview is required unless the material
+has no honest visual structure; in that case use a concise set of structured
+summary cards instead of inventing a chart.
+
+Keep visuals informational rather than decorative:
+
+- Use charts only for real quantities; never imply invented precision.
+- Make color reinforce meaning, and repeat the meaning with text, shape, or
+  position so color is never the only signal.
+- Keep visual labels short and move nuance into linked detail sections.
+- Add an accessible label or caption to every diagram and meaningful visual.
+- Prefer one coherent overview over a collection of unrelated widgets.
+- Preserve clean stacking and reading order on narrow screens.
+
+## Document and decision markup
 
 - Wrap each logical unit of content in `<section data-note id="kebab-case-id">`.
   Stable, descriptive ids matter: the user's feedback references them and you
   will use them to locate what to edit.
 - Give the document a meaningful `<title>` — it appears in the feedback header.
-- Richer widgets (choice buttons, sliders, toggles) are at your discretion per
-  document. One rule: any structured input must report its state into the
-  feedback aggregation by calling
-  `MarginNotes.addItem({kind: 'choice: <widget-id>', blockId: '<section-id>', text: 'selected: <value>'})`
-  whenever its value changes (if you want latest-only semantics, first find the
-  index of the previous item for that widget in `MarginNotes.items` — e.g. via
-  `findIndex` — and call `MarginNotes.removeItem(index)` only when the index is
-  not `-1` before calling `addItem` with the new value).
+- Use the template's declarative choice markup for decisions. Put
+  `data-choice="<stable-widget-id>"` on the option container and
+  `data-choice-option="<stable-value>"` on each button. Add
+  `data-recommended` to the recommended option for presentation only. The
+  inlined annotation layer binds these buttons, restores saved state, and keeps
+  only the latest selection in feedback.
+- For other structured widgets, call `MarginNotes.addItem(...)` so their state
+  appears in copied feedback; use stable widget and section identifiers.
 
 ## Annotation layer (required)
 
@@ -73,7 +128,8 @@ document must stay portable. If the file cannot be read, tell the user and
 generate the document without the layer rather than failing.
 
 This gives the user: a 💬 comment affordance per section, comment-on-text-selection,
-localStorage persistence, and a "Feedback (n) — Copy for agent" button.
+declarative decision choices, localStorage persistence, and a
+"Feedback (n) — Copy for agent" button.
 
 **Known caveat — Safari + `file://`:** some browsers (notably Safari) treat each
 `file://` document as a unique, sandboxed security origin, which can silently break
@@ -96,9 +152,15 @@ document you wrote — edit those locations precisely:
 ## Verification checklist (before telling the user it's done)
 
 - [ ] File opens standalone (`open <file>.html`) with no console errors.
+- [ ] Unresolved decisions are grouped at the top; no later decision is absent
+      from that dashboard.
+- [ ] The visual overview precedes detailed prose and links to stable deep dives.
+- [ ] Visuals retain their meaning and reading order at narrow widths.
 - [ ] 💬 affordances appear on every `data-note` section.
 - [ ] "Feedback (0) — Copy for agent" button is visible bottom-right.
-- [ ] Any custom widgets you added push items via `MarginNotes.addItem`.
+- [ ] Decision choices select visibly, restore on reload, replace the previous
+      selection for that decision, and appear in copied feedback.
+- [ ] Any other custom widgets push items via `MarginNotes.addItem`.
 
 See `template.html` in this directory for the styled reference document, and
 `fixture.html` for the minimal known-good regression example.

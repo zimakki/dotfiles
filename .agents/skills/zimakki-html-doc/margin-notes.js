@@ -1,4 +1,4 @@
-/* margin-notes v1 — inline annotation layer for agent-generated HTML documents.
+/* margin-notes v2 — inline annotation layer for agent-generated HTML documents.
  * Source of truth: dotfiles/.agents/skills/zimakki-html-doc/margin-notes.js
  * Inlined into documents by the zimakki-html-doc skill. No dependencies.
  */
@@ -30,6 +30,9 @@
     '.mn-saved{font-size:13px;color:var(--mn-box-fg,#333);margin:.2em 0;white-space:pre-wrap}',
     '.mn-saved .mn-del{color:var(--mn-danger,#a33);cursor:pointer;border:none;background:none;',
     'font:inherit;padding:0;border-radius:0}',
+    '[data-choice-option]{cursor:pointer}',
+    '[data-choice-option][aria-pressed="true"]{border-color:var(--mn-accent-border,#888);',
+    'box-shadow:0 0 0 1px var(--mn-accent-border,#888)}',
     '#mn-copy{position:fixed;right:16px;bottom:16px;z-index:9999;padding:.6em 1em;',
     'border-radius:999px;border:1px solid var(--mn-accent-border,#888);',
     'background:var(--mn-accent-bg,#1f1f2e);color:var(--mn-accent-fg,#fff);cursor:pointer;',
@@ -81,6 +84,55 @@
     return true;
   }
 
+  function choiceValue(item) {
+    if (item.value !== undefined) return String(item.value);
+    return String(item.text || '').replace(/^selected:\s*/, '');
+  }
+
+  function refreshChoices() {
+    document.querySelectorAll('[data-choice]').forEach(function (group) {
+      var choiceId = group.getAttribute('data-choice');
+      var current = items.find(function (it) { return it.kind === 'choice: ' + choiceId; });
+      var currentValue = current ? choiceValue(current) : null;
+      group.querySelectorAll('[data-choice-option]').forEach(function (button) {
+        var selected = button.getAttribute('data-choice-option') === currentValue;
+        button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+        button.classList.toggle('is-selected', selected);
+      });
+    });
+  }
+
+  function selectChoice(group, button) {
+    var choiceId = group.getAttribute('data-choice');
+    var value = button.getAttribute('data-choice-option');
+    if (!choiceId || value === null) return;
+    var previous = items.findIndex(function (it) { return it.kind === 'choice: ' + choiceId; });
+    if (previous !== -1) items.splice(previous, 1);
+    var block = group.closest('[data-note]');
+    items.push({
+      kind: 'choice: ' + choiceId,
+      blockId: block ? block.id : '',
+      text: 'selected: ' + value,
+      value: value,
+      ts: new Date().toISOString()
+    });
+    save(items);
+    refresh();
+  }
+
+  function installChoices() {
+    document.querySelectorAll('[data-choice]').forEach(function (group) {
+      if (!group.getAttribute('role')) group.setAttribute('role', 'group');
+      var label = group.getAttribute('data-choice-label');
+      if (label && !group.getAttribute('aria-label')) group.setAttribute('aria-label', label);
+      group.querySelectorAll('[data-choice-option]').forEach(function (button) {
+        if (button.tagName === 'BUTTON' && !button.getAttribute('type')) button.setAttribute('type', 'button');
+        button.addEventListener('click', function () { selectChoice(group, button); });
+      });
+    });
+    refreshChoices();
+  }
+
   function feedbackText() {
     var title = document.title || location.pathname;
     var date = new Date().toISOString().slice(0, 10);
@@ -127,6 +179,7 @@
       var has = items.some(function (it) { return it.blockId === b.id; });
       b.classList.toggle('mn-has-note', has);
     });
+    refreshChoices();
   }
 
   function commentBox(blockId, quote, onDone) {
@@ -263,11 +316,18 @@
       style.textContent = CSS;
       document.head.appendChild(style);
       decorateBlocks();
+      installChoices();
       installCopyButton();
       watchSelection();
       if (!storageOk) showStorageWarning();
       refresh();
-      window.MarginNotes = { addItem: addItem, removeItem: removeItem, items: items, feedbackText: feedbackText };
+      window.MarginNotes = {
+        addItem: addItem,
+        removeItem: removeItem,
+        items: items,
+        feedbackText: feedbackText,
+        selectChoice: selectChoice
+      };
     } catch (e) {
       if (window.console) console.error('margin-notes failed to init:', e);
     }

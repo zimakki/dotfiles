@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The zimakki-html-doc house style</title>
+<title>The zimakki-html-doc visual brief</title>
 <style>
 /* ── Catppuccin Mocha tokens (matches bat, ghostty, warp, starship, atuin) ── */
 :root {
@@ -149,6 +149,98 @@ pre.code::before {
   margin-top: .8rem;
 }
 
+/* ── Visual briefs: reusable infographic and decision primitives ── */
+.visual-pane, .decision-dashboard {
+  background: linear-gradient(145deg, rgba(49, 50, 68, .82), rgba(24, 24, 37, .92));
+  border: 1px solid var(--surface1);
+  border-radius: 12px;
+  padding: 1.2rem;
+  margin: 1.4rem 0;
+}
+.visual-label, .decision-index, .metric-label {
+  font: .7rem/1.4 var(--font-mono);
+  color: var(--overlay1);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.decision-grid, .compare-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .9rem;
+}
+.decision-card, .compare-card, .flow-node, .metric {
+  background: rgba(17, 17, 27, .62);
+  border: 1px solid var(--surface0);
+  border-radius: 9px;
+  padding: 1rem;
+}
+.decision-card h3, .compare-card h3 { margin: .25rem 0 .45rem; }
+.decision-card p, .compare-card p { color: var(--subtext0); font-size: .94rem; line-height: 1.55; }
+.choice-grid { display: grid; gap: .45rem; margin: .8rem 0; }
+.choice-option {
+  position: relative;
+  width: 100%;
+  border: 1px solid var(--surface1);
+  border-radius: 7px;
+  background: var(--mantle);
+  color: var(--subtext1);
+  padding: .7rem .8rem;
+  text-align: left;
+  font: .78rem/1.4 var(--font-mono);
+}
+.choice-option:hover { color: var(--text); border-color: var(--overlay0); }
+.choice-option[aria-pressed="true"] {
+  color: var(--mauve);
+  background: rgba(203, 166, 247, .09);
+}
+.choice-option[data-recommended] { padding-right: 7.7rem; }
+.choice-option[data-recommended]::after {
+  content: 'recommended';
+  position: absolute;
+  top: 50%; right: .65rem;
+  transform: translateY(-50%);
+  color: var(--green);
+  font-size: .62rem;
+  letter-spacing: .05em;
+}
+.detail-link, .back-link {
+  display: inline-block;
+  font: .74rem var(--font-mono);
+  text-decoration: none;
+}
+.visual-flow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin-top: .85rem;
+}
+.flow-node { position: relative; min-height: 7rem; text-decoration: none; }
+.flow-node:not(:last-child)::after {
+  content: '→';
+  position: absolute;
+  left: calc(100% + .38rem); top: 50%;
+  color: var(--overlay1);
+  transform: translateY(-50%);
+}
+.flow-node strong { display: block; font: .82rem/1.35 var(--font-mono); color: var(--blue); }
+.flow-node span { display: block; margin-top: .45rem; color: var(--subtext0); font-size: .86rem; line-height: 1.45; }
+.metric-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .7rem;
+  margin: .8rem 0 1rem;
+}
+.metric-value { display: block; color: var(--peach); font: 1.25rem/1.2 var(--font-mono); margin-bottom: .2rem; }
+.timeline { display: grid; gap: .7rem; border-left: 1px solid var(--surface1); margin: 1rem 0 1rem .4rem; }
+.timeline-step { position: relative; padding-left: 1.2rem; }
+.timeline-step::before { content: ''; position: absolute; left: -.31rem; top: .55rem; width: .55rem; height: .55rem; border-radius: 50%; background: var(--mauve); }
+.timeline-step strong { font: .8rem var(--font-mono); color: var(--green); }
+@media (max-width: 42rem) {
+  .decision-grid, .compare-grid, .metric-strip, .visual-flow { grid-template-columns: 1fr; }
+  .flow-node { min-height: 0; }
+  .flow-node:not(:last-child)::after { content: '↓'; left: 50%; top: calc(100% + .18rem); transform: translateX(-50%); }
+}
+
 /* ── The living margin: each section wears its own feedback anchor ── */
 @media (min-width: 76rem) {
   [data-note]::before {
@@ -198,12 +290,12 @@ section[data-note] { position: relative; margin: 0; scroll-margin-top: 2.5rem; }
    very wide displays), and panes grow rightward from the prose edge into the
    freed space. */
 @media (min-width: 64rem) {
-  pre.code, .diagram { width: 54rem; margin-left: 50%; transform: translateX(-50%); }
+  pre.code, .diagram, .visual-pane, .decision-dashboard { width: 54rem; margin-left: 50%; transform: translateX(-50%); }
 }
 @media (min-width: 84rem) {
   #toc { display: block; }
   main { margin-left: max(28rem, calc(50vw - 26.75rem)); }
-  pre.code, .diagram {
+  pre.code, .diagram, .visual-pane, .decision-dashboard {
     width: min(60rem, calc(100vw - 34rem));
     margin-left: 0;
     transform: none;
@@ -220,8 +312,72 @@ footer {
 <body>
 <main>
 
-<h1>The zimakki-html-doc house style</h1>
-<p class="subtitle">A reference document that explains its own design — read it, comment on it, copy the feedback out.</p>
+<h1>The zimakki-html-doc visual brief</h1>
+<p class="subtitle">A reference document that shows its shape first, links to the detail, and carries your decisions and comments back to the agent.</p>
+
+<section data-note id="decisions-needed">
+  <h2>Decisions needed</h2>
+  <p>Unresolved choices belong together at the top. Recommendations are visible but never selected on your behalf.</p>
+  <div class="decision-dashboard">
+    <div class="decision-grid">
+      <article class="decision-card">
+        <span class="decision-index">01 · document density</span>
+        <h3>What should lead?</h3>
+        <p>Choose the default reading path for generated briefs.</p>
+        <div class="choice-grid" data-choice="document-density" data-choice-label="Default document density">
+          <button class="choice-option" data-choice-option="visual-first" data-recommended>Visual overview, then detail</button>
+          <button class="choice-option" data-choice-option="balanced">Visuals and prose interleaved</button>
+          <button class="choice-option" data-choice-option="prose-first">Detailed prose, then summary</button>
+        </div>
+        <a class="detail-link" href="#detail-visual-first">Read the reasoning →</a>
+      </article>
+      <article class="decision-card">
+        <span class="decision-index">02 · diagram complexity</span>
+        <h3>How should relationships render?</h3>
+        <p>Native elements stay small and responsive; Mermaid handles dense graphs.</p>
+        <div class="choice-grid" data-choice="diagram-default" data-choice-label="Default diagram renderer">
+          <button class="choice-option" data-choice-option="native-first" data-recommended>HTML, CSS, and SVG first</button>
+          <button class="choice-option" data-choice-option="mermaid-first">Mermaid first</button>
+        </div>
+        <a class="detail-link" href="#diagrams">Inspect the diagram guidance →</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section data-note id="at-a-glance">
+  <h2>At a glance</h2>
+  <p>The first screen gives the reader a map; every node opens a deeper explanation in the same file.</p>
+  <div class="visual-pane" role="group" aria-label="Four-step visual-first document flow from decisions through feedback">
+    <span class="visual-label">the default reading path</span>
+    <div class="metric-strip">
+      <div class="metric"><span class="metric-value">1</span><span class="metric-label">decision dashboard</span></div>
+      <div class="metric"><span class="metric-value">1</span><span class="metric-label">coherent overview</span></div>
+      <div class="metric"><span class="metric-value">n</span><span class="metric-label">linked deep dives</span></div>
+    </div>
+    <div class="visual-flow">
+      <a class="flow-node" href="#decisions-needed"><strong>Decide</strong><span>See every unresolved choice together.</span></a>
+      <a class="flow-node" href="#detail-visual-first"><strong>Orient</strong><span>Understand the shape before the nuance.</span></a>
+      <a class="flow-node" href="#why-mocha"><strong>Explore</strong><span>Follow only the evidence you need.</span></a>
+      <a class="flow-node" href="#annotation-theming"><strong>Respond</strong><span>Comment, select, and copy feedback.</span></a>
+    </div>
+  </div>
+</section>
+
+<section data-note id="detail-visual-first">
+  <h2>Why the brief is visual first</h2>
+  <p>
+    A process should look like a flow, alternatives should look comparable, and
+    ownership should look like a map. The visual layer communicates those
+    relationships quickly; linked prose carries evidence, exceptions, and the
+    details that should not be compressed into a label.
+  </p>
+  <div class="compare-grid">
+    <article class="compare-card"><span class="visual-label">overview</span><h3>Scan</h3><p>Short labels, meaningful position, honest quantities, and visible relationships.</p></article>
+    <article class="compare-card"><span class="visual-label">deep dive</span><h3>Verify</h3><p>Reasoning, examples, caveats, sources, and implementation detail remain readable below.</p></article>
+  </div>
+  <a class="back-link" href="#at-a-glance">← Back to the overview</a>
+</section>
 
 <section data-note id="why-mocha">
   <h2>Why this looks like your terminal</h2>
@@ -395,7 +551,7 @@ footer {
   </p>
 </section>
 
-<footer>generated with zimakki-html-doc · margin-notes v1 inlined below · catppuccin mocha</footer>
+<footer>generated with zimakki-html-doc · margin-notes v2 inlined below · catppuccin mocha</footer>
 
 </main>
 <script>
@@ -438,7 +594,7 @@ footer {
 })();
 </script>
 <script>
-/* margin-notes v1 — inline annotation layer for agent-generated HTML documents.
+/* margin-notes v2 — inline annotation layer for agent-generated HTML documents.
  * Source of truth: dotfiles/.agents/skills/zimakki-html-doc/margin-notes.js
  * Inlined into documents by the zimakki-html-doc skill. No dependencies.
  */
@@ -470,6 +626,9 @@ footer {
     '.mn-saved{font-size:13px;color:var(--mn-box-fg,#333);margin:.2em 0;white-space:pre-wrap}',
     '.mn-saved .mn-del{color:var(--mn-danger,#a33);cursor:pointer;border:none;background:none;',
     'font:inherit;padding:0;border-radius:0}',
+    '[data-choice-option]{cursor:pointer}',
+    '[data-choice-option][aria-pressed="true"]{border-color:var(--mn-accent-border,#888);',
+    'box-shadow:0 0 0 1px var(--mn-accent-border,#888)}',
     '#mn-copy{position:fixed;right:16px;bottom:16px;z-index:9999;padding:.6em 1em;',
     'border-radius:999px;border:1px solid var(--mn-accent-border,#888);',
     'background:var(--mn-accent-bg,#1f1f2e);color:var(--mn-accent-fg,#fff);cursor:pointer;',
@@ -521,6 +680,55 @@ footer {
     return true;
   }
 
+  function choiceValue(item) {
+    if (item.value !== undefined) return String(item.value);
+    return String(item.text || '').replace(/^selected:\s*/, '');
+  }
+
+  function refreshChoices() {
+    document.querySelectorAll('[data-choice]').forEach(function (group) {
+      var choiceId = group.getAttribute('data-choice');
+      var current = items.find(function (it) { return it.kind === 'choice: ' + choiceId; });
+      var currentValue = current ? choiceValue(current) : null;
+      group.querySelectorAll('[data-choice-option]').forEach(function (button) {
+        var selected = button.getAttribute('data-choice-option') === currentValue;
+        button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+        button.classList.toggle('is-selected', selected);
+      });
+    });
+  }
+
+  function selectChoice(group, button) {
+    var choiceId = group.getAttribute('data-choice');
+    var value = button.getAttribute('data-choice-option');
+    if (!choiceId || value === null) return;
+    var previous = items.findIndex(function (it) { return it.kind === 'choice: ' + choiceId; });
+    if (previous !== -1) items.splice(previous, 1);
+    var block = group.closest('[data-note]');
+    items.push({
+      kind: 'choice: ' + choiceId,
+      blockId: block ? block.id : '',
+      text: 'selected: ' + value,
+      value: value,
+      ts: new Date().toISOString()
+    });
+    save(items);
+    refresh();
+  }
+
+  function installChoices() {
+    document.querySelectorAll('[data-choice]').forEach(function (group) {
+      if (!group.getAttribute('role')) group.setAttribute('role', 'group');
+      var label = group.getAttribute('data-choice-label');
+      if (label && !group.getAttribute('aria-label')) group.setAttribute('aria-label', label);
+      group.querySelectorAll('[data-choice-option]').forEach(function (button) {
+        if (button.tagName === 'BUTTON' && !button.getAttribute('type')) button.setAttribute('type', 'button');
+        button.addEventListener('click', function () { selectChoice(group, button); });
+      });
+    });
+    refreshChoices();
+  }
+
   function feedbackText() {
     var title = document.title || location.pathname;
     var date = new Date().toISOString().slice(0, 10);
@@ -567,6 +775,7 @@ footer {
       var has = items.some(function (it) { return it.blockId === b.id; });
       b.classList.toggle('mn-has-note', has);
     });
+    refreshChoices();
   }
 
   function commentBox(blockId, quote, onDone) {
@@ -703,11 +912,18 @@ footer {
       style.textContent = CSS;
       document.head.appendChild(style);
       decorateBlocks();
+      installChoices();
       installCopyButton();
       watchSelection();
       if (!storageOk) showStorageWarning();
       refresh();
-      window.MarginNotes = { addItem: addItem, removeItem: removeItem, items: items, feedbackText: feedbackText };
+      window.MarginNotes = {
+        addItem: addItem,
+        removeItem: removeItem,
+        items: items,
+        feedbackText: feedbackText,
+        selectChoice: selectChoice
+      };
     } catch (e) {
       if (window.console) console.error('margin-notes failed to init:', e);
     }

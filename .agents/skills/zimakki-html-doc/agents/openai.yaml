@@ -1,4 +1,4 @@
 interface:
-  display_name: "Zimakki HTML Doc"
-  short_description: "Create annotated, self-contained HTML explainers"
-  default_prompt: "Use $zimakki-html-doc to create a self-contained interactive HTML document in the Zimakki house style with browser annotations."
+  display_name: "Zimakki Visual Brief"
+  short_description: "Create annotated, infographic-first HTML briefs"
+  default_prompt: "Use $zimakki-html-doc to create a self-contained, infographic-first HTML decision brief with linked deep dives and browser annotations."
