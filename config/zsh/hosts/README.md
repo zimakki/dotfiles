@@ -24,3 +24,4 @@ file = no-op, so a fresh machine needs no bootstrap.
 
 ## Current machines
 - `zis-AccessOwl-MacBook-Pro` — macOS 26.5.2
+- `zis-MacBook-Pro` — macOS

@@ -25,7 +25,11 @@ run = '''
 repo="${MISE_CONFIG_ROOT:-}"
 if [ ! -x "$repo/scripts/bootstrap/preflight.zsh" ]; then
   config="${MISE_GLOBAL_CONFIG_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/mise/config.toml}"
-  repo="$(dirname "$(realpath "$config")")"
+  if [ -e "$config" ] || [ -L "$config" ]; then
+    repo="$(dirname "$(realpath "$config")")"
+  else
+    repo="$(git rev-parse --show-toplevel 2>/dev/null || pwd -P)"
+  fi
 fi
 exec "$repo/scripts/bootstrap/preflight.zsh" --guard-only "$repo"
 '''
@@ -37,7 +41,11 @@ run = '''
 repo="${MISE_CONFIG_ROOT:-}"
 if [ ! -x "$repo/scripts/bootstrap/preflight.zsh" ]; then
   config="${MISE_GLOBAL_CONFIG_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/mise/config.toml}"
-  repo="$(dirname "$(realpath "$config")")"
+  if [ -e "$config" ] || [ -L "$config" ]; then
+    repo="$(dirname "$(realpath "$config")")"
+  else
+    repo="$(git rev-parse --show-toplevel 2>/dev/null || pwd -P)"
+  fi
 fi
 "$repo/scripts/bootstrap/preflight.zsh" --guard-only "$repo"
 brew bundle --file="$repo/BrewFile"
@@ -50,7 +58,11 @@ run = '''
 repo="${MISE_CONFIG_ROOT:-}"
 if [ ! -x "$repo/scripts/bootstrap/preflight.zsh" ]; then
   config="${MISE_GLOBAL_CONFIG_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/mise/config.toml}"
-  repo="$(dirname "$(realpath "$config")")"
+  if [ -e "$config" ] || [ -L "$config" ]; then
+    repo="$(dirname "$(realpath "$config")")"
+  else
+    repo="$(git rev-parse --show-toplevel 2>/dev/null || pwd -P)"
+  fi
 fi
 exec "$repo/scripts/bootstrap/preflight.zsh" --guard-only "$repo"
 '''
@@ -61,7 +73,11 @@ run = '''
 repo="${MISE_CONFIG_ROOT:-}"
 if [ ! -x "$repo/scripts/bootstrap/preflight.zsh" ]; then
   config="${MISE_GLOBAL_CONFIG_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/mise/config.toml}"
-  repo="$(dirname "$(realpath "$config")")"
+  if [ -e "$config" ] || [ -L "$config" ]; then
+    repo="$(dirname "$(realpath "$config")")"
+  else
+    repo="$(git rev-parse --show-toplevel 2>/dev/null || pwd -P)"
+  fi
 fi
 exec "$repo/scripts/bootstrap/preflight.zsh" --guard-only "$repo"
 '''
@@ -112,7 +128,11 @@ run = '''
 repo="${MISE_CONFIG_ROOT:-}"
 if [ ! -x "$repo/scripts/bootstrap/exceptions.zsh" ]; then
   config="${MISE_GLOBAL_CONFIG_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/mise/config.toml}"
-  repo="$(dirname "$(realpath "$config")")"
+  if [ -e "$config" ] || [ -L "$config" ]; then
+    repo="$(dirname "$(realpath "$config")")"
+  else
+    repo="$(git rev-parse --show-toplevel 2>/dev/null || pwd -P)"
+  fi
 fi
 exec "$repo/scripts/bootstrap/exceptions.zsh"
 '''

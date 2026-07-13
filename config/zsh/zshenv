@@ -38,6 +38,8 @@ typeset -U path PATH
 # above) so mise shims keep priority. `latest` in the Postgres.app path is a
 # symlink tracking the current version. Listed order == precedence order.
 _dotfiles_path_candidates=(
+  "/opt/homebrew/bin"
+  "/opt/homebrew/sbin"
   "/Applications/Postgres.app/Contents/Versions/latest/bin"
   "$HOME/.bun/bin"
   "$HOME/Library/pnpm"

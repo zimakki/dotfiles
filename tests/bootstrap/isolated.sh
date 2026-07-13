@@ -46,6 +46,11 @@ mkdir -p "$home" "$root/work" "$root/mise"
 # mise may discover a real global config by both its symlink path and its
 # resolved repository path on macOS. Explicitly ignore both while testing.
 caller_global="${MISE_GLOBAL_CONFIG_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/mise/config.toml}"
+repo_config_resolved="$($python_bin - "$repo/mise.toml" <<'PY'
+import os, sys
+print(os.path.realpath(sys.argv[1]))
+PY
+)"
 ignored_paths=()
 if [[ -e "$caller_global" || -L "$caller_global" ]]; then
   ignored_paths+=("$caller_global")
@@ -54,8 +59,32 @@ import os, sys
 print(os.path.realpath(sys.argv[1]))
 PY
 )"
-  [[ "$caller_global_resolved" == "$caller_global" ]] || ignored_paths+=("$caller_global_resolved")
+  if [[ "$caller_global_resolved" != "$caller_global" && "$caller_global_resolved" != "$repo_config_resolved" ]]; then
+    ignored_paths+=("$caller_global_resolved")
+  fi
 fi
+
+# The test runs from the real checkout path, so mise can still discover
+# caller-specific parent configs such as ../.mise.toml even with HOME isolated.
+# Ignore those to keep the fixture independent from local directory state.
+parent_dir="$(dirname "$repo")"
+while [[ "$parent_dir" != "/" ]]; do
+  for parent_config in "$parent_dir/mise.toml" "$parent_dir/.mise.toml"; do
+    if [[ -e "$parent_config" || -L "$parent_config" ]]; then
+      ignored_paths+=("$parent_config")
+      parent_config_resolved="$($python_bin - "$parent_config" <<'PY'
+import os, sys
+print(os.path.realpath(sys.argv[1]))
+PY
+)"
+      [[ "$parent_config_resolved" == "$parent_config" ]] || ignored_paths+=("$parent_config_resolved")
+    fi
+  done
+  next_parent="$(dirname "$parent_dir")"
+  [[ "$next_parent" == "$parent_dir" ]] && break
+  parent_dir="$next_parent"
+done
+
 ignored_config_paths=""
 if (( ${#ignored_paths[@]} > 0 )); then
   ignored_config_paths="$(IFS=:; printf '%s' "${ignored_paths[*]}")"
@@ -295,11 +324,14 @@ config_listing="$({
   cd "$root/work"
   run_mise config ls --json
 })"
-"$python_bin" - "$config_listing" "${ignored_paths[@]}" <<'PY'
+"$python_bin" - "$config_listing" "$repo_config_resolved" "${ignored_paths[@]}" <<'PY'
 import json, os, sys
 loaded = {os.path.realpath(item["path"]) for item in json.loads(sys.argv[1])}
-for ignored in sys.argv[2:]:
-    if ignored in {item["path"] for item in json.loads(sys.argv[1])} or os.path.realpath(ignored) in loaded:
+loaded_raw = {item["path"] for item in json.loads(sys.argv[1])}
+repo_config = sys.argv[2]
+for ignored in sys.argv[3:]:
+    ignored_real = os.path.realpath(ignored)
+    if ignored in loaded_raw or (ignored_real != repo_config and ignored_real in loaded):
         raise SystemExit(f"real config leaked into isolated test: {ignored}")
 PY
 pass "temporary global config works without loading the caller's global path or target"
