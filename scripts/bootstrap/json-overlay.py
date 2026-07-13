@@ -98,16 +98,11 @@ def apply_overlay(source: Path, target: Path, repo_root: Path, check: bool) -> i
         raise OverlayError(f"Managed overlay must live inside the repository: {source}")
 
     managed = load_json(source)
-    target_was_symlink = target.is_symlink()
-    if target_was_symlink:
-        resolved_target = target.resolve(strict=False)
-        if not is_within(resolved_target, repo_root):
-            raise OverlayError(
-                f"Refusing to replace arbitrary symlink {target} -> {resolved_target}"
-            )
-        existing = load_json(resolved_target, missing={})
-        mode = stat.S_IMODE(resolved_target.stat().st_mode) if resolved_target.exists() else 0o600
-    elif target.exists():
+    if target.is_symlink():
+        raise OverlayError(
+            f"Refusing symlink target; app-owned JSON must be a regular file: {target}"
+        )
+    if target.exists():
         existing = load_json(target)
         mode = stat.S_IMODE(target.stat().st_mode)
     else:
@@ -115,7 +110,7 @@ def apply_overlay(source: Path, target: Path, repo_root: Path, check: bool) -> i
         mode = 0o600
 
     merged = merge_json(existing, managed)
-    converged = target.exists() and not target_was_symlink and existing == merged
+    converged = target.exists() and existing == merged
     if check:
         if converged:
             print(f"JSON overlay is current: {target}")
@@ -129,8 +124,7 @@ def apply_overlay(source: Path, target: Path, repo_root: Path, check: bool) -> i
 
     require_safe_checkout()
     atomic_write_json(target, merged, mode)
-    migration = " (replaced repository-owned symlink)" if target_was_symlink else ""
-    print(f"Applied JSON overlay: {target}{migration}")
+    print(f"Applied JSON overlay: {target}")
     return 0
 
 

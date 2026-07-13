@@ -9,10 +9,9 @@ front door and coordinator. `BrewFile` is the sole Homebrew package/cask
 inventory; the discoverable `mise.toml` owns mise tools, static dotfile links,
 and typed macOS defaults.
 
-Canonical app configuration belongs under `config/<app>/`. Root-level legacy
-config names may exist only as temporary compatibility symlinks during the
-staged migration. Do not add new root-level config files. When adding or
-removing stable managed config, update `[dotfiles]` in `mise.toml`.
+Canonical app configuration belongs under `config/<app>/`; do not add
+root-level config files. When adding or removing stable managed config, update
+`[dotfiles]` in `mise.toml`.
 
 Claude and Karabiner are app-mutated files and are not `[dotfiles]` entries.
 Their repository-owned JSON overlays merge recursively into live regular files;
@@ -23,8 +22,6 @@ caches, automatic backups, and secrets outside Git.
 Bootstrap exceptions are narrow and live under `scripts/bootstrap/`:
 
 - `link-lazygit-config.zsh` resolves Lazygit's dynamic destination.
-- `relink-static-config.py` removes transitional root-link dependencies after
-  mise applies static dotfiles.
 - `apply-macos-exceptions.zsh` handles unsupported host-scoped writes and
   necessary app restarts.
 - `json-overlay.py` safely applies managed fragments to app-owned JSON files.

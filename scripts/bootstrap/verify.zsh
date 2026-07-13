@@ -98,9 +98,6 @@ mise bootstrap status --missing >/dev/null 2>&1 \
   || fail "bootstrap drift detected"
 
 hdr "Bootstrap exceptions"
-python3 "$REPO/scripts/bootstrap/relink-static-config.py" --check >/dev/null 2>&1 \
-  && pass "static HOME links use direct declared sources" \
-  || fail "static HOME links still depend on compatibility paths"
 "$REPO/scripts/bootstrap/link-lazygit-config.zsh" --check >/dev/null 2>&1 \
   && pass "dynamic Lazygit link" \
   || fail "dynamic Lazygit link is missing or incorrect"

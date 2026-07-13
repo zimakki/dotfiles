@@ -118,7 +118,6 @@ bootstrap_preflight_main() {
   local script
   for script in \
     scripts/bootstrap/exceptions.zsh \
-    scripts/bootstrap/relink-static-config.py \
     scripts/bootstrap/link-lazygit-config.zsh \
     scripts/bootstrap/apply-macos-exceptions.zsh \
     scripts/bootstrap/verify.zsh \

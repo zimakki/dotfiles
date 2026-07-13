@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import json
-import os
 from pathlib import Path, PurePosixPath
 import re
 import subprocess
@@ -101,47 +100,19 @@ for managed_overlay in (
     assert managed_overlay.is_file(), managed_overlay
     assert str(managed_overlay.relative_to(ROOT)) not in seen_sources
 
-compatibility_links = {
-    "atuin_config.toml": "config/atuin/config.toml",
-    "atuin_themes": "config/atuin/themes",
-    "bat_config": "config/bat/config",
-    "claude_settings.json": "config/claude/settings.legacy.json",
-    "ghostty_config": "config/ghostty/config",
-    "gitconfig": "config/git/config",
-    "gitignore_global": "config/git/ignore_global",
-    "hosts": "config/zsh/hosts",
-    "hunk": "config/hunk",
-    "karabiner.json": "config/karabiner/karabiner.legacy.json",
-    "lazygit_config.yml": "config/lazygit/config.yml",
-    "starship.toml": "config/starship/starship.toml",
-    "television": "config/television",
-    "warp_keybindings.yaml": "config/warp/keybindings.yaml",
-    "warp_themes": "config/warp/themes",
-    "zprofile": "config/zsh/zprofile",
-    "zsh": "config/zsh/themes",
-    "zshenv": "config/zsh/zshenv",
-    "zshrc": "config/zsh/zshrc",
-}
-for link_name, link_text in compatibility_links.items():
-    link = ROOT / link_name
-    assert link.is_symlink(), f"missing transitional compatibility link: {link_name}"
-    assert os.readlink(link) == link_text, f"unexpected compatibility target: {link_name}"
-    subprocess.run(
-        ["git", "-C", ROOT, "ls-files", "--error-unmatch", link_name],
-        check=True,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
+root_symlinks = subprocess.run(
+    ["git", "-C", ROOT, "ls-files", "-s"],
+    check=True,
+    capture_output=True,
+    text=True,
+).stdout.splitlines()
+assert not any(
+    line.startswith("120000 ") and "/" not in line.split("\t", 1)[1]
+    for line in root_symlinks
+), "root-level app config symlinks are not supported"
 
 claude_overlay = json.loads((ROOT / "config/claude/settings.json").read_text())
-claude_legacy = json.loads((ROOT / "config/claude/settings.legacy.json").read_text())
-assert "statusLine" not in claude_legacy, "stale Claude statusLine must not survive migration"
 assert "feedbackSurveyState" not in claude_overlay, "volatile Claude state is not overlay-owned"
-assert "feedbackSurveyState" in claude_legacy, "pre-cutover Claude state must survive migration"
-
-karabiner_overlay = json.loads((ROOT / "config/karabiner/karabiner.json").read_text())
-karabiner_legacy = json.loads((ROOT / "config/karabiner/karabiner.legacy.json").read_text())
-assert karabiner_legacy == karabiner_overlay, "Karabiner legacy snapshot must preserve pre-cutover JSON"
 
 bootstrap_task = CONFIG["tasks"]["bootstrap"]
 assert bootstrap_task["dir"] == "{{cwd}}"
@@ -177,18 +148,12 @@ required_scripts = (
     "scripts/bootstrap/link-lazygit-config.zsh",
     "scripts/bootstrap/apply-macos-exceptions.zsh",
     "scripts/bootstrap/json-overlay.py",
-    "scripts/bootstrap/relink-static-config.py",
     "scripts/bootstrap/verify.zsh",
     "scripts/maintenance/sync-agent-skills.sh",
     "tests/bootstrap/isolated.sh",
 )
 for relative in required_scripts:
     assert (ROOT / relative).is_file(), relative
-
-exceptions = (ROOT / "scripts/bootstrap/exceptions.zsh").read_text(encoding="utf-8")
-verification = (ROOT / "scripts/bootstrap/verify.zsh").read_text(encoding="utf-8")
-for script in (exceptions, verification):
-    assert "relink-static-config.py" in script
 
 obsolete_scripts = (
     "setup_sim_links.zsh",

@@ -69,40 +69,10 @@ first_link_hop() {
   print -r -- "${candidate:a}"
 }
 
-replace_with_direct_link() {
-  local temporary
-  temporary="$(mktemp "${dest:h}/.${dest:t}.link.XXXXXX")"
-  rm -- "$temporary"
-  if ! ln -s "$source_file" "$temporary"; then
-    rm -f -- "$temporary"
-    return 1
-  fi
-  if ! mv -f -- "$temporary" "$dest"; then
-    rm -f -- "$temporary"
-    return 1
-  fi
-}
-
 if [[ -L "$dest" ]]; then
   first_hop="$(first_link_hop "$dest")"
   if [[ "$first_hop" == "${source_file:a}" ]]; then
     print "Lazygit config is directly linked: $dest"
-    exit 0
-  fi
-
-  if [[ "${dest:A}" == "${source_file:A}" && "$first_hop" == "${REPO:a}"/* ]]; then
-    original_link_text="$(readlink "$dest")"
-    if $check; then
-      print -u2 -- "Lazygit config uses an indirect compatibility link: $dest -> $original_link_text"
-      exit 1
-    fi
-    bootstrap_require_canonical_checkout "$REPO"
-    if [[ ! -L "$dest" || "$(readlink "$dest")" != "$original_link_text" ]]; then
-      print -u2 -- "Lazygit config changed during migration: $dest"
-      exit 1
-    fi
-    replace_with_direct_link
-    print "Relinked Lazygit config directly: $dest -> $source_file"
     exit 0
   fi
 fi

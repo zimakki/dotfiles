@@ -58,8 +58,7 @@ unset _dir _dotfiles_path_candidates
 # Per-host config: source config/zsh/hosts/<LocalHostName>.zsh if present.
 # LocalHostName is stable + filename-safe (unlike $HOST, which is network-
 # dependent). The managed zsh config dir is resolved from THIS file's real path
-# (symlink-aware), including while ~/.zshenv reaches it through the transitional
-# root-level compatibility symlink.
+# so the host directory remains relative to the managed source.
 # ---------------------------------------------------------------------------
 _dotfiles_zsh_dir="${${(%):-%N}:A:h}"
 _host_name="$(scutil --get LocalHostName 2>/dev/null)"

@@ -110,11 +110,6 @@ run_clean_env() {
 run_mise() {
   run_clean_env "${mise_env[@]}" "$mise_bin" "$@"
 }
-run_static_relink() {
-  run_clean_env "${mise_env[@]}" "$python_bin" \
-    "$repo/scripts/bootstrap/relink-static-config.py" "$@"
-}
-
 printf 'Testing canonical-checkout mutation guard\n'
 guard_primary="$root/guard-primary"
 guard_linked="$root/guard-linked"
@@ -124,10 +119,7 @@ printf 'guard fixture\n' > "$guard_primary/fixture"
 cp "$repo/mise.toml" "$guard_primary/mise.toml"
 cp "$repo/scripts/bootstrap/json-overlay.py" \
   "$guard_primary/scripts/bootstrap/json-overlay.py"
-cp "$repo/scripts/bootstrap/relink-static-config.py" \
-  "$guard_primary/scripts/bootstrap/relink-static-config.py"
 printf '# guard zshenv fixture\n' > "$guard_primary/config/zsh/zshenv"
-ln -s config/zsh/zshenv "$guard_primary/zshenv"
 "$python_bin" - "$guard_primary/mise.toml" <<'PY'
 from pathlib import Path
 import re, sys
@@ -145,13 +137,11 @@ PY
 printf '# intentionally empty fixture\n' > "$guard_primary/BrewFile"
 cp "$repo/scripts/bootstrap/preflight.zsh" \
   "$guard_primary/scripts/bootstrap/preflight.zsh"
-git -C "$guard_primary" add fixture mise.toml BrewFile zshenv config/zsh/zshenv \
-  scripts/bootstrap/preflight.zsh scripts/bootstrap/json-overlay.py \
-  scripts/bootstrap/relink-static-config.py
+git -C "$guard_primary" add fixture mise.toml BrewFile config/zsh/zshenv \
+  scripts/bootstrap/preflight.zsh scripts/bootstrap/json-overlay.py
 git -C "$guard_primary" -c user.name=Bootstrap -c user.email=bootstrap@example.invalid \
   commit --quiet -m fixture
 git -C "$guard_primary" worktree add --quiet -b linked-test "$guard_linked"
-guard_linked_real="$(cd "$guard_linked" && pwd -P)"
 zsh "$guard_primary/scripts/bootstrap/preflight.zsh" --guard-only
 if zsh "$guard_linked/scripts/bootstrap/preflight.zsh" --guard-only >/dev/null 2>&1; then
   fail "mutation guard accepted a linked worktree"
@@ -159,21 +149,6 @@ fi
 DOTFILES_BOOTSTRAP_TEST_ALLOW_WORKTREE=1 \
   zsh "$guard_linked/scripts/bootstrap/preflight.zsh" --guard-only >/dev/null
 pass "canonical checkout passes, linked worktree fails, explicit test override passes"
-
-guard_home="$root/guard-home"
-mkdir -p "$guard_home"
-ln -s "$guard_linked_real/zshenv" "$guard_home/.zshenv"
-if HOME="$guard_home" \
-  "$python_bin" "$guard_linked/scripts/bootstrap/relink-static-config.py" >/dev/null 2>&1; then
-  fail "static-link migration bypassed the linked-worktree guard"
-fi
-[[ "$(readlink "$guard_home/.zshenv")" == "$guard_linked_real/zshenv" ]] \
-  || fail "refused static-link migration changed its target"
-HOME="$guard_home" DOTFILES_BOOTSTRAP_TEST_ALLOW_WORKTREE=1 \
-  "$python_bin" "$guard_linked/scripts/bootstrap/relink-static-config.py" >/dev/null
-[[ "$(readlink "$guard_home/.zshenv")" == "$guard_linked_real/config/zsh/zshenv" ]] \
-  || fail "guarded static-link fixture did not migrate with the test override"
-pass "static-link migration is guarded before rewriting a compatibility chain"
 
 printf 'Testing guard coverage for full and partial mise bootstrap runs\n'
 partial_home="$root/partial-home"
@@ -273,40 +248,6 @@ PY
   run_mise bootstrap dotfiles status --missing >/dev/null
 )
 pass "$link_count static links apply and converge on a second run"
-
-printf 'Testing transitional static-link migration\n'
-rm "$home/.zshenv" "$home/.config/television"
-ln -s "$repo/zshenv" "$home/.zshenv"
-ln -s "$repo/television" "$home/.config/television"
-(
-  cd "$repo"
-  run_mise bootstrap dotfiles apply --yes >/dev/null
-)
-[[ "$(readlink "$home/.zshenv")" == "$repo/zshenv" ]] \
-  || fail "mise unexpectedly normalized the compatibility-chain fixture"
-if run_static_relink --check >/dev/null 2>&1; then
-  fail "static-link check accepted indirect compatibility links"
-fi
-run_static_relink >/dev/null
-[[ "$(readlink "$home/.zshenv")" == "$repo/config/zsh/zshenv" ]] \
-  || fail "file compatibility link was not rewritten directly"
-[[ "$(readlink "$home/.config/television")" == "$repo/config/television" ]] \
-  || fail "directory compatibility link was not rewritten directly"
-run_static_relink --check >/dev/null
-
-outside_bridge="$root/outside-zprofile-link"
-ln -s "$repo/config/zsh/zprofile" "$outside_bridge"
-rm "$home/.zprofile"
-ln -s "$outside_bridge" "$home/.zprofile"
-if run_static_relink >/dev/null 2>&1; then
-  fail "static-link migration accepted an outside-repo first hop"
-fi
-[[ "$(readlink "$home/.zprofile")" == "$outside_bridge" ]] \
-  || fail "refused outside-repo link was not preserved"
-rm "$home/.zprofile"
-ln -s "$repo/config/zsh/zprofile" "$home/.zprofile"
-run_static_relink --check >/dev/null
-pass "repo-owned chains become direct while outside-repo chains are refused and preserved"
 
 printf 'Testing hermetic global config discovery\n'
 expected_node="$($python_bin - "$repo/mise.toml" <<'PY'
@@ -468,24 +409,7 @@ set -e
 [[ $overlay_status -eq 2 && -L "$overlay_home/arbitrary-link.json" ]] \
   || fail "overlay did not refuse and preserve an arbitrary symlink"
 
-mkdir -p "$overlay_repo/config/claude"
-mv "$overlay_repo/managed.json" "$overlay_repo/config/claude/settings.json"
-printf '%s\n' '{"feedbackSurveyState":{"lastShownTime":42},"managed":{"extra":"legacy"}}' \
-  > "$overlay_repo/config/claude/settings.legacy.json"
-ln -s config/claude/settings.legacy.json "$overlay_repo/claude_settings.json"
-ln -s "$overlay_repo/claude_settings.json" "$overlay_home/repo-link.json"
-"${overlay[@]}" "$overlay_repo/config/claude/settings.json" "$overlay_home/repo-link.json" >/dev/null
-[[ -f "$overlay_home/repo-link.json" && ! -L "$overlay_home/repo-link.json" ]] \
-  || fail "repository-owned symlink was not migrated to a regular JSON file"
-"$python_bin" - "$overlay_home/repo-link.json" <<'PY'
-import json, sys
-with open(sys.argv[1]) as handle:
-    value = json.load(handle)
-assert value["feedbackSurveyState"] == {"lastShownTime": 42}
-assert value["managed"] == {"extra": "legacy", "nested": 1, "list": [1]}
-assert value["scalar"] == "new"
-PY
-pass "overlays preserve unmanaged legacy state through the real two-hop compatibility chain"
+pass "overlays preserve unmanaged keys, converge without rewrites, and refuse symlink targets"
 
 printf 'Testing Lazygit conflict handling and output validation\n'
 link_fake_bin="$root/link-fake-bin"
@@ -509,14 +433,6 @@ env "${link_env[@]}" zsh "$repo/scripts/bootstrap/link-lazygit-config.zsh" --bac
 backup_count="$(find "$link_home/.config/lazygit" -maxdepth 1 -name 'config.yml.bak.*' | wc -l | tr -d ' ')"
 [[ "$backup_count" == 1 ]] || fail "Lazygit backup mode did not preserve exactly one timestamped copy"
 env "${link_env[@]}" zsh "$repo/scripts/bootstrap/link-lazygit-config.zsh" --check >/dev/null
-rm "$link_home/.config/lazygit/config.yml"
-ln -s "$repo/lazygit_config.yml" "$link_home/.config/lazygit/config.yml"
-if env "${link_env[@]}" zsh "$repo/scripts/bootstrap/link-lazygit-config.zsh" --check >/dev/null 2>&1; then
-  fail "Lazygit check accepted an indirect compatibility link"
-fi
-env "${link_env[@]}" zsh "$repo/scripts/bootstrap/link-lazygit-config.zsh" >/dev/null
-[[ "$(readlink "$link_home/.config/lazygit/config.yml")" == "$repo/config/lazygit/config.yml" ]] \
-  || fail "Lazygit compatibility link was not normalized to a direct first hop"
 rm "$link_home/.config/lazygit/config.yml"
 printf 'replace me\n' > "$link_home/.config/lazygit/config.yml"
 env "${link_env[@]}" zsh "$repo/scripts/bootstrap/link-lazygit-config.zsh" --force >/dev/null

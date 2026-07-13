@@ -49,8 +49,8 @@ schemas or loading rules interchangeable.
 - New config is discoverable without memorizing root-level naming conventions.
 - `mise.toml` expresses installation destinations without forcing the source
   tree to mirror `$HOME`.
-- Root-level compatibility symlinks may remain during staged migration, but
-  they are transitional and must not become authoring locations.
+- Root-level app config is not an authoring location; canonical sources remain
+  under `config/<app>/`.
 - JSON overlays preserve live dictionary keys absent from the managed fragment.
   Managed lists and scalar values replace their live counterparts. Overlay
   application is atomic and tested separately from static links.
