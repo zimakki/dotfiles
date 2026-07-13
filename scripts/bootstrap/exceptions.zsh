@@ -17,8 +17,6 @@ fi
 # the newly-created global link to that exact file as well.
 mise trust "$global_config"
 
-python3 "$REPO/scripts/bootstrap/relink-static-config.py"
-
 "$REPO/scripts/bootstrap/link-lazygit-config.zsh"
 
 python3 "$REPO/scripts/bootstrap/json-overlay.py" \

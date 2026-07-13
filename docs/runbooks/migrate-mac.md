@@ -13,33 +13,6 @@ the canonical checkout that will remain on disk.
 - Never commit credentials, opaque exports, caches, databases, or automatic
   backups.
 
-## One-time app-oriented layout cutover
-
-Existing machines initially have HOME links aimed at the former root-level
-sources. Close Claude and Karabiner, update the canonical checkout, and leave
-the root compatibility links and app-local `*.legacy.json` snapshots in place.
-Then run the normal bootstrap. Its exception task:
-
-1. rewrites repo-owned indirect static links to direct `config/<app>/` sources;
-2. normalizes Lazygit's link to a direct first hop; and
-3. merges the Claude and Karabiner overlays into regular app-owned HOME files,
-   using the distinct legacy snapshots to preserve unmanaged pre-cutover keys.
-
-Check the cutover explicitly:
-
-```sh
-python3 scripts/bootstrap/relink-static-config.py --check
-scripts/bootstrap/link-lazygit-config.zsh --check
-test ! -L ~/.claude/settings.json
-test ! -L ~/.config/karabiner/karabiner.json
-scripts/bootstrap/verify.zsh
-```
-
-Run verification twice. Delete the root compatibility links and legacy
-snapshots only in a later commit, after every managed machine passes these
-checks; mise itself considers an indirect chain converged and therefore cannot
-prove that those anchors are removable.
-
 ## 1. Capture the old Mac
 
 Create a migration branch in a separate worktree. This keeps edits away from
@@ -100,9 +73,8 @@ python3 scripts/bootstrap/json-overlay.py --check \
   config/karabiner/karabiner.json ~/.config/karabiner/karabiner.json
 ```
 
-During the first migration, the overlay tool can replace a symlink that points
-back into this repository after preserving its JSON content. It refuses an
-arbitrary external symlink.
+The overlay tool refuses symlink targets so it cannot accidentally mutate a
+linked source. Claude and Karabiner targets must be regular app-owned files.
 
 For macOS preferences, add only settings that were deliberately changed and
 that mise can express as typed values. When a setting is unknown, capture

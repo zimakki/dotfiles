@@ -22,8 +22,6 @@ caches, automatic backups, and secrets outside Git.
 Bootstrap exceptions are narrow and live under `scripts/bootstrap/`:
 
 - `link-lazygit-config.zsh` resolves Lazygit's dynamic destination.
-- `relink-static-config.py` removes transitional root-link dependencies after
-  mise applies static dotfiles.
 - `apply-macos-exceptions.zsh` handles unsupported host-scoped writes and
   necessary app restarts.
 - `json-overlay.py` safely applies managed fragments to app-owned JSON files.

@@ -148,18 +148,12 @@ required_scripts = (
     "scripts/bootstrap/link-lazygit-config.zsh",
     "scripts/bootstrap/apply-macos-exceptions.zsh",
     "scripts/bootstrap/json-overlay.py",
-    "scripts/bootstrap/relink-static-config.py",
     "scripts/bootstrap/verify.zsh",
     "scripts/maintenance/sync-agent-skills.sh",
     "tests/bootstrap/isolated.sh",
 )
 for relative in required_scripts:
     assert (ROOT / relative).is_file(), relative
-
-exceptions = (ROOT / "scripts/bootstrap/exceptions.zsh").read_text(encoding="utf-8")
-verification = (ROOT / "scripts/bootstrap/verify.zsh").read_text(encoding="utf-8")
-for script in (exceptions, verification):
-    assert "relink-static-config.py" in script
 
 obsolete_scripts = (
     "setup_sim_links.zsh",

@@ -26,7 +26,7 @@ Apply changes in this order:
 2. Preview the full operation.
 3. Apply packages, tools, static links, and typed defaults through mise.
 4. Run only the narrow exceptions mise cannot express.
-5. Verify convergence twice before removing a recovery anchor.
+5. Verify convergence twice after an apply.
 
 Conflicts fail closed. Inspect live content before using any force option.
 Scripts must propagate failures, avoid fixed destructive backup names, and be
@@ -36,8 +36,6 @@ safe to re-run.
 
 - `scripts/bootstrap/link-lazygit-config.zsh` may resolve Lazygit's dynamic
   destination.
-- `scripts/bootstrap/relink-static-config.py` may replace a repo-owned indirect
-  HOME symlink with a direct link to the same declared static source.
 - `scripts/bootstrap/apply-macos-exceptions.zsh` may perform unsupported
   host-scoped defaults writes and restart affected apps when needed.
 - `scripts/bootstrap/json-overlay.py` may merge repository-owned fragments into
