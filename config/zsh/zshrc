@@ -13,6 +13,12 @@ source "$_dotfiles_zsh_dir/lib/functions.zsh"
 source "$_dotfiles_zsh_dir/lib/aliases.zsh"
 source "$_dotfiles_zsh_dir/lib/secrets.zsh"
 
+# Paseo: some desktop builds inject a stale PASEO_HOOK_CLI path → fall back to PATH.
+# Self-disables once Paseo ships a build whose path exists.
+if [[ -n "$PASEO_HOOK_CLI" && ! -x "$PASEO_HOOK_CLI" ]]; then
+  export PASEO_HOOK_CLI=paseo
+fi
+
 # ── Completions and interactive tools ───────────────────────────────────────
 if [[ -t 1 ]] && command -v ngrok >/dev/null 2>&1; then
   eval "$(ngrok completion)"
