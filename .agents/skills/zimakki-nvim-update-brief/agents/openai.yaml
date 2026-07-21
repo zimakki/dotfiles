@@ -1,0 +1,4 @@
+interface:
+  display_name: "Neovim What's New"
+  short_description: "Learn what new Neovim updates enable"
+  default_prompt: "Use $zimakki-nvim-update-brief to create a read-only visual learning brief about newly possible workflows in my Neovim stack."
