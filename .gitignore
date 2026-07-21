@@ -7,3 +7,6 @@ config/karabiner/automatic_backups/
 
 # macOS filesystem metadata
 .DS_Store
+
+# Local feature worktrees
+.worktrees/
