@@ -1,6 +1,6 @@
 # Discoverable workstation bootstrap config. This same file is linked to
 # ~/.config/mise/config.toml so the tools remain global outside this checkout.
-min_version = "2026.7.4"
+min_version = "2026.7.11"
 
 [env]
 # kerl reads this while Erlang is compiled, before managed shell files exist.
