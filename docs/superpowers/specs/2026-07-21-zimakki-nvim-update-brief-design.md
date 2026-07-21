@@ -21,7 +21,8 @@ soon after they become available.
   packages.
 - Explain what new capabilities enable and why they may matter to the user's
   workflow.
-- Feature no more than three to seven strong discoveries per report.
+- Feature no more than seven strong discoveries per report, normally three to
+  seven when the evidence supports that many.
 - Focus primarily on already-installed plugins and Mason tools.
 - Include at most one or two exceptional adjacent discoveries when they are
   directly relevant to the user's stack.
@@ -35,7 +36,9 @@ soon after they become available.
 ## Non-goals
 
 - Apply, select, roll back, or recommend automatic updates.
-- Modify Neovim configuration or suggest unsolicited configuration edits.
+- Modify Neovim configuration or turn the report into generic configuration
+  advice. A highlighted opt-in feature may include a clearly optional,
+  feature-specific snippet as part of its try-it explanation.
 - Provide exhaustive release-note coverage.
 - Explain routine bug fixes, dependency bumps, refactors, or maintenance in
   detail.
@@ -108,15 +111,18 @@ active config + prior coverage
 3. Groups candidates into research themes.
 4. Researches candidates, using parallel research subagents when the candidate
    set is large enough to benefit.
-5. Selects the strongest three to seven discoveries.
+5. Selects up to seven discoveries, normally three to seven when that many
+   clear the editorial threshold.
 6. Prepares a structured evidence bundle.
 7. Launches a dedicated subagent that must use `zimakki-html-doc`.
 8. Verifies the resulting report and its read-only guarantees.
 9. Advances coverage state only for successfully covered components.
 
 The orchestrator remains capable of doing the research itself when parallel
-agents are unavailable. The HTML assembly step remains a distinct subagent
-boundary when agent support is available.
+research agents are unavailable. Final HTML assembly always requires a distinct
+`zimakki-html-doc` subagent. If subagent support is unavailable, the run stops
+with a clear diagnostic, preserves its evidence bundle, and does not advance
+coverage.
 
 ### 2. Read-only collector
 
@@ -135,6 +141,12 @@ The collector may read local metadata and make network queries to remote Git
 repositories, GitHub APIs, Mason registry sources, and official project
 endpoints. It must not invoke Lazy sync/update/install, Mason update/install, or
 checkout changes into installed repositories.
+
+The collector must not source the active configuration in a way that can
+trigger user autocommands, installers, or other startup side effects. Resolve
+version constraints from static metadata or a disposable sandbox. If an exact
+compatible target cannot be established within that boundary, leave the
+component pending instead of probing through the active Neovim runtime.
 
 Its output is a structured candidate manifest in a temporary working
 directory. The manifest includes source identity, installed revision, coverage
@@ -242,7 +254,7 @@ scope, invent discoveries, or replace evidence supplied by the orchestrator.
 The report reads like a curated learning magazine:
 
 1. **Title and purpose** — what period and stack the report covers.
-2. **At a glance** — the three to seven strongest discoveries in one visual
+2. **At a glance** — up to seven of the strongest discoveries in one visual
    overview.
 3. **New shiny things** — one linked deep dive per selected discovery.
 4. **Smaller sparkles** — concise user-visible improvements that did not merit
@@ -354,7 +366,7 @@ manifests. Tests must demonstrate that it:
 - Selects capabilities rather than copying update text.
 - Suppresses fix-heavy maintenance.
 - Explains why a feature matters and what it enables.
-- Respects the three-to-seven cap without padding.
+- Respects the seven-item cap without padding toward a minimum.
 - Omits unsupported claims.
 - Does not repeat already-covered stories.
 - Keeps adjacent discoveries rare and relevant.
@@ -408,7 +420,8 @@ reported explicitly.
 - External, report-only workflow.
 - Hybrid deterministic collector plus agent research.
 - Installed stack first; exceptional adjacent discoveries only.
-- Three to seven primary discoveries, with no padding.
+- No more than seven primary discoveries, normally three to seven and never
+  padded toward a minimum.
 - Learning and workflow enablement over fixes and upgrade risk.
 - Persistent per-component coverage memory outside Neovim.
 - Dedicated `zimakki-html-doc` subagent for final presentation.
