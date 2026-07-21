@@ -80,12 +80,38 @@ defmodule Zimakki.NvimUpdateBrief do
     error -> {:error, Exception.message(error)}
   end
 
+  def complete(run_path, coverage_path, report_path, _env, run_git) do
+    with {:ok, report} <- read_report(report_path),
+         true <- html_document?(report) || {:error, "report is not an HTML document"} do
+      manifest = read_json!(run_path)
+      coverage = read_json!(coverage_path)
+
+      if local_guard(manifest, run_git) != manifest["guard"] do
+        {:error, "Neovim artifacts changed after collection; coverage was not advanced"}
+      else
+        state = load_state(manifest["runtime"]["brief_home"])
+        updated = merge_coverage(state, manifest, coverage, report_path)
+        write_state!(manifest["runtime"]["brief_home"], updated)
+        :ok
+      end
+    end
+  rescue
+    error -> {:error, Exception.message(error)}
+  end
+
   def main(args, env \\ System.get_env(), run_git \\ &run_git/2)
 
   def main(["collect" | args], env, run_git) do
     with {:ok, opts} <- parse_collect_options(args),
          {:ok, path} <- collect(opts, env, run_git) do
       IO.puts(path)
+      :ok
+    end
+  end
+
+  def main(["complete" | args], env, run_git) do
+    with {:ok, opts} <- parse_complete_options(args),
+         :ok <- complete(opts[:run], opts[:coverage], opts[:report], env, run_git) do
       :ok
     end
   end
@@ -104,14 +130,138 @@ defmodule Zimakki.NvimUpdateBrief do
     end
   end
 
+  defp parse_complete_options(args) do
+    case OptionParser.parse(args,
+           strict: [run: :string, coverage: :string, report: :string]
+         ) do
+      {opts, [], []} ->
+        missing = Enum.reject([:run, :coverage, :report], &Keyword.has_key?(opts, &1))
+
+        if missing == [] do
+          {:ok, opts}
+        else
+          {:error, "missing complete options: #{Enum.map_join(missing, ", ", &"--#{&1}")}"}
+        end
+
+      {_opts, positional, invalid} ->
+        {:error, "invalid complete arguments: #{inspect(positional ++ invalid)}"}
+    end
+  end
+
+  defp read_report(path) do
+    case File.read(path) do
+      {:ok, report} -> {:ok, report}
+      {:error, reason} -> {:error, "cannot read report #{path}: #{:file.format_error(reason)}"}
+    end
+  end
+
+  defp html_document?(report) do
+    report
+    |> String.slice(0, 1_024)
+    |> String.downcase()
+    |> String.contains?("<html")
+  end
+
+  defp local_guard(manifest, run_git) do
+    runtime = manifest["runtime"]
+    lock_path = Path.join(runtime["config_dir"], "lazy-lock.json")
+
+    %{
+      "lazy_lock_sha256" => lock_path |> File.read!() |> sha256(),
+      "plugins" =>
+        Map.new(manifest["lazy"], fn plugin ->
+          install_dir = plugin["install_dir"]
+          {head, _warning} = git_from_install(run_git, ["rev-parse", "HEAD"], install_dir)
+
+          {status, _warning} =
+            git_from_install(run_git, ["status", "--porcelain"], install_dir)
+
+          {plugin["component_id"], %{"head" => head, "status" => status}}
+        end),
+      "receipts" =>
+        Map.new(manifest["mason"], fn package ->
+          hash = package["receipt_path"] |> File.read!() |> sha256()
+          {package["component_id"], hash}
+        end)
+    }
+  end
+
+  defp merge_coverage(state, manifest, coverage, report_path) do
+    runtime = manifest["runtime"]
+    config_id = runtime["config_id"]
+    configs = state["configs"] || %{}
+    previous = configs[config_id] || %{}
+    components = previous["components"] || %{}
+
+    allowed_ids =
+      (manifest["lazy"] ++ manifest["mason"])
+      |> MapSet.new(& &1["component_id"])
+
+    completed_at = DateTime.utc_now() |> DateTime.truncate(:second) |> DateTime.to_iso8601()
+
+    updated_components =
+      Enum.reduce(coverage["processed"] || [], components, fn item, acc ->
+        id = item["component_id"]
+        through = item["through"]
+        disposition = item["disposition"]
+
+        unless MapSet.member?(allowed_ids, id) do
+          raise ArgumentError, "coverage references unknown component #{inspect(id)}"
+        end
+
+        unless disposition in ["featured", "no_learning_value"] do
+          raise ArgumentError, "invalid coverage disposition for #{id}"
+        end
+
+        unless is_binary(through) and through != "" do
+          raise ArgumentError, "coverage target is missing for #{id}"
+        end
+
+        Map.put(acc, id, %{
+          "covered" => through,
+          "disposition" => disposition,
+          "report" => Path.expand(report_path),
+          "updated_at" => completed_at
+        })
+      end)
+
+    adjacent = Enum.uniq((previous["adjacent"] || []) ++ (coverage["adjacent"] || []))
+
+    config =
+      previous
+      |> Map.put("components", updated_components)
+      |> Map.put("adjacent", adjacent)
+      |> Map.put("last_report", Path.expand(report_path))
+      |> Map.put("last_completed_at", completed_at)
+
+    state
+    |> Map.put("schema", @schema)
+    |> Map.put("configs", Map.put(configs, config_id, config))
+  end
+
+  defp write_state!(brief_home, state) do
+    File.mkdir_p!(brief_home)
+    state_path = Path.join(brief_home, "state.json")
+    temporary_path = state_path <> ".tmp"
+
+    try do
+      File.write!(temporary_path, encode_json(state))
+      File.rename!(temporary_path, state_path)
+    after
+      if File.exists?(temporary_path), do: File.rm(temporary_path)
+    end
+  end
+
   defp collect_lazy(name, entry, paths, state, config_id, run_git) do
     install_dir = Path.join([paths.data_dir, "lazy", name])
     branch = entry["branch"] || "main"
     locked = entry["commit"]
 
-    {origin, origin_warning} = git_output(run_git, ["remote", "get-url", "origin"], install_dir)
-    {head, head_warning} = git_output(run_git, ["rev-parse", "HEAD"], install_dir)
-    {status, status_warning} = git_output(run_git, ["status", "--porcelain"], install_dir)
+    {origin, origin_warning} =
+      git_from_install(run_git, ["remote", "get-url", "origin"], install_dir)
+
+    {head, head_warning} = git_from_install(run_git, ["rev-parse", "HEAD"], install_dir)
+    {status, status_warning} = git_from_install(run_git, ["status", "--porcelain"], install_dir)
     repository = github_repository(origin)
 
     {remote, remote_warning} =
@@ -204,6 +354,14 @@ defmodule Zimakki.NvimUpdateBrief do
     case run_git.(args, cwd) do
       {:ok, output} -> {String.trim(output), nil}
       {:error, reason} -> {nil, "git #{Enum.join(args, " ")} unavailable: #{reason}"}
+    end
+  end
+
+  defp git_from_install(run_git, args, install_dir) do
+    if File.dir?(install_dir) do
+      git_output(run_git, args, install_dir)
+    else
+      {nil, "plugin install directory is absent"}
     end
   end
 
