@@ -12,7 +12,7 @@ if File.exists?(script) do
 end
 
 defmodule Zimakki.NvimUpdateBriefTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   alias Zimakki.NvimUpdateBrief, as: Brief
 
@@ -150,6 +150,18 @@ defmodule Zimakki.NvimUpdateBriefTest do
     assert paths.data_dir == Path.join(root, ".local/share/nvim")
   end
 
+  test "rejects v4 before collection can read it" do
+    fixture = fixture!()
+    v4 = Path.join(fixture.root, "astronvim_v4")
+
+    assert_raise ArgumentError, ~r/v4/, fn ->
+      Brief.resolve_paths(
+        [config: v4],
+        Map.put(fixture.env, "NVIM_APPNAME", "astronvim_v4")
+      )
+    end
+  end
+
   test "reports a missing lockfile directly" do
     fixture = fixture!()
     File.rm!(Path.join(fixture.config, "lazy-lock.json"))
@@ -175,6 +187,12 @@ defmodule Zimakki.NvimUpdateBriefTest do
 
     assert Path.dirname(path) == Path.join(fixture.brief_home, "runs")
     assert %{"schema" => 1} = path |> File.read!() |> :json.decode()
+  end
+
+  test "CLI usage documents collection and completion" do
+    assert {:error, usage} = Brief.main([], %{}, fn _args, _cwd -> {:error, "unused"} end)
+    assert usage =~ "collect"
+    assert usage =~ "complete"
   end
 
   test "complete advances processed coverage and preserves pending components" do
@@ -284,6 +302,111 @@ defmodule Zimakki.NvimUpdateBriefTest do
 
     assert message =~ "cannot read report"
     assert File.read!(ready.state_path) == ready.original_state
+  end
+
+  test "complete preserves an unseen Mason baseline for a later installed update" do
+    fixture = fixture!()
+    ready = ready_completion!(fixture)
+
+    assert :ok =
+             Brief.complete(
+               ready.run_path,
+               ready.coverage_path,
+               ready.report_path,
+               fixture.env,
+               git_for(fixture)
+             )
+
+    write_json!(fixture.receipt_path, %{
+      "name" => "stylua",
+      "schema_version" => "2.0",
+      "source" => %{"id" => "pkg:github/johnnymorganz/stylua@v2.6.0"}
+    })
+
+    manifest =
+      Brief.build_manifest(
+        [config: fixture.config, brief_home: fixture.brief_home],
+        fixture.env,
+        git_for(fixture)
+      )
+
+    mason = hd(manifest["mason"])
+    assert mason["baseline"] == "v2.5.0"
+    assert mason["candidate"]
+  end
+
+  test "complete rejects a Lazy coverage target not present in the manifest" do
+    fixture = fixture!()
+    ready = ready_completion!(fixture)
+    coverage = ready.coverage_path |> File.read!() |> :json.decode()
+
+    changed =
+      update_in(coverage, ["processed", Access.at(0), "through"], fn _target -> "typo" end)
+
+    write_json!(ready.coverage_path, changed)
+
+    assert {:error, message} =
+             Brief.complete(
+               ready.run_path,
+               ready.coverage_path,
+               ready.report_path,
+               fixture.env,
+               git_for(fixture)
+             )
+
+    assert message =~ "does not match collected target"
+    assert File.read!(ready.state_path) == ready.original_state
+  end
+
+  test "collection leaves a clean plugin index byte-for-byte unchanged" do
+    fixture = fixture!()
+    readme = Path.join(fixture.plugin_dir, "README.md")
+    File.write!(readme, "clean\n")
+
+    git!(["init", "--initial-branch=main"], fixture.plugin_dir)
+    git!(["config", "user.email", "test@example.com"], fixture.plugin_dir)
+    git!(["config", "user.name", "Test"], fixture.plugin_dir)
+    git!(["add", "README.md"], fixture.plugin_dir)
+    git!(["commit", "-m", "fixture"], fixture.plugin_dir)
+    head = git!(["rev-parse", "HEAD"], fixture.plugin_dir)
+
+    origin = Path.join(fixture.root, "origin.git")
+    git!(["init", "--bare", origin], fixture.root)
+    git!(["remote", "add", "origin", origin], fixture.plugin_dir)
+    git!(["push", "-u", "origin", "main"], fixture.plugin_dir)
+
+    write_json!(fixture.lock_path, %{
+      "snacks.nvim" => %{"branch" => "main", "commit" => head}
+    })
+
+    File.write!(readme, "dirty\n")
+    File.write!(readme, "clean\n")
+    index_path = Path.join(fixture.plugin_dir, ".git/index")
+    before = File.read!(index_path)
+
+    real_git = System.find_executable("git")
+    wrapper_dir = Path.join(fixture.root, "bin")
+    wrapper_log = Path.join(fixture.root, "git-arguments.log")
+    wrapper = Path.join(wrapper_dir, "git")
+    File.mkdir_p!(wrapper_dir)
+
+    File.write!(
+      wrapper,
+      "#!/bin/sh\nprintf '%s\\n' \"$@\" >> #{wrapper_log}\nexec #{real_git} \"$@\"\n"
+    )
+
+    File.chmod!(wrapper, 0o755)
+    previous_path = System.fetch_env!("PATH")
+    System.put_env("PATH", wrapper_dir <> ":" <> previous_path)
+    on_exit(fn -> System.put_env("PATH", previous_path) end)
+
+    Brief.build_manifest(
+      [config: fixture.config, brief_home: fixture.brief_home],
+      fixture.env
+    )
+
+    assert File.read!(index_path) == before
+    assert "--no-optional-locks" in (wrapper_log |> File.read!() |> String.split())
   end
 
   defp fixture! do
@@ -400,5 +523,12 @@ defmodule Zimakki.NvimUpdateBriefTest do
       state_path: state_path,
       original_state: original_state
     }
+  end
+
+  defp git!(args, cwd) do
+    case System.cmd("git", args, cd: cwd, stderr_to_stdout: true) do
+      {output, 0} -> String.trim(output)
+      {output, status} -> flunk("git #{Enum.join(args, " ")} failed (#{status}): #{output}")
+    end
   end
 end

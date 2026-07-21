@@ -80,6 +80,10 @@ state-change, or before/after diagram. Never fabricate a product interface.
 Coverage is about whether a range was handled, not whether an update was
 installed.
 
+For Lazy components, `through` must exactly equal the manifest's collected
+`target`. For Mason components, use the exact upstream version established by
+the cited primary evidence; it may be newer than the installed receipt.
+
 ## Output contracts
 
 Write `coverage.json` beside the manifest:

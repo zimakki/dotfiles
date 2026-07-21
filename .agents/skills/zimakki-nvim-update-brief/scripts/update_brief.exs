@@ -8,10 +8,17 @@ defmodule Zimakki.NvimUpdateBrief do
     app_name = Map.get(env, "NVIM_APPNAME", "nvim")
     config_home = Map.get(env, "XDG_CONFIG_HOME", Path.join(home, ".config"))
     data_home = Map.get(env, "XDG_DATA_HOME", Path.join(home, ".local/share"))
+    config_dir = Path.expand(opts[:config] || Path.join(config_home, app_name))
+
+    resolved_config = resolve_link(config_dir)
+
+    if Enum.any?([app_name, config_dir, resolved_config], &v4_reference?/1) do
+      raise ArgumentError, "refusing to inspect a v4 Neovim configuration"
+    end
 
     %{
       app_name: app_name,
-      config_dir: Path.expand(opts[:config] || Path.join(config_home, app_name)),
+      config_dir: config_dir,
       data_dir: Path.expand(Path.join(data_home, app_name)),
       brief_home:
         Path.expand(opts[:brief_home] || Path.join(data_home, "zimakki-nvim-update-brief"))
@@ -117,7 +124,8 @@ defmodule Zimakki.NvimUpdateBrief do
   end
 
   def main(_args, _env, _run_git) do
-    {:error, "usage: update_brief.exs collect [--config PATH] [--brief-home PATH]"}
+    {:error,
+     "usage:\n  update_brief.exs collect [--config PATH] [--brief-home PATH]\n  update_brief.exs complete --run PATH --coverage PATH --report PATH"}
   end
 
   defp parse_collect_options(args) do
@@ -193,14 +201,22 @@ defmodule Zimakki.NvimUpdateBrief do
     previous = configs[config_id] || %{}
     components = previous["components"] || %{}
 
+    manifest_components = manifest["lazy"] ++ manifest["mason"]
+
+    components_with_baselines =
+      Enum.reduce(manifest_components, components, fn item, acc ->
+        Map.put_new(acc, item["component_id"], %{"baseline" => item["baseline"]})
+      end)
+
     allowed_ids =
-      (manifest["lazy"] ++ manifest["mason"])
-      |> MapSet.new(& &1["component_id"])
+      MapSet.new(manifest_components, & &1["component_id"])
+
+    manifest_by_id = Map.new(manifest_components, &{&1["component_id"], &1})
 
     completed_at = DateTime.utc_now() |> DateTime.truncate(:second) |> DateTime.to_iso8601()
 
     updated_components =
-      Enum.reduce(coverage["processed"] || [], components, fn item, acc ->
+      Enum.reduce(coverage["processed"] || [], components_with_baselines, fn item, acc ->
         id = item["component_id"]
         through = item["through"]
         disposition = item["disposition"]
@@ -215,6 +231,10 @@ defmodule Zimakki.NvimUpdateBrief do
 
         unless is_binary(through) and through != "" do
           raise ArgumentError, "coverage target is missing for #{id}"
+        end
+
+        if String.starts_with?(id, "lazy:") and through != manifest_by_id[id]["target"] do
+          raise ArgumentError, "coverage target for #{id} does not match collected target"
         end
 
         Map.put(acc, id, %{
@@ -329,7 +349,8 @@ defmodule Zimakki.NvimUpdateBrief do
   end
 
   defp prior_covered(state, config_id, component_id, fallback) do
-    get_in(state, ["configs", config_id, "components", component_id, "covered"]) || fallback
+    component = get_in(state, ["configs", config_id, "components", component_id]) || %{}
+    component["covered"] || component["baseline"] || fallback
   end
 
   defp load_state(brief_home) do
@@ -368,7 +389,7 @@ defmodule Zimakki.NvimUpdateBrief do
   defp run_git(args, cwd) do
     options = if cwd, do: [cd: cwd, stderr_to_stdout: true], else: [stderr_to_stdout: true]
 
-    case System.cmd("git", args, options) do
+    case System.cmd("git", ["--no-optional-locks" | args], options) do
       {output, 0} -> {:ok, output}
       {output, _status} -> {:error, String.trim(output)}
     end
@@ -387,6 +408,17 @@ defmodule Zimakki.NvimUpdateBrief do
       [_, owner, repository] -> "#{owner}/#{repository}"
       _match -> nil
     end
+  end
+
+  defp resolve_link(path) do
+    case :file.read_link_all(String.to_charlist(path)) do
+      {:ok, resolved} -> resolved |> List.to_string() |> Path.expand()
+      {:error, _reason} -> path
+    end
+  end
+
+  defp v4_reference?(value) do
+    Regex.match?(~r/(^|[^a-z0-9])v4([^a-z0-9]|$)/, String.downcase(value))
   end
 
   defp purl_version(nil), do: nil
