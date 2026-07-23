@@ -31,6 +31,19 @@ tre() {
   command tre "$@" -e && source "/tmp/tre_aliases_$USER" 2>/dev/null
 }
 
+y() {
+  local tmp cwd exit_status
+  tmp="$(mktemp -t yazi-cwd.XXXXXX)" || return 1
+
+  command yazi "$@" --cwd-file="$tmp"
+  exit_status=$?
+  IFS= read -r -d '' cwd < "$tmp"
+  rm -f -- "$tmp"
+
+  [[ -n "$cwd" && "$cwd" != "$PWD" && -d "$cwd" ]] && builtin cd -- "$cwd"
+  return "$exit_status"
+}
+
 delete_nvim_cache() {
   local dir
   for dir in "$HOME/.local/share/nvim" "$HOME/.local/state/nvim" "$HOME/.cache/nvim"; do

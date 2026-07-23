@@ -4,9 +4,11 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path, PurePosixPath
 import re
 import subprocess
+import tempfile
 import tomllib
 
 
@@ -136,6 +138,71 @@ assert "/opt/homebrew/bin/mise" not in zshrc
 assert "KERL_BUILD_DOCS" in zshenv
 for target in ("~/.gitconfig", "~/.zshenv", "~/.zprofile", "~/.zshrc"):
     assert "/Users/" not in source_for(target).read_text(encoding="utf-8"), target
+
+yazi_dir = source_for("~/.config/yazi")
+yazi_theme = tomllib.loads((yazi_dir / "theme.toml").read_text(encoding="utf-8"))
+assert yazi_theme == {"flavor": {"dark": "catppuccin-mocha"}}
+
+yazi_packages = tomllib.loads((yazi_dir / "package.toml").read_text(encoding="utf-8"))
+mocha_dependency = next(
+    (
+        dependency
+        for dependency in yazi_packages.get("flavor", {}).get("deps", [])
+        if dependency.get("use") == "yazi-rs/flavors:catppuccin-mocha"
+    ),
+    None,
+)
+assert mocha_dependency is not None
+assert re.fullmatch(r"[0-9a-f]{7,40}", mocha_dependency["rev"])
+assert re.fullmatch(r"[0-9a-f]{32}", mocha_dependency["hash"])
+
+mocha_dir = yazi_dir / "flavors/catppuccin-mocha.yazi"
+for relative in (
+    "flavor.toml",
+    "tmtheme.xml",
+    "LICENSE",
+    "LICENSE-tmtheme",
+    "README.md",
+    "preview.png",
+):
+    assert (mocha_dir / relative).is_file(), relative
+tomllib.loads((mocha_dir / "flavor.toml").read_text(encoding="utf-8"))
+
+with tempfile.TemporaryDirectory() as temp_dir:
+    temp_path = Path(temp_dir)
+    yazi_stub = temp_path / "yazi"
+    yazi_stub.write_text(
+        """#!/bin/sh
+for argument do
+  case "$argument" in
+    --cwd-file=*) cwd_file="${argument#--cwd-file=}" ;;
+  esac
+done
+[ -n "${cwd_file:-}" ] || exit 2
+printf '%s' "$YAZI_TEST_CWD" > "$cwd_file"
+"""
+    )
+    yazi_stub.chmod(0o755)
+    expected_cwd = temp_path / "destination"
+    expected_cwd.mkdir()
+    wrapper_env = os.environ.copy()
+    wrapper_env["PATH"] = f"{temp_path}:{wrapper_env['PATH']}"
+    wrapper_env["YAZI_TEST_CWD"] = str(expected_cwd)
+    wrapper_check = subprocess.run(
+        [
+            "zsh",
+            "-fc",
+            'source "$1"; cd /; y "$2"; print -rn -- "$PWD"',
+            "zsh",
+            str(ROOT / "config/zsh/lib/functions.zsh"),
+            str(expected_cwd),
+        ],
+        env=wrapper_env,
+        capture_output=True,
+        text=True,
+    )
+    assert wrapper_check.returncode == 0, wrapper_check.stderr
+    assert wrapper_check.stdout == str(expected_cwd), wrapper_check.stdout
 
 brewfile = (ROOT / "BrewFile").read_text(encoding="utf-8")
 assert 'tap "zimakki/tap"' in brewfile

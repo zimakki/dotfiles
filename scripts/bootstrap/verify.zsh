@@ -43,7 +43,7 @@ else
 fi
 
 hdr "CLIs on PATH"
-for command_name in starship atuin tv fzf zoxide lsd nvim delta bat lazygit rg fd gh; do
+for command_name in starship atuin tv fzf zoxide lsd nvim delta bat lazygit rg fd gh yazi ya; do
   command -v "$command_name" >/dev/null 2>&1 \
     && pass "$command_name" \
     || fail "$command_name not on PATH"
