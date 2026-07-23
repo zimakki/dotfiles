@@ -53,6 +53,24 @@ starship_path="$(command -v starship 2>/dev/null || true)"
 [[ -n "$brew_prefix" && "$starship_path" == "$brew_prefix/bin/starship" ]] \
   && pass "starship comes from Homebrew" \
   || fail "starship resolves to ${starship_path:-<none>}"
+
+yazi_formula_prefix="$(brew --prefix yazi 2>/dev/null || true)"
+yazi_path="$(command -v yazi 2>/dev/null || true)"
+ya_path="$(command -v ya 2>/dev/null || true)"
+yazi_expected="$yazi_formula_prefix/bin/yazi"
+ya_expected="$yazi_formula_prefix/bin/ya"
+[[ -n "$yazi_formula_prefix" \
+    && -n "$yazi_path" && "${yazi_path:A}" == "${yazi_expected:A}" \
+    && -n "$ya_path" && "${ya_path:A}" == "${ya_expected:A}" ]] \
+  && pass "yazi and ya come from the Homebrew yazi formula" \
+  || fail "yazi/ya resolve to ${yazi_path:-<none>} and ${ya_path:-<none>} (want $yazi_expected and $ya_expected)"
+
+yazi_version="$(yazi --version 2>/dev/null | awk '{print $2}' || true)"
+ya_version="$(ya --version 2>/dev/null | awk '{print $2}' || true)"
+[[ -n "$yazi_version" && "$yazi_version" == "$ya_version" ]] \
+  && pass "yazi and ya versions match ($yazi_version)" \
+  || fail "yazi/ya versions are ${yazi_version:-<none>} and ${ya_version:-<none>}"
+
 for plugin in \
   zsh-autosuggestions/zsh-autosuggestions.zsh \
   zsh-syntax-highlighting/zsh-syntax-highlighting.zsh; do

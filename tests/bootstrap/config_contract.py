@@ -208,6 +208,31 @@ brewfile = (ROOT / "BrewFile").read_text(encoding="utf-8")
 assert 'tap "zimakki/tap"' in brewfile
 assert 'cask "zimakki/tap/inkwell"' in brewfile
 assert 'cask "inkwell"' not in brewfile
+assert re.search(r'^brew "yazi"$', brewfile, re.MULTILINE)
+
+verifier = (ROOT / "scripts/bootstrap/verify.zsh").read_text(encoding="utf-8")
+cli_loop = re.search(r"for command_name in ([^;]+); do", verifier)
+assert cli_loop is not None
+assert {"yazi", "ya"} <= set(cli_loop.group(1).split())
+
+yazi_verifier_contract = (
+    'yazi_formula_prefix="$(brew --prefix yazi 2>/dev/null || true)"',
+    'yazi_path="$(command -v yazi 2>/dev/null || true)"',
+    'ya_path="$(command -v ya 2>/dev/null || true)"',
+    'yazi_expected="$yazi_formula_prefix/bin/yazi"',
+    'ya_expected="$yazi_formula_prefix/bin/ya"',
+    '"${yazi_path:A}" == "${yazi_expected:A}"',
+    '"${ya_path:A}" == "${ya_expected:A}"',
+    'yazi_version="$(yazi --version 2>/dev/null | awk \'{print $2}\' || true)"',
+    'ya_version="$(ya --version 2>/dev/null | awk \'{print $2}\' || true)"',
+    '[[ -n "$yazi_version" && "$yazi_version" == "$ya_version" ]]',
+)
+missing_yazi_checks = [
+    snippet for snippet in yazi_verifier_contract if snippet not in verifier
+]
+assert not missing_yazi_checks, (
+    f"verifier is missing Yazi formula/version checks: {missing_yazi_checks}"
+)
 
 required_scripts = (
     "scripts/bootstrap/preflight.zsh",
